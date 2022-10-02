@@ -24,8 +24,7 @@ from inhouse_bot.queue_channel_handler.queue_channel_handler import (
 from inhouse_bot.ranking_channel_handler.ranking_channel_handler import ranking_channel_handler
 
 intents = discord.Intents.all()
-intents.members = True
-
+intents.presences = False
 
 class InhouseBot(commands.Bot):
     """
