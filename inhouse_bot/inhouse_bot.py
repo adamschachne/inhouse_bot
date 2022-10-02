@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import threading
@@ -22,7 +23,7 @@ from inhouse_bot.queue_channel_handler.queue_channel_handler import (
 # Defining intents to get full members list
 from inhouse_bot.ranking_channel_handler.ranking_channel_handler import ranking_channel_handler
 
-intents = discord.Intents.default()
+intents = discord.Intents.all()
 intents.members = True
 
 
@@ -34,28 +35,29 @@ class InhouseBot(commands.Bot):
     def __init__(self, **options):
         super().__init__(PREFIX, intents=intents, case_insensitive=True, **options)
 
+        # Setting up the on_message listener that will handle queue channels
+        self.add_listener(queue_channel_handler.queue_channel_message_listener, "on_message")
+
+        # Setting up some basic logging
+        self.logger = logging.getLogger("inhouse_bot")
+
+        self.add_listener(self.command_logging, "on_command")    
+
+    async def setup_hook(self) -> None:
         # Importing locally to allow InhouseBot to be imported in the cogs
         from inhouse_bot.cogs.queue_cog import QueueCog
         from inhouse_bot.cogs.admin_cog import AdminCog
         from inhouse_bot.cogs.stats_cog import StatsCog
 
-        self.add_cog(QueueCog(self))
-        self.add_cog(AdminCog(self))
-        self.add_cog(StatsCog(self))
-
-        # Setting up the on_message listener that will handle queue channels
-        self.add_listener(func=queue_channel_handler.queue_channel_message_listener, name="on_message")
-
-        # Setting up some basic logging
-        self.logger = logging.getLogger("inhouse_bot")
-
-        self.add_listener(func=self.command_logging, name="on_command")
+        await self.add_cog(QueueCog(self))
+        await self.add_cog(AdminCog(self))
+        await self.add_cog(StatsCog(self))
 
         # While I hate mixing production and testing code, this is the most convenient solution to test the bot
         if os.environ.get("INHOUSE_BOT_TEST"):
             from tests.test_cog import TestCog
-
             self.add_cog(TestCog(self))
+
 
     def run(self, *args, **kwargs):
         super().run(os.environ["INHOUSE_BOT_TOKEN"], *args, **kwargs)
