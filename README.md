@@ -5,7 +5,7 @@ A Discord bot to handle League of Legends in-house games, with role queue, match
 
 ## Note
 
-As `discord.py` is not maintained anymore and the LCS player association has developed its own matchmaking system, this bot is not maintained anymore as of December 2021.
+This is a fork of [inhouse_bot](https://github.com/mrtolkien/inhouse_bot). The original project is no longer maintained, so I'm using this repo to develop new features.
 
 # Demo
 ![Demo](.demo.gif)
