@@ -31,15 +31,19 @@ class RoleConverter(commands.Converter):
         """
         Converts an input string to a clean role
         """
-        matched_string, ratio = rapidfuzz.process.extractOne(argument, full_roles_dict.keys())
 
+        matched_string, ratio, _ = rapidfuzz.process.extractOne(argument, list(full_roles_dict.keys()))
         if ratio < 85:
             await ctx.send(f"The role was not understood")
             raise ConversionError
-
         else:
             return full_roles_dict[matched_string]
 
+class QueueRoleConverter(RoleConverter):
+    async def convert(self, ctx, argument):
+        if str.upper(argument) == 'ALL':
+            return 'ALL'
+        return await super().convert(ctx, argument)
 
 class ChampionNameConverter(commands.Converter):
     async def convert(self, ctx, argument):

@@ -9,7 +9,7 @@ from inhouse_bot import matchmaking_logic
 from inhouse_bot.common_utils.constants import PREFIX
 from inhouse_bot.common_utils.docstring import doc
 from inhouse_bot.common_utils.emoji_and_thumbnails import get_role_emoji
-from inhouse_bot.common_utils.fields import RoleConverter
+from inhouse_bot.common_utils.fields import QueueRoleConverter, roles_list
 from inhouse_bot.common_utils.get_last_game import get_last_game
 from inhouse_bot.common_utils.validation_dialog import checkmark_validation
 
@@ -172,14 +172,15 @@ class QueueCog(commands.Cog, name="Queue"):
             {PREFIX}queue SUP
             {PREFIX}queue bot
             {PREFIX}queue adc
+            {PREFIX}queue all
             {PREFIX}queue adc @CoreJJ support
     """)
     async def queue(
         self,
         ctx: commands.Context,
-        role: RoleConverter(),
+        role: QueueRoleConverter(),
         duo: discord.Member = None,
-        duo_role: RoleConverter() = None,
+        duo_role: QueueRoleConverter() = None,
     ):
         # Checking if the last game of this player got cancelled
         #   If so, we put them in the queue in front of other players
@@ -192,21 +193,36 @@ class QueueCog(commands.Cog, name="Queue"):
                 jump_ahead = True
 
         if not duo:
-
-            # Simply queuing the player
-            game_queue.add_player(
-                player_id=ctx.author.id,
-                name=ctx.author.display_name,
-                role=role,
-                channel_id=ctx.channel.id,
-                server_id=ctx.guild.id,
-                jump_ahead=jump_ahead,
-            )
+            if role == "ALL":
+                for r in roles_list:
+                    # Simply queuing the player
+                    game_queue.add_player(
+                        player_id=ctx.author.id,
+                        name=ctx.author.display_name,
+                        role=r,
+                        channel_id=ctx.channel.id,
+                        server_id=ctx.guild.id,
+                        jump_ahead=jump_ahead,
+                    )
+            else:
+                # Simply queuing the player
+                game_queue.add_player(
+                    player_id=ctx.author.id,
+                    name=ctx.author.display_name,
+                    role=role,
+                    channel_id=ctx.channel.id,
+                    server_id=ctx.guild.id,
+                    jump_ahead=jump_ahead,
+                )
 
         # If there is a duo, we go for a different flow (which should likely be another function)
         else:
             if not duo_role:
                 await ctx.send("You need to input a role for your duo partner")
+                return
+
+            if role == "ALL" or duo_role == "ALL":
+                await ctx.send("Duos cannot queue for all roles")
                 return
 
             duo_validation_message = await ctx.send(
