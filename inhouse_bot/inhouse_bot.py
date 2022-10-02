@@ -56,7 +56,7 @@ class InhouseBot(commands.Bot):
         # While I hate mixing production and testing code, this is the most convenient solution to test the bot
         if os.environ.get("INHOUSE_BOT_TEST"):
             from tests.test_cog import TestCog
-            self.add_cog(TestCog(self))
+            await self.add_cog(TestCog(self))
 
 
     def run(self, *args, **kwargs):
