@@ -100,7 +100,7 @@ class QueueChannelHandler:
             embed.add_field(name="Duos", value=", ".join(duos_strings))
 
         embed.set_footer(
-            text=f"Use {PREFIX}queue <role> or {PREFIX}queue all to join,  or !leave to leave | All non-queue messages are deleted"
+            text=f"Use {PREFIX}queue <role> or {PREFIX}queue all to join, or !leave to leave"
         )
 
         message_text = ""
