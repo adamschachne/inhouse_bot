@@ -1,6 +1,4 @@
-
 version: "3.8"
-
 services:
   inhouse_bot:
     build:
@@ -20,26 +18,37 @@ services:
       INHOUSE_BOT_MID_EMOJI: '<:MID:1021910129500749974>'
       INHOUSE_BOT_BOT_EMOJI: '<:BOT:1021910195112255508>'
       INHOUSE_BOT_SUP_EMOJI: '<:SUP:1021910164053438494>'
-
     volumes:
-      - "./dbsocket:/var/run/postgresql"
-
+      # Socket volume to connect to the database
+      - type: volume
+        source: dbsocket
+        target: /var/run/postgresql
+    depends_on:
+    - db
   db:
     image: postgres:alpine
     restart: always
     volumes:
-      - "./pgdata:/var/lib/postgresql/data"
-      - "./dbsocket:/var/run/postgresql"
+    - type: volume
+      source: dbsocket
+      target: /var/run/postgresql
+
+    - type: volume
+      source: pgdata
+      target: /var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: ⚠ POSTGRES PASSWORD ⚠
       POSTGRES_DB: inhouse_bot
+    ports:
+      - 5432:5432
 
   adminer:
     image: adminer
     restart: always
     ports:
       - 8085:8080
-
+    depends_on:
+      - db
 volumes:
-  pgdata:
   dbsocket:
+  pgdata:
