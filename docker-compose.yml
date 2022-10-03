@@ -1,43 +1,45 @@
-# THIS IS THE DEVELOPMENT DOCKER COMPOSE I’M USING
-# DO NOT USE IT TO DEPLOY THE BOT
 
 version: "3.8"
 
 services:
   inhouse_bot:
-    image: mrtolkien/inhouse_bot:beta
     build:
       context: .
-    env_file: # Using in env file in dev to hide my bot key and such
-      - .env
+      dockerfile: ./Dockerfile
+    restart: always
+    environment:
+      # The connection string is an SQLAlchemy connection string, does not need a password since it uses sockets
+      INHOUSE_BOT_CONNECTION_STRING: postgresql+psycopg2://postgres:@/inhouse_bot
+
+      # You need to put your Discord Bot token here
+      INHOUSE_BOT_TOKEN: ⚠ PUT_YOUR_TOKEN_HERE ⚠
+
+      # Those emoji help the bot look good and are defined with discord.py emoji syntax
+      INHOUSE_BOT_TOP_EMOJI: '<:TOP:1021910091538104321>'
+      INHOUSE_BOT_JGL_EMOJI: '<:JG:1021910144600244277>'
+      INHOUSE_BOT_MID_EMOJI: '<:MID:1021910129500749974>'
+      INHOUSE_BOT_BOT_EMOJI: '<:BOT:1021910195112255508>'
+      INHOUSE_BOT_SUP_EMOJI: '<:SUP:1021910164053438494>'
+
     volumes:
-      - type: bind
-        source: ./
-        target: /inhouse_bot
-      - type: volume
-        source: dbsocket
-        target: /var/run/postgresql
-    depends_on:
-      - db
+      - "./dbsocket:/var/run/postgresql"
 
   db:
     image: postgres:alpine
-
-    environment:
-      POSTGRES_DB: inhouse_bot
-      POSTGRES_PASSWORD: pwd
-
+    restart: always
     volumes:
-      # Socket volume to communicate faster
-      - type: volume
-        source: dbsocket
-        target: /var/run/postgresql
+      - "./pgdata:/var/lib/postgresql/data"
+      - "./dbsocket:/var/run/postgresql"
+    environment:
+      POSTGRES_PASSWORD: ⚠ POSTGRES PASSWORD ⚠
+      POSTGRES_DB: inhouse_bot
 
   adminer:
     image: adminer
+    restart: always
     ports:
-      - 8080:8080
-
+      - 8085:8080
 
 volumes:
+  pgdata:
   dbsocket:
