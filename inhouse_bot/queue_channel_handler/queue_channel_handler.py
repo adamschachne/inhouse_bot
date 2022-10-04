@@ -85,7 +85,8 @@ class QueueChannelHandler:
                 f"{get_role_emoji(role)} " + ", ".join(qp.player.short_name for qp in role_queue)
             )
 
-        embed.add_field(name="Queue", value="\n".join(queue_rows))
+        # Hardcoded value(55) to put the player count string in the corner
+        embed.add_field(name=f"{'Queue'.ljust(55)} Players in Queue: {queue.unique_players_in_queue()}", value="\n".join(queue_rows)) 
 
         # Adding duos field if it’s not empty
         if queue.duos:
