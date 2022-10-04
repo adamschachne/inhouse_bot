@@ -144,6 +144,11 @@ class GameQueue:
         rows.append(f"DUO\t{', '.join(duos_strings)}")
 
         return "\n".join(rows)
+    
+    def unique_players_in_queue(self):
+        uniquePlayers = set()
+        [uniquePlayers.add(qp.player_id) for qp in self.queue_players]
+        return len(uniquePlayers)
 
     @property
     def queue_players_dict(self) -> Dict[str, List[QueuePlayer]]:
