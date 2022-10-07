@@ -269,9 +269,9 @@ class QueueCog(commands.Cog, name="Queue"):
     """)
     async def leave(
         self, ctx: commands.Context,
+        role: QueueRoleConverter() = None,
     ):
-        game_queue.remove_player(player_id=ctx.author.id, channel_id=ctx.channel.id)
-
+        game_queue.remove_player(player_id=ctx.author.id, channel_id=ctx.channel.id, role=role)
         await queue_channel_handler.update_queue_channels(bot=self.bot, server_id=ctx.guild.id)
 
     @commands.command(aliases=["win", "wins", "victory"])
