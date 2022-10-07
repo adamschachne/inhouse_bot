@@ -265,7 +265,10 @@ class QueueCog(commands.Cog, name="Queue"):
 
         Example:
             {PREFIX}leave
+            {PREFIX}leave bot
+            {PREFIX}leave jg
             {PREFIX}leave_queue
+
     """)
     async def leave(
         self, ctx: commands.Context,
