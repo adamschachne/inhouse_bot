@@ -83,7 +83,9 @@ def add_player(
 
 def remove_player(player_id: int, channel_id: int = None, role: str = None):
     """
-    Removes the player from the queue in all roles in the channel
+    Removes the player from the queue in the channel
+
+    If a role is provided, the player is dropped from only that role
 
     If no channel id is given, drop him from *all* queues, cross-server
     """
