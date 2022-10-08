@@ -18,6 +18,9 @@ services:
       INHOUSE_BOT_MID_EMOJI: '<:MID:1021910129500749974>'
       INHOUSE_BOT_BOT_EMOJI: '<:BOT:1021910195112255508>'
       INHOUSE_BOT_SUP_EMOJI: '<:SUP:1021910164053438494>'
+
+      # Controls running db upgrade
+      RUN_MIGRATIONS: true
     volumes:
       # Socket volume to connect to the database
       - type: volume
