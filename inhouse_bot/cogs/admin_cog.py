@@ -188,9 +188,7 @@ class AdminCog(commands.Cog, name="Admin"):
         if not name:
             return await ctx.send("Missing Summoner name.")
 
-        id = ctx.author.id
         server_id = ctx.guild.id
-
         summoner = self.lol_Api.get_summoner_by_name(name)
         puuid = summoner["puuid"]
         summonerName = summoner["name"]
@@ -204,7 +202,7 @@ class AdminCog(commands.Cog, name="Admin"):
             ).one_or_none()
 
             if player:
-                if player.id == id:
+                if player.id == user.id:
                     return await ctx.send("Summoner is already verified")
                 else:
                     (session.query(Player)
