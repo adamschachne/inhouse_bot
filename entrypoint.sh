@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 
-if [ "$RUN_MIGRATIONS" == "true" ]; then
-    echo "running migrations"
-    exec alembic upgrade head
+if [ "$RUN_MIGRATIONS" == "true" ]
+then
+    alembic upgrade head
 fi
 
-exec python -u run_bot.py
+python -u run_bot.py

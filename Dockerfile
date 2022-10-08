@@ -16,4 +16,4 @@ COPY run_bot.py .
 COPY entrypoint.sh .
 
 # Run entrypoint.sh
-ENTRYPOINT ["bash", "entrypoint.sh"]
+ENTRYPOINT ["/bin/sh", "entrypoint.sh"]
