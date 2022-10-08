@@ -219,7 +219,7 @@ class AdminCog(commands.Cog, name="Admin"):
                     (session.query(Player)
                     .filter(Player.id == player.id)
                     .filter(Player.server_id == server_id)
-                    .update({ Player.summoner_puuid: None }))
+                    .update({ Player.summoner_puuid: None, Player.name: None }))
 
             session.merge(Player(id=user.id, server_id=server_id, name=summoner_name, summoner_puuid=puuid))
             
