@@ -10,6 +10,8 @@ from inhouse_bot.common_utils.constants import CONFIG_OPTIONS, PREFIX
 from inhouse_bot.common_utils.docstring import doc
 from inhouse_bot.common_utils.get_last_game import get_last_game
 from inhouse_bot.common_utils.get_server_config import get_server_config
+from inhouse_bot.common_utils.lol_api import Lol_Api
+from inhouse_bot.database_orm.tables.player import Player
 from inhouse_bot.inhouse_bot import InhouseBot
 from inhouse_bot.queue_channel_handler import queue_channel_handler
 from inhouse_bot.ranking_channel_handler.ranking_channel_handler import ranking_channel_handler
@@ -23,6 +25,7 @@ class AdminCog(commands.Cog, name="Admin"):
 
     def __init__(self, bot: InhouseBot):
         self.bot = bot
+        self.lol_Api = Lol_Api()
 
     @commands.group(case_insensitive=True)
     @commands.has_permissions(administrator=True)
@@ -167,3 +170,48 @@ class AdminCog(commands.Cog, name="Admin"):
 
             value = 'ON' if server_config.config.get(config_key) else 'OFF'
             await ctx.send(f"{config_key} is: {value}")
+
+    @admin.command()
+    @guild_only()
+    @doc(f"""
+        Connects a Summoner to a discord account
+
+        Example:
+            `{PREFIX}admin verify @User <Summoner Name>`
+    """)
+    async def verify(self, ctx: commands.Context, user: discord.Member, name: str = ""):
+        # did not provide discord member
+        if not user:
+            return await ctx.send("Missing user.")
+
+        # did not provide summoner name
+        if not name:
+            return await ctx.send("Missing Summoner name.")
+
+        id = ctx.author.id
+        server_id = ctx.guild.id
+
+        summoner = self.lol_Api.get_summoner_by_name(name)
+        puuid = summoner["puuid"]
+        summonerName = summoner["name"]
+
+        with session_scope() as session:
+            player = (
+                session.query(Player)
+                .select_from(Player)
+                .filter(Player.server_id == server_id)
+                .filter(Player.summoner_puuid == puuid)
+            ).one_or_none()
+
+            if player:
+                if player.id == id:
+                    return await ctx.send("Summoner is already verified")
+                else:
+                    (session.query(Player)
+                    .filter(Player.id == player.id)
+                    .filter(Player.server_id == server_id)
+                    .update({ Player.summoner_puuid: None }))
+
+            session.merge(Player(id=user.id, server_id=server_id, name=name, summoner_puuid=puuid))
+            
+        await ctx.send(f"Verified Summoner name: {summonerName}")
