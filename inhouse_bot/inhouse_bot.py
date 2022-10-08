@@ -40,7 +40,7 @@ class InhouseBot(commands.Bot):
         # Setting up some basic logging
         self.logger = logging.getLogger("inhouse_bot")
 
-        self.add_listener(self.command_logging, "on_command")    
+        self.add_listener(self.command_logging, "on_command")
 
     async def setup_hook(self) -> None:
         # Importing locally to allow InhouseBot to be imported in the cogs

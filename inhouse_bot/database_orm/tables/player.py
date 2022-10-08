@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, BigInteger
+from sqlalchemy import Column, String, BigInteger, UniqueConstraint
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
@@ -10,6 +10,9 @@ class Player(bot_declarative_base):
     """Represents a player taking part in inhouse games"""
 
     __tablename__ = "player"
+    __table_args__ = (
+        UniqueConstraint('server_id', 'summoner_puuid', name="unique_server_id_summoner_puuid"),
+    )
 
     # Discord account info
     id = Column(BigInteger, primary_key=True)
@@ -20,6 +23,9 @@ class Player(bot_declarative_base):
     # Player nickname and team as defined by themselves
     name = Column(String)
     team = Column(String)
+
+    # Summoner puuid
+    summoner_puuid = Column(String)
 
     # We automatically load the ratings when loading a Player object
     ratings = relationship(

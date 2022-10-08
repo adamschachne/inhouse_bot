@@ -2,7 +2,7 @@ import os
 from contextlib import contextmanager
 
 import sqlalchemy.orm
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 
 # The declarative base that we use for all our SQL alchemy classes
 bot_declarative_base = declarative_base()

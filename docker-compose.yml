@@ -18,6 +18,11 @@ services:
       INHOUSE_BOT_MID_EMOJI: '<:MID:1021910129500749974>'
       INHOUSE_BOT_BOT_EMOJI: '<:BOT:1021910195112255508>'
       INHOUSE_BOT_SUP_EMOJI: '<:SUP:1021910164053438494>'
+
+      INHOUSE_BOT_RIOT_API_KEY: ⚠ PUT_YOUR_API_KEY_HERE ⚠
+
+      # Controls running db upgrade
+      RUN_MIGRATIONS: true
     volumes:
       # Socket volume to connect to the database
       - type: volume
@@ -25,6 +30,7 @@ services:
         target: /var/run/postgresql
     depends_on:
     - db
+
   db:
     image: postgres:alpine
     restart: always

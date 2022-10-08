@@ -11,3 +11,5 @@ tabulate==0.8.10
 trueskill==0.4.5
 psycopg2==2.9.3
 git+https://github.com/Rapptz/discord-ext-menus
+alembic==1.8.1
+riotwatcher==3.2.3
