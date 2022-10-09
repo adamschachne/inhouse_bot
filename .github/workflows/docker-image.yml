@@ -25,7 +25,4 @@ jobs:
     
       # Upload the image
     - name: push to GitHub Container Registry
-      run:  docker push ghcr.io/${{ github.repository }}/
-    - name: Build the Docker image
-      run: docker build -t ghcr.io/${{ github.repository }}/inhouse_bot:latest .
-      
+      run:  docker push ghcr.io/${{ github.repository }}/inhouse_bot:latest   
