@@ -3,7 +3,6 @@ from typing import Union
 import discord
 from discord.ext import commands
 from discord.ext.commands import guild_only
-from discord.ext.commands._types import Check
 
 from inhouse_bot import game_queue, matchmaking_logic
 from inhouse_bot.database_orm import session_scope
