@@ -1,22 +1,19 @@
-
 name: Build and Push Docker container
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build-and-push:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v1
-
     - name: Build the Docker image
       run: docker build -t ghcr.io/inhouse_bot/inhouse_bot .
-
     - name: Setup GitHub Container Registry
-      run: echo $CR_PAT | docker login ghcr.io -u USERNAME --password-stdin
-
+      run: echo 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 | docker login ghcr.io -u USERNAME --password-stdin
     - name: push to GitHub Container Registry
       run:  docker push ghcr.io/inhouse_bot/inhouse_bot
