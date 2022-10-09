@@ -184,6 +184,15 @@ class QueueChannelHandler:
 
             await self.refresh_channel_queue(channel=channel, restart=restart)
 
+    async def check_tournaments(self, bot: Bot, server_id: Optional[int]):
+        """
+        Looks at the active tournament matches and sees if any have completed
+        """
+        # with session_scope() as session:
+        #     channel_query = session.query(ChannelInformation).filter(ChannelInformation.id == channel_id)
+        #     channel_query.delete(synchronize_session=False)
+        print("check tournaments TODO")
+
 
 # This will be an object common to all functions afterwards
 queue_channel_handler = QueueChannelHandler()

@@ -9,6 +9,7 @@ from discord.ext import commands
 
 
 from discord.ext.commands import NoPrivateMessage
+from fastapi import FastAPI
 
 from inhouse_bot import game_queue
 from inhouse_bot.common_utils.constants import PREFIX, BACKGROUND_JOBS_INTERVAL, QUEUE_RESET_TIME
@@ -19,6 +20,7 @@ from inhouse_bot.queue_channel_handler.queue_channel_handler import (
     QueueChannelsOnly,
     queue_channel_handler,
 )
+from inhouse_bot.tournament.tournament_handler import TournamentHandler
 
 # Defining intents to get full members list
 from inhouse_bot.ranking_channel_handler.ranking_channel_handler import ranking_channel_handler
@@ -31,8 +33,11 @@ class InhouseBot(commands.Bot):
     A bot handling role-based matchmaking for LoL games
     """
 
-    def __init__(self, **options):
+    def __init__(self, app: FastAPI, **options):
         super().__init__(PREFIX, intents=intents, case_insensitive=True, **options)
+
+        # Prepare Tournament API handling
+        self.tournament_handler = TournamentHandler(bot=self, app=app)
 
         # Setting up the on_message listener that will handle queue channels
         self.add_listener(queue_channel_handler.queue_channel_message_listener, "on_message")
@@ -58,8 +63,11 @@ class InhouseBot(commands.Bot):
             await self.add_cog(TestCog(self))
 
 
-    def run(self, *args, **kwargs):
-        super().run(os.environ["INHOUSE_BOT_TOKEN"], *args, **kwargs)
+    async def start(self, *args, **kwargs):
+        await super().start(os.environ["INHOUSE_BOT_TOKEN"], *args, **kwargs)
+
+    # def run(self, *args, **kwargs):
+    #     super().run(os.environ["INHOUSE_BOT_TOKEN"], *args, **kwargs)
 
     async def command_logging(self, ctx: discord.ext.commands.Context):
         """
@@ -73,7 +81,6 @@ class InhouseBot(commands.Bot):
     """
     def background_jobs(self):
         now = datetime.now()
-        self.logger.info(f"[Background Job Scheduler] {now}")
 
         try:
             with session_scope() as session:
@@ -87,7 +94,7 @@ class InhouseBot(commands.Bot):
                     self.loop.create_task(queue_channel_handler.update_queue_channels(bot=self, server_id=None))
 
             if config["tournament"]:
-                print("run tournament check TODO")
+                self.loop.create_task(queue_channel_handler.check_tournaments(bot=self, server_id=None))
         except Exception as e:
             self.logger.error(f"[Background Job Scheduler] error {e}")
         finally:
@@ -105,6 +112,7 @@ class InhouseBot(commands.Bot):
 
         # Starts the scheduler
         self.background_jobs()
+
 
     async def on_command_error(self, ctx, error):
         """
