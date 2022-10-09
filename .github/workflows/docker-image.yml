@@ -19,7 +19,7 @@ jobs:
       run: docker build -t ghcr.io/inhouse_bot/inhouse_bot .
 
     - name: Setup GitHub Container Registry
-      run: echo "$" | docker login https://ghcr.io -u $ --password-stdin
+      run: echo $CR_PAT | docker login ghcr.io -u USERNAME --password-stdin
 
     - name: push to GitHub Container Registry
       run:  docker push ghcr.io/inhouse_bot/inhouse_bot
