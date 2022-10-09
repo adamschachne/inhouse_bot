@@ -15,14 +15,14 @@ jobs:
       uses: docker/login-action@v2
       with:
           registry: ghcr.io
-          username: adamschachne
+          username: ${{ github.repository }}
           password: ${{ secrets.GITHUB_TOKEN }}
       
       # Build the image with tag matching repo owner name
     - uses: actions/checkout@v1
     - name: Build the Docker image
-      run: docker build -t ghcr.io/adamschachne/msoft_bot/msoft_bot .
+      run: docker build -t ghcr.io/${{ github.repository }}/inhouse_bot/inhouse_bot .
     
       # Upload the image
     - name: push to GitHub Container Registry
-      run:  docker push ghcr.io/adamschachne/msoft_bot/msoft_bot:latest
+      run:  docker push ghcr.io/${{ github.repository }}/inhouse_bot/inhouse_bot:latest
