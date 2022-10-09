@@ -5,13 +5,13 @@ from discord.ext import commands
 from discord.ext.commands import guild_only
 
 from inhouse_bot import game_queue, matchmaking_logic
-from inhouse_bot.common_utils import lol_api
 from inhouse_bot.database_orm import session_scope
 from inhouse_bot.common_utils.constants import CONFIG_OPTIONS, PREFIX
 from inhouse_bot.common_utils.docstring import doc
 from inhouse_bot.common_utils.get_last_game import get_last_game
 from inhouse_bot.common_utils.get_server_config import get_server_config
-from inhouse_bot.common_utils.lol_api import Lol_Api
+from inhouse_bot.common_utils.lol_api.tasks import get_summoner_by_name
+from pyot.core.exceptions import PyotException
 from inhouse_bot.database_orm.tables.player import Player
 from inhouse_bot.inhouse_bot import InhouseBot
 from inhouse_bot.queue_channel_handler import queue_channel_handler
@@ -28,7 +28,6 @@ class AdminCog(commands.Cog, name="Admin"):
 
     def __init__(self, bot: InhouseBot):
         self.bot = bot
-        self.lol_Api = Lol_Api()
 
     @commands.group(case_insensitive=True)
     @commands.has_permissions(administrator=True)
@@ -194,22 +193,19 @@ class AdminCog(commands.Cog, name="Admin"):
         name = ' '.join(name_arg)
         server_id = ctx.guild.id
         try:
-            summoner = self.lol_Api.get_summoner_by_name(name)
-        except HTTPError as ex:
-            if ex.response.status_code == 404:
+            summoner = await get_summoner_by_name(name)
+        except PyotException as ex:
+            if ex.code == 404:
                 return await ctx.send(f"Couldn't find Summoner name: {name}")
             # anything else gets raised
             raise ex
-
-        puuid = summoner["puuid"]
-        summoner_name = summoner["name"]
 
         with session_scope() as session:
             player = (
                 session.query(Player)
                 .select_from(Player)
                 .filter(Player.server_id == server_id)
-                .filter(Player.summoner_puuid == puuid)
+                .filter(Player.summoner_puuid == summoner.puuid)
             ).one_or_none()
 
             if player:
@@ -221,6 +217,6 @@ class AdminCog(commands.Cog, name="Admin"):
                     .filter(Player.server_id == server_id)
                     .update({ Player.summoner_puuid: None, Player.name: None }))
 
-            session.merge(Player(id=user.id, server_id=server_id, name=summoner_name, summoner_puuid=puuid))
+            session.merge(Player(id=user.id, server_id=server_id, name=summoner.name, summoner_puuid=summoner.puuid))
             
-        await ctx.send(f"Verified Summoner name: {summoner_name}")
+        await ctx.send(f"Verified Summoner name: {summoner.name}")
