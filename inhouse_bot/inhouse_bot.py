@@ -11,7 +11,7 @@ from discord.ext import commands
 from discord.ext.commands import NoPrivateMessage
 
 from inhouse_bot import game_queue
-from inhouse_bot.common_utils.constants import PREFIX, QUEUE_RESET_TIME
+from inhouse_bot.common_utils.constants import PREFIX, BACKGROUND_JOBS_INTERVAL, QUEUE_RESET_TIME
 from inhouse_bot.common_utils.get_server_config import get_server_config
 from inhouse_bot.database_orm import session_scope
 from inhouse_bot.game_queue.queue_handler import SameRolesForDuo
@@ -67,31 +67,44 @@ class InhouseBot(commands.Bot):
         """
         self.logger.info(f"{ctx.message.content}\t{ctx.author.name}\t{ctx.guild.name}\t{ctx.channel.name}")
 
-    def daily_jobs(self):
-        """
-        Runs a timer every 60 seconds, triggering jobs at the appropriate minute mark
-        """
-        threading.Timer(60, self.daily_jobs).start()
+    """
+    Runs a timer every BACKGROUND_JOBS_INTERVAL seconds, triggering jobs accordingly.
+    No work should be done in this thread -- jobs should only get added to the event loop
+    """
+    def background_jobs(self):
         now = datetime.now()
+        self.logger.info(f"[Background Job Scheduler] {now}")
 
-        if now.strftime("%H:%M") == QUEUE_RESET_TIME:
+        try:
             with session_scope() as session:
-                server_config = get_server_config(server_id=self.guilds[0].id, session=session)
-                if server_config.config.get('queue_reset'):
+                # TODO this only retrieves the config for the first guild.
+                # This could cause problems if the bot is in multiple guilds.
+                config = get_server_config(server_id=self.guilds[0].id, session=session).config
+
+            if now.strftime("%H:%M") == QUEUE_RESET_TIME:
+                if config['queue_reset']:
                     game_queue.reset_queue()
                     self.loop.create_task(queue_channel_handler.update_queue_channels(bot=self, server_id=None))
 
+            if config["tournament"]:
+                print("run tournament check TODO")
+        except Exception as e:
+            self.logger.error(f"[Background Job Scheduler] error {e}")
+        finally:
+            # Always make sure the next jobs are scheduled
+            threading.Timer(BACKGROUND_JOBS_INTERVAL, self.background_jobs).start()
+
     async def on_ready(self):
         self.logger.info(f"{self.user.name} has connected to Discord")
-
-        # Starts the scheduler
-        self.daily_jobs()
 
         # We cancel all ready-checks, and queue_channel_handler will handle rewriting the queues
         game_queue.cancel_all_ready_checks()
 
         await queue_channel_handler.update_queue_channels(bot=self, server_id=None)
         await ranking_channel_handler.update_ranking_channels(bot=self, server_id=None)
+
+        # Starts the scheduler
+        self.background_jobs()
 
     async def on_command_error(self, ctx, error):
         """
