@@ -10,11 +10,11 @@ async def get_summoner_by_name(summoner_name: str):
     return summoner 
     
 
-async def average_win_rate_100_matches(summoner_name: str):
+async def average_win_rate_10_matches(summoner_name: str):
     async with Queue() as queue:
         summoner = await lol.Summoner(name=summoner_name).get()
         history = await summoner.match_history.get()
-        for match in history.matches[:100]:
+        for match in history.matches[:10]:
             await queue.put(match.get())
         first_10_matches: List[lol.Match] = await queue.join()
     wins = []
