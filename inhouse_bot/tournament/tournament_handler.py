@@ -43,4 +43,6 @@ class TournamentHandler:
 
     async def game_result(self, game_result: GameResultParams):
         # TODO
+
+        # Update the tournament with this new result
         return game_result

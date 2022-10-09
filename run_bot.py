@@ -28,4 +28,5 @@ async def startup_event():
 PORT = os.getenv("INHOUSE_BOT_API_PORT") or 5000
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=PORT, log_level="info")
+    # TODO uvicorn emits logs that are logged twice
+    uvicorn.run(app, host="127.0.0.1", port=PORT, log_level=logging.INFO)
