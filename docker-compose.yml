@@ -1,9 +1,7 @@
 version: "3.8"
 services:
   inhouse_bot:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
+    image: ghcr.io/adamschachne/inhouse_bot:latest
     restart: always
     environment:
       # The connection string is an SQLAlchemy connection string, does not need a password since it uses sockets

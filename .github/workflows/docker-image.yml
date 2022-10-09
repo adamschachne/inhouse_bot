@@ -2,10 +2,9 @@ name: Build and Push Docker container
 
 on:
   push:
+    # whenever code is merged to main, deploy new image
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-    
+
 jobs:
   login:
     runs-on: ubuntu-latest
