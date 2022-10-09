@@ -111,7 +111,7 @@ class TestCog(commands.Cog, name="TEST"):
         msg = await ctx.send("The queue has been reset, filled again, and a game created (with no winner)")
 
         game_queue.start_ready_check([i for i in range(0, 9)] + [ctx.author.id], ctx.channel.id, msg.id)
-        game_queue.validate_ready_check(msg.id)
+        game_queue.remove_players_from_queue(msg.id)
         await queue_channel_handler.update_queue_channels(bot=self.bot, server_id=ctx.guild.id)
 
     @test.command()
@@ -139,7 +139,7 @@ class TestCog(commands.Cog, name="TEST"):
                 winner = game.player_ids_list[int(random.random() * 10)]
 
             game_queue.start_ready_check([i for i in range(0, 9)] + [ctx.author.id], ctx.channel.id, 0)
-            game_queue.validate_ready_check(0)
+            game_queue.remove_players_from_queue(0)
 
             matchmaking_logic.score_game_from_winning_player(player_id=winner, server_id=ctx.guild.id)
 

@@ -95,7 +95,7 @@ class QueueCog(commands.Cog, name="Queue"):
 
             if ready is True:
                 # We drop all 10 players from the queue
-                game_queue.validate_ready_check(ready_check_message.id)
+                game_queue.remove_players_from_queue(ready_check_message.id)
 
                 # We commit the game to the database (without a winner)
                 with session_scope() as session:
