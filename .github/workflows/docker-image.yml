@@ -14,6 +14,6 @@ jobs:
     - name: Build the Docker image
       run: docker build -t ghcr.io/inhouse_bot/inhouse_bot .
     - name: Setup GitHub Container Registry
-      run: echo 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 | docker login ghcr.io -u USERNAME --password-stdin
+      run: docker login ghcr.io -u $ghcr_user -p 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
     - name: push to GitHub Container Registry
       run:  docker push ghcr.io/inhouse_bot/inhouse_bot
