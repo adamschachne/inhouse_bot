@@ -21,8 +21,8 @@ jobs:
       # Build the image with tag matching repo owner name
     - uses: actions/checkout@v1
     - name: Build the Docker image
-      run: docker build -t ghcr.io/${{ github.repository }}/inhouse_bot/inhouse_bot .
+      run: docker build -t ghcr.io/${{ github.repository }}/ .
     
       # Upload the image
     - name: push to GitHub Container Registry
-      run:  docker push ghcr.io/${{ github.repository }}/inhouse_bot/inhouse_bot:latest
+      run:  docker push ghcr.io/${{ github.repository }}/
