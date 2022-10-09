@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ "$RUN_MIGRATIONS" == "true" ]
+if [ "$RUN_MIGRATIONS" = "true" ]
 then
     alembic upgrade head
 fi
