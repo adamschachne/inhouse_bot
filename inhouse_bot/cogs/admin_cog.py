@@ -3,6 +3,7 @@ from typing import Union
 import discord
 from discord.ext import commands
 from discord.ext.commands import guild_only
+from discord.ext.commands._types import Check
 
 from inhouse_bot import game_queue, matchmaking_logic
 from inhouse_bot.database_orm import session_scope
@@ -11,6 +12,7 @@ from inhouse_bot.common_utils.docstring import doc
 from inhouse_bot.common_utils.get_last_game import get_last_game
 from inhouse_bot.common_utils.get_server_config import get_server_config
 from inhouse_bot.common_utils.lol_api.tasks import get_summoner_by_name
+from inhouse_bot.common_utils.is_admin import admin_group_check
 from pyot.core.exceptions import PyotException
 from inhouse_bot.database_orm.tables.player import Player
 from inhouse_bot.inhouse_bot import InhouseBot
@@ -30,7 +32,7 @@ class AdminCog(commands.Cog, name="Admin"):
         self.bot = bot
 
     @commands.group(case_insensitive=True)
-    @commands.has_permissions(administrator=True)
+    @admin_group_check()
     @doc(f"Admin functions, use {PREFIX}help admin for a complete list")
     async def admin(self, ctx: commands.Context):
         if ctx.invoked_subcommand is None:
