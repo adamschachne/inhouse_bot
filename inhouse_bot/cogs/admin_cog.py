@@ -200,8 +200,6 @@ class AdminCog(commands.Cog, name="Admin"):
             # anything else gets raised
             raise ex
 
-        summoner_name = summoner.name
-
         with session_scope() as session:
             player = (
                 session.query(Player)
@@ -219,6 +217,6 @@ class AdminCog(commands.Cog, name="Admin"):
                     .filter(Player.server_id == server_id)
                     .update({ Player.summoner_puuid: None, Player.name: None }))
 
-            session.merge(Player(id=user.id, server_id=server_id, name=summoner_name, summoner_puuid=summoner.puuid))
+            session.merge(Player(id=user.id, server_id=server_id, name=summoner.name, summoner_puuid=summoner.puuid))
             
-        await ctx.send(f"Verified Summoner name: {summoner_name}")
+        await ctx.send(f"Verified Summoner name: {summoner.name}")
