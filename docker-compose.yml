@@ -1,9 +1,11 @@
 version: "3.8"
 services:
   inhouse_bot:
-    build:
+    #To use local dockerile
+    build: 
       context: .
       dockerfile: ./Dockerfile
+    image: inhouse_bot
     restart: always
     environment:
       # The connection string is an SQLAlchemy connection string, does not need a password since it uses sockets

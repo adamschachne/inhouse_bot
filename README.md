@@ -7,45 +7,42 @@ A Discord bot to handle League of Legends in-house games, with role queue, match
 
 This is a fork of [inhouse_bot](https://github.com/mrtolkien/inhouse_bot). The original project is no longer maintained, so I'm using this repo to develop new features.
 
-# Demo
-![Demo](.demo.gif)
-
-# Installation
-
-## Video tutorial
-[![](http://img.youtube.com/vi/TksVS8PE2fw/0.jpg)](http://www.youtube.com/watch?v=TksVS8PE2fw "Youtube Video")
-
-## Text steps
-
-- Install [Docker](https://docs.docker.com/get-docker/)
-
-    - I wrote an [in-depth tutorial about using Docker here](https://blog.tolki.dev/development/realistic-python-docker-work-flow/)
-
-- Get your Discord bot token from [the Discord developer portal](https://discord.com/developers/applications)
-
-- Activate your bot on the Discord developer portal and give it the Server Members privileged intent
-
-- Invite the bot to your server through OAuth2
-
-- Add emoji for all 5 LoL roles to your server
-
-    - They are handled separately than champion emoji as they’re crucial for the bot to work
-
-    - Optional: invite your bot to servers that have emoji for each champion, for example :TwistedFate: for Twisted Fate and :KaiSa: for Kai’Sa. You can also define a :loading: emoji that will be used by the bot 
-
-- Create a `docker-compose.yml` file based [on this docker compose file](https://github.com/mrtolkien/inhouse_bot/blob/master/docker-compose-example.yml)
-
-- Edit the file to add your Discord bot token as well as the Discord ID of your emojis, and change the database default password to something random
-
-     - You can add the environment variable `INHOUSE_BOT_TEST=1` to the bot’s variables and it will add a few `!test` commands
-
-     - You can add the environment variable `INHOUSE_BOT_COMMAND_PREFIX` to customize the prefix of the bot (will default to `!`).
-
-- Run `docker-compose up -d` and your bot should be up and running!
-
-    - If you also added the `adminer` service, you can use http://localhost:8080/ to manage the database
+## Running the app
+ 
+ 1. Install [Docker](https://docs.docker.com/get-docker/)
+ 2. Activate your bot on the Discord developer portal and give it the Server Members privileged intent: [Video](http://www.youtube.com/watch?v=TksVS8PE2fw    "Youtube Video")
+ 
+ 3. In github, go: profile in top right -> Settings -> Developer settings -> Personal Access Tokens -> Generate new token:
     
-- Use `!admin mark queue` to define queue channels
+    a. Name to indicate personal access token
+    
+    b. Select ```(write:packages and read:packages and delete:packages)```
+    
+    c. Generate token
+    
+    d. Copy token value
+ 
+ 4. In terminal do the following:
+    
+    a. export CR_PAT=```{your_token_value}```
+    
+    b. ```echo $CR_PAT | docker login ghcr.io {github_user_name} --password-stdin```
+    
+    c. After that command, you should get (login succeeded)
+
+5. In docker.compose yml, replace all the values as needed:
+    
+    a. INHOUSE_BOT_TOKEN = ```{token of discord bot}```
+    
+    b. INHOUSE_BOT_RIOT_API_KEY = ```{riot api key}```
+    
+    c. POSTGRES_PASSWORD: = ```{postgres password}``` -- can be anything.
+    
+    d. And for all the emojis copy over the values of the pictures you get from your discord server
+ 
+ 6. ```docker compose build ```
+
+ 7. ```docker compose up -d```, at this point the application should be running
 
 # Basic use
 ```
