@@ -11,7 +11,8 @@ from discord.ext import commands
 from discord.ext.commands import NoPrivateMessage
 
 from inhouse_bot import game_queue
-from inhouse_bot.common_utils.constants import PREFIX, QUEUE_RESET_TIME
+from inhouse_bot.common_utils.constants import PREFIX, BACKGROUND_JOBS_INTERVAL, QUEUE_RESET_TIME
+from inhouse_bot.common_utils.docstring import doc
 from inhouse_bot.common_utils.get_server_config import get_server_config
 from inhouse_bot.database_orm import session_scope
 from inhouse_bot.game_queue.queue_handler import SameRolesForDuo
@@ -47,6 +48,15 @@ class InhouseBot(commands.Bot):
         from inhouse_bot.cogs.queue_cog import QueueCog
         from inhouse_bot.cogs.admin_cog import AdminCog
         from inhouse_bot.cogs.stats_cog import StatsCog
+
+        # Putting this here because there's not a category that makes sense yet
+        @commands.command()
+        @doc(f"Displays the running bot version")
+        async def version(ctx: commands.Context):
+            version = os.getenv("VERSION")
+            await ctx.send(version)
+
+        self.add_command(version)
 
         await self.add_cog(QueueCog(self))
         await self.add_cog(AdminCog(self))

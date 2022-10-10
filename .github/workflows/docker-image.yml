@@ -3,13 +3,17 @@ name: Build and Push Docker container
 on:
   push:
     # whenever code is merged to main, deploy new image
-    branches: [ "main" ]
+    branches: [ "main", "app-version" ]
   
 jobs:
-  login:
+  build_and_publish:
     runs-on: ubuntu-latest
     steps:
-    # Login in to ghcr
+    - name: Set version
+      id: version
+      run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+
+      # Login in to ghcr
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v2
       with:
@@ -20,8 +24,8 @@ jobs:
       # Build the image with tag matching repo owner name
     - uses: actions/checkout@v1
     - name: Build the Docker image
-      run: docker build -t ghcr.io/${{ github.repository }} .
+      run: docker build --build-arg VERSION=${{ steps.version.outputs.sha_short }} -t ghcr.io/${{ github.repository }} .
 
       # Upload the image
-    - name: push to GitHub Container Registry
-      run:  docker push ghcr.io/${{ github.repository }}:latest   
+    # - name: Push to GitHub Container Registry
+    #   run:  docker push ghcr.io/${{ github.repository }}:latest   
