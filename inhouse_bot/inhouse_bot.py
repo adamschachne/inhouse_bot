@@ -11,7 +11,7 @@ from discord.ext import commands
 from discord.ext.commands import NoPrivateMessage
 
 from inhouse_bot import game_queue
-from inhouse_bot.common_utils.constants import PREFIX, BACKGROUND_JOBS_INTERVAL, QUEUE_RESET_TIME
+from inhouse_bot.common_utils.constants import PREFIX, QUEUE_RESET_TIME
 from inhouse_bot.common_utils.docstring import doc
 from inhouse_bot.common_utils.get_server_config import get_server_config
 from inhouse_bot.database_orm import session_scope
