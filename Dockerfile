@@ -16,7 +16,7 @@ COPY run_bot.py .
 COPY entrypoint.sh .
 
 ARG VERSION
-ENV VERSION = $VERSION
+ENV VERSION $VERSION
 
 # Run entrypoint.sh
 ENTRYPOINT ["/bin/sh", "entrypoint.sh"]
