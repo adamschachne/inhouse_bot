@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Set version
+      uses: actions/checkout@v3
       id: version
       run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
 
@@ -22,7 +23,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       
       # Build the image with tag matching repo owner name
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
     - name: Build the Docker image
       run: docker build --build-arg VERSION=${{ steps.version.outputs.sha_short }} -t ghcr.io/${{ github.repository }} .
 
