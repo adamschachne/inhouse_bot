@@ -9,24 +9,27 @@ jobs:
   build_and_publish:
     runs-on: ubuntu-latest
     steps:
-    - name: Set version
-      uses: actions/checkout@v3
-      id: version
-      run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-
       # Login in to ghcr
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v2
-      with:
-          registry: ghcr.io
-          username: ${{ github.repository }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+            registry: ghcr.io
+            username: ${{ github.repository }}
+            password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Checkout
+      - name: Checkout repo
+      - uses: actions/checkout@v3
+
+      # Set version
+      - name: Set version
+        id: version
+        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+
       # Build the image with tag matching repo owner name
-    - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: docker build --build-arg VERSION=${{ steps.version.outputs.sha_short }} -t ghcr.io/${{ github.repository }} .
+      - name: Build the Docker image
+        run: docker build --build-arg VERSION=${{ steps.version.outputs.sha_short }} -t ghcr.io/${{ github.repository }} .
 
       # Upload the image
-    # - name: Push to GitHub Container Registry
-    #   run:  docker push ghcr.io/${{ github.repository }}:latest   
+      # - name: Push to GitHub Container Registry
+      #   run:  docker push ghcr.io/${{ github.repository }}:latest
