@@ -7,7 +7,7 @@ A Discord bot to handle League of Legends in-house games, with role queue, match
 
 This is a fork of [inhouse_bot](https://github.com/mrtolkien/inhouse_bot). The original project is no longer maintained, so I'm using this repo to develop new features.
 
-## How To Run Application
+## Running the app
  
 1. Install [Docker](https://docs.docker.com/get-docker/)
  2. Activate your bot on the Discord developer portal and give it the Server Members privileged intent: [Video](http://www.youtube.com/watch?v=TksVS8PE2fw    "Youtube Video")
@@ -40,7 +40,9 @@ This is a fork of [inhouse_bot](https://github.com/mrtolkien/inhouse_bot). The o
     
     d. And for all the emojis copy over the values of the pictures you get from your discord server
  
- 6. ```docker compose up -d or docker compose up```, at this point the application should be running
+ 6. ```docker compose build ```, at this point the application should be running
+
+ 6. ```docker compose up -d```, at this point the application should be running
 
 # Basic use
 ```
