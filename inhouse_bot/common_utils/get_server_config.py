@@ -1,6 +1,6 @@
 from inhouse_bot.common_utils.constants import CONFIG_OPTIONS
 from inhouse_bot.database_orm import ServerConfig
-from inhouse_bot.database_orm.session.session_handler import session_scope
+from inhouse_bot.database_orm.session.session import session_scope
 
 
 def get_server_config(server_id: int, session) -> ServerConfig:
