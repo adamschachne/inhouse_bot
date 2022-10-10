@@ -9,7 +9,7 @@ This is a fork of [inhouse_bot](https://github.com/mrtolkien/inhouse_bot). The o
 
 ## Running the app
  
-1. Install [Docker](https://docs.docker.com/get-docker/)
+ 1. Install [Docker](https://docs.docker.com/get-docker/)
  2. Activate your bot on the Discord developer portal and give it the Server Members privileged intent: [Video](http://www.youtube.com/watch?v=TksVS8PE2fw    "Youtube Video")
  
  3. In github, go: profile in top right -> Settings -> Developer settings -> Personal Access Tokens -> Generate new token:
@@ -40,9 +40,9 @@ This is a fork of [inhouse_bot](https://github.com/mrtolkien/inhouse_bot). The o
     
     d. And for all the emojis copy over the values of the pictures you get from your discord server
  
- 6. ```docker compose build ```, at this point the application should be running
+ 6. ```docker compose build ```
 
- 6. ```docker compose up -d```, at this point the application should be running
+ 7. ```docker compose up -d```, at this point the application should be running
 
 # Basic use
 ```
