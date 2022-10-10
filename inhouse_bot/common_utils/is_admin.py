@@ -3,6 +3,8 @@ from discord.ext.commands.core import check
 from inhouse_bot.database_orm import session_scope
 from inhouse_bot.database_orm import Admin
 
+class AdminGroupOnly(commands.CheckFailure):
+    pass
 
 def admin_group_check():
     """
@@ -22,4 +24,4 @@ def is_admin(id: int, server_id: str) -> bool:
         
         if admin:
             return True
-    return False
+    raise AdminGroupOnly()

@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import os
 import threading
@@ -14,13 +13,14 @@ from fastapi import FastAPI
 from inhouse_bot import game_queue
 from inhouse_bot.common_utils.constants import PREFIX, BACKGROUND_JOBS_INTERVAL, QUEUE_RESET_TIME
 from inhouse_bot.common_utils.get_server_config import get_server_config
+from inhouse_bot.common_utils.is_admin import AdminGroupOnly
 from inhouse_bot.database_orm import session_scope
 from inhouse_bot.game_queue.queue_handler import SameRolesForDuo
 from inhouse_bot.queue_channel_handler.queue_channel_handler import (
     QueueChannelsOnly,
     queue_channel_handler,
 )
-from inhouse_bot.tournament.tournament_handler import TournamentHandler
+from inhouse_bot.tournament import tournament_handler, tournament_check
 
 # Defining intents to get full members list
 from inhouse_bot.ranking_channel_handler.ranking_channel_handler import ranking_channel_handler
@@ -36,8 +36,8 @@ class InhouseBot(commands.Bot):
     def __init__(self, app: FastAPI, **options):
         super().__init__(PREFIX, intents=intents, case_insensitive=True, **options)
 
-        # Prepare Tournament API handling
-        self.tournament_handler = TournamentHandler(bot=self, app=app)
+        # Set up handlers if necessary
+        tournament_handler.setup(bot=self, app=app)
 
         # Setting up the on_message listener that will handle queue channels
         self.add_listener(queue_channel_handler.queue_channel_message_listener, "on_message")
@@ -94,7 +94,7 @@ class InhouseBot(commands.Bot):
                     self.loop.create_task(queue_channel_handler.update_queue_channels(bot=self, server_id=None))
 
             if config["tournament"]:
-                self.loop.create_task(queue_channel_handler.check_tournaments(bot=self, server_id=None))
+                self.loop.create_task(tournament_check(bot=self, server_id=None))
         except Exception as e:
             self.logger.error(f"[Background Job Scheduler] error {e}")
         finally:
@@ -136,6 +136,9 @@ class InhouseBot(commands.Bot):
 
         elif isinstance(error, SameRolesForDuo):
             await ctx.send(f"Duos must have different roles")
+
+        elif isinstance(error, AdminGroupOnly):
+            await ctx.send(f"Only admins can use this command")
 
         # This handles errors that happen during a command
         elif isinstance(error, commands.CommandInvokeError):
