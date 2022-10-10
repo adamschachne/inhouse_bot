@@ -1,10 +1,10 @@
 version: "3.8"
 services:
   inhouse_bot:
-    # #To use local dockerile
-    # build: 
-    #   context: .
-    #   dockerfile: ./Dockerfile
+    #To use local dockerile
+    build: 
+      context: .
+      dockerfile: ./Dockerfile
     image: inhouse_bot
     restart: always
     environment:
