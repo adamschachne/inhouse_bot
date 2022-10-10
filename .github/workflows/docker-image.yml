@@ -19,7 +19,7 @@ jobs:
 
       # Checkout
       - name: Checkout repo
-      - uses: actions/checkout@v3
+        uses: actions/checkout@v3
 
       # Set version
       - name: Set version
