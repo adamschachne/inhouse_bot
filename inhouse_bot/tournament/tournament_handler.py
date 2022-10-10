@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Union
 from discord import Message, Embed, TextChannel
 from discord.ext import commands
 from discord.ext.commands import Bot
@@ -11,11 +11,10 @@ from inhouse_bot.database_orm import session_scope
 tournament_logger = logging.getLogger("tournament_handler")
 
 class TournamentHandler:
-    def __init__(self, bot: Bot, app: FastAPI):
+    bot: Union[Bot, None] = None
+    app: Union[FastAPI, None] = None
 
-        # Compose with a reference to the bot. Not sure if this is a good practice.
-        self.bot = bot
-
+    def __init__(self):        
         # Tournaments
         self.tournaments_cache = {}
 
@@ -28,21 +27,18 @@ class TournamentHandler:
             #     .filter(ChannelInformation.channel_type == "QUEUE")
             #     .all()
             # )
-
-        # 
-        app.add_api_route("/game_result", self.game_result, methods=["POST"])
         
-    async def check_tournaments(self, bot: Bot, server_id: Optional[int]):
-        """
-        Looks at the active tournament matches and sees if any have completed
-        """
-        # with session_scope() as session:
-        #     channel_query = session.query(ChannelInformation).filter(ChannelInformation.id == channel_id)
-        #     channel_query.delete(synchronize_session=False)
-        print("check tournaments TODO")
+    def setup(self, bot: Bot, app: FastAPI):
+        self.bot = bot
+        self.app = app
 
+        # Handle the game_result route
+        app.add_api_route("/game_result", self.game_result, methods=["POST"])
+
+    # API route handler function
     async def game_result(self, game_result: GameResultParams):
-        # TODO
-
-        # Update the tournament with this new result
+        # TODO Update the tournament with this new result
         return game_result
+
+# Singleton export
+tournament_handler = TournamentHandler()

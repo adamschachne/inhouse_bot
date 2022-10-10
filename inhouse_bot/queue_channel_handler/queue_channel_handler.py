@@ -184,15 +184,6 @@ class QueueChannelHandler:
 
             await self.refresh_channel_queue(channel=channel, restart=restart)
 
-    async def check_tournaments(self, bot: Bot, server_id: Optional[int]):
-        """
-        Looks at the active tournament matches and sees if any have completed
-        """
-        # with session_scope() as session:
-        #     channel_query = session.query(ChannelInformation).filter(ChannelInformation.id == channel_id)
-        #     channel_query.delete(synchronize_session=False)
-        print("check tournaments TODO")
-
 
 # This will be an object common to all functions afterwards
 queue_channel_handler = QueueChannelHandler()
@@ -204,7 +195,7 @@ class QueueChannelsOnly(commands.CheckFailure):
 
 # This is a decorator for commands
 def queue_channel_only():
-    async def predicate(ctx):
+    async def predicate(ctx: commands.Context):
         if ctx.channel.id not in queue_channel_handler.queue_channel_ids:
             raise QueueChannelsOnly
         else:
