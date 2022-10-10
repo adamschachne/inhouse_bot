@@ -4,7 +4,8 @@ on:
   push:
     # whenever code is merged to main, deploy new image
     branches: [ "main" ]
-
+  pull_request:
+    branches: [ "main" ]
 jobs:
   login:
     runs-on: ubuntu-latest
@@ -21,7 +22,8 @@ jobs:
     - uses: actions/checkout@v1
     - name: Build the Docker image
       run: docker build -t ghcr.io/${{ github.repository }} .
-    
+      run: docker tag ghcr.io/${{ github.repository }} ghcr.io/inhouse_bot:latest
+
       # Upload the image
     - name: push to GitHub Container Registry
-      run:  docker push ghcr.io/${{ github.repository }}:latest   
+      run:  docker push ghcr.io/inhouse_bot:latest  
