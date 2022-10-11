@@ -72,12 +72,8 @@ class InhouseBot(commands.Bot):
             from tests.test_cog import TestCog
             await self.add_cog(TestCog(self))
 
-
     async def start(self, *args, **kwargs):
         await super().start(os.environ["INHOUSE_BOT_TOKEN"], *args, **kwargs)
-
-    # def run(self, *args, **kwargs):
-    #     super().run(os.environ["INHOUSE_BOT_TOKEN"], *args, **kwargs)
 
     async def command_logging(self, ctx: discord.ext.commands.Context):
         """
