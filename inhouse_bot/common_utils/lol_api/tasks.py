@@ -23,4 +23,3 @@ async def average_win_rate_10_matches(summoner_name: str):
             if participant.puuid == summoner.puuid:
                 wins.append(int(participant.win))
     return statistics.mean(wins or [0])
-    

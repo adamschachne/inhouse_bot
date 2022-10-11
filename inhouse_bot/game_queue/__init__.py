@@ -6,7 +6,7 @@ from inhouse_bot.game_queue.queue_handler import (
     remove_player,
     remove_players,
     start_ready_check,
-    validate_ready_check,
+    remove_players_from_queue,
     cancel_ready_check,
     cancel_all_ready_checks,
     get_active_queues,

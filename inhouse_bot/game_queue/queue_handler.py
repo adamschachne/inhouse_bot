@@ -140,7 +140,7 @@ def start_ready_check(player_ids: List[int], channel_id: int, ready_check_messag
         )
 
 
-def validate_ready_check(ready_check_id: int):
+def remove_players_from_queue(ready_check_id: int):
     """
     When a ready check is validated, we drop all players from all queues
     """

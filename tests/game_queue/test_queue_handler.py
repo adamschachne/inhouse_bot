@@ -57,7 +57,7 @@ def test_queue_full():
 
     # We start and validate the ready check (message id 1)
     game_queue.start_ready_check(list(range(1, 11)), 0, 1)
-    game_queue.validate_ready_check(1)
+    game_queue.remove_players_from_queue(1)
 
     # We verify that both queues are empty
     assert len(GameQueue(0)) == 0

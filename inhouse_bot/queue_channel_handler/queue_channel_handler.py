@@ -195,7 +195,7 @@ class QueueChannelsOnly(commands.CheckFailure):
 
 # This is a decorator for commands
 def queue_channel_only():
-    async def predicate(ctx):
+    async def predicate(ctx: commands.Context):
         if ctx.channel.id not in queue_channel_handler.queue_channel_ids:
             raise QueueChannelsOnly
         else:

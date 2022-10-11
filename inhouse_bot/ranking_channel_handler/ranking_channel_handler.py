@@ -119,5 +119,4 @@ class RankingChannelHandler:
 
         return ratings
 
-
 ranking_channel_handler = RankingChannelHandler()

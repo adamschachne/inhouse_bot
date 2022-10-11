@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import os
 import threading
@@ -9,17 +8,20 @@ from discord.ext import commands
 
 
 from discord.ext.commands import NoPrivateMessage
+from fastapi import FastAPI
 
 from inhouse_bot import game_queue
-from inhouse_bot.common_utils.constants import PREFIX, QUEUE_RESET_TIME
+from inhouse_bot.common_utils.constants import PREFIX, BACKGROUND_JOBS_INTERVAL, QUEUE_RESET_TIME
 from inhouse_bot.common_utils.docstring import doc
 from inhouse_bot.common_utils.get_server_config import get_server_config
+from inhouse_bot.common_utils.is_admin import AdminGroupOnly
 from inhouse_bot.database_orm import session_scope
 from inhouse_bot.game_queue.queue_handler import SameRolesForDuo
 from inhouse_bot.queue_channel_handler.queue_channel_handler import (
     QueueChannelsOnly,
     queue_channel_handler,
 )
+from inhouse_bot.tournament import tournament_handler, tournament_check
 
 # Defining intents to get full members list
 from inhouse_bot.ranking_channel_handler.ranking_channel_handler import ranking_channel_handler
@@ -32,8 +34,11 @@ class InhouseBot(commands.Bot):
     A bot handling role-based matchmaking for LoL games
     """
 
-    def __init__(self, **options):
+    def __init__(self, app: FastAPI, **options):
         super().__init__(PREFIX, intents=intents, case_insensitive=True, **options)
+
+        # Set up handlers if necessary
+        tournament_handler.setup(bot=self, app=app)
 
         # Setting up the on_message listener that will handle queue channels
         self.add_listener(queue_channel_handler.queue_channel_message_listener, "on_message")
@@ -67,9 +72,8 @@ class InhouseBot(commands.Bot):
             from tests.test_cog import TestCog
             await self.add_cog(TestCog(self))
 
-
-    def run(self, *args, **kwargs):
-        super().run(os.environ["INHOUSE_BOT_TOKEN"], *args, **kwargs)
+    async def start(self, *args, **kwargs):
+        await super().start(os.environ["INHOUSE_BOT_TOKEN"], *args, **kwargs)
 
     async def command_logging(self, ctx: discord.ext.commands.Context):
         """
@@ -77,31 +81,44 @@ class InhouseBot(commands.Bot):
         """
         self.logger.info(f"{ctx.message.content}\t{ctx.author.name}\t{ctx.guild.name}\t{ctx.channel.name}")
 
-    def daily_jobs(self):
-        """
-        Runs a timer every 60 seconds, triggering jobs at the appropriate minute mark
-        """
-        threading.Timer(60, self.daily_jobs).start()
+    """
+    Runs a timer every BACKGROUND_JOBS_INTERVAL seconds, triggering jobs accordingly.
+    No work should be done in this thread -- jobs should only get added to the event loop
+    """
+    def background_jobs(self):
         now = datetime.now()
 
-        if now.strftime("%H:%M") == QUEUE_RESET_TIME:
+        try:
             with session_scope() as session:
-                server_config = get_server_config(server_id=self.guilds[0].id, session=session)
-                if server_config.config.get('queue_reset'):
+                # TODO this only retrieves the config for the first guild.
+                # This could cause problems if the bot is in multiple guilds.
+                config = get_server_config(server_id=self.guilds[0].id, session=session).config
+
+            if now.strftime("%H:%M") == QUEUE_RESET_TIME:
+                if config['queue_reset']:
                     game_queue.reset_queue()
                     self.loop.create_task(queue_channel_handler.update_queue_channels(bot=self, server_id=None))
 
+            if config["tournament"]:
+                self.loop.create_task(tournament_check(bot=self, server_id=None))
+        except Exception as e:
+            self.logger.error(f"[Background Job Scheduler] error {e}")
+        finally:
+            # Always make sure the next jobs are scheduled
+            threading.Timer(BACKGROUND_JOBS_INTERVAL, self.background_jobs).start()
+
     async def on_ready(self):
         self.logger.info(f"{self.user.name} has connected to Discord")
-
-        # Starts the scheduler
-        self.daily_jobs()
 
         # We cancel all ready-checks, and queue_channel_handler will handle rewriting the queues
         game_queue.cancel_all_ready_checks()
 
         await queue_channel_handler.update_queue_channels(bot=self, server_id=None)
         await ranking_channel_handler.update_ranking_channels(bot=self, server_id=None)
+
+        # Starts the scheduler
+        self.background_jobs()
+
 
     async def on_command_error(self, ctx, error):
         """
@@ -125,6 +142,9 @@ class InhouseBot(commands.Bot):
 
         elif isinstance(error, SameRolesForDuo):
             await ctx.send(f"Duos must have different roles")
+
+        elif isinstance(error, AdminGroupOnly):
+            await ctx.send(f"Only admins can use this command")
 
         # This handles errors that happen during a command
         elif isinstance(error, commands.CommandInvokeError):

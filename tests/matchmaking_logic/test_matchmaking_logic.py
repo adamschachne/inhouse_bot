@@ -98,6 +98,6 @@ def test_duo_matchmaking():
             winner = game.player_ids_list[int(random.random() * 10)]
 
         game_queue.start_ready_check([i for i in range(0, 10)], 0, 0)
-        game_queue.validate_ready_check(0)
+        game_queue.remove_players_from_queue(0)
 
         score_game_from_winning_player(player_id=winner, server_id=0)
