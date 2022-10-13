@@ -57,7 +57,9 @@ async def checkmark_validation(
     ids_to_drop = None
     try:
         while len(ids_of_players_who_validated) < validation_threshold:
-            reaction, user = await bot.wait_for("reaction_add", timeout=timeout, check=check)
+            reaction, user = await bot.wait_for(
+                "reaction_add", timeout=timeout, check=check
+            )
 
             # A player accepted, we keep him in memory
             if str(reaction.emoji) == "✅":
@@ -68,7 +70,9 @@ async def checkmark_validation(
                 if game:
                     await message.edit(
                         embed=game.get_embed(
-                            embed_type="GAME_FOUND", validated_players=ids_of_players_who_validated, bot=bot
+                            embed_type="GAME_FOUND",
+                            validated_players=ids_of_players_who_validated,
+                            bot=bot,
                         )
                     )
 
@@ -87,7 +91,11 @@ async def checkmark_validation(
 
         result, ids_to_drop = (
             None,
-            set(i for i in validating_players_ids if i not in ids_of_players_who_validated),
+            set(
+                i
+                for i in validating_players_ids
+                if i not in ids_of_players_who_validated
+            ),
         )
 
     checkmark_logger.info(f"Unmarking message {message.id} as queue related")

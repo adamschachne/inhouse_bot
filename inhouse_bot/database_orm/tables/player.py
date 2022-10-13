@@ -11,7 +11,9 @@ class Player(bot_declarative_base):
 
     __tablename__ = "player"
     __table_args__ = (
-        UniqueConstraint('server_id', 'summoner_puuid', name="unique_server_id_summoner_puuid"),
+        UniqueConstraint(
+            "server_id", "summoner_puuid", name="unique_server_id_summoner_puuid"
+        ),
     )
 
     # Discord account info

@@ -11,7 +11,11 @@ from discord.ext.commands import NoPrivateMessage
 from fastapi import FastAPI
 
 from inhouse_bot import game_queue
-from inhouse_bot.common_utils.constants import PREFIX, BACKGROUND_JOBS_INTERVAL, QUEUE_RESET_TIME
+from inhouse_bot.common_utils.constants import (
+    PREFIX,
+    BACKGROUND_JOBS_INTERVAL,
+    QUEUE_RESET_TIME,
+)
 from inhouse_bot.common_utils.docstring import doc
 from inhouse_bot.common_utils.get_server_config import get_server_config
 from inhouse_bot.common_utils.is_admin import AdminGroupOnly
@@ -24,10 +28,13 @@ from inhouse_bot.queue_channel_handler.queue_channel_handler import (
 from inhouse_bot.tournament import tournament_handler, tournament_check
 
 # Defining intents to get full members list
-from inhouse_bot.ranking_channel_handler.ranking_channel_handler import ranking_channel_handler
+from inhouse_bot.ranking_channel_handler.ranking_channel_handler import (
+    ranking_channel_handler,
+)
 
 intents = discord.Intents.all()
 intents.presences = False
+
 
 class InhouseBot(commands.Bot):
     """
@@ -41,7 +48,9 @@ class InhouseBot(commands.Bot):
         tournament_handler.setup(bot=self, app=app)
 
         # Setting up the on_message listener that will handle queue channels
-        self.add_listener(queue_channel_handler.queue_channel_message_listener, "on_message")
+        self.add_listener(
+            queue_channel_handler.queue_channel_message_listener, "on_message"
+        )
 
         # Setting up some basic logging
         self.logger = logging.getLogger("inhouse_bot")
@@ -70,6 +79,7 @@ class InhouseBot(commands.Bot):
         # While I hate mixing production and testing code, this is the most convenient solution to test the bot
         if os.environ.get("INHOUSE_BOT_TEST"):
             from tests.test_cog import TestCog
+
             await self.add_cog(TestCog(self))
 
     async def start(self, *args, **kwargs):
@@ -79,12 +89,15 @@ class InhouseBot(commands.Bot):
         """
         Listener called on command-trigger messages to add some logging
         """
-        self.logger.info(f"{ctx.message.content}\t{ctx.author.name}\t{ctx.guild.name}\t{ctx.channel.name}")
+        self.logger.info(
+            f"{ctx.message.content}\t{ctx.author.name}\t{ctx.guild.name}\t{ctx.channel.name}"
+        )
 
     """
     Runs a timer every BACKGROUND_JOBS_INTERVAL seconds, triggering jobs accordingly.
     No work should be done in this thread -- jobs should only get added to the event loop
     """
+
     def background_jobs(self):
         now = datetime.now()
 
@@ -92,12 +105,18 @@ class InhouseBot(commands.Bot):
             with session_scope() as session:
                 # TODO this only retrieves the config for the first guild.
                 # This could cause problems if the bot is in multiple guilds.
-                config = get_server_config(server_id=self.guilds[0].id, session=session).config
+                config = get_server_config(
+                    server_id=self.guilds[0].id, session=session
+                ).config
 
             if now.strftime("%H:%M") == QUEUE_RESET_TIME:
-                if config['queue_reset']:
+                if config["queue_reset"]:
                     game_queue.reset_queue()
-                    self.loop.create_task(queue_channel_handler.update_queue_channels(bot=self, server_id=None))
+                    self.loop.create_task(
+                        queue_channel_handler.update_queue_channels(
+                            bot=self, server_id=None
+                        )
+                    )
 
             if config["tournament"]:
                 self.loop.create_task(tournament_check(bot=self, server_id=None))
@@ -119,16 +138,19 @@ class InhouseBot(commands.Bot):
         # Starts the scheduler
         self.background_jobs()
 
-
     async def on_command_error(self, ctx, error):
         """
         Custom error command that catches CommandNotFound as well as MissingRequiredArgument for readable feedback
         """
         if isinstance(error, commands.CommandNotFound):
-            await ctx.send(f"Command `{ctx.invoked_with}` not found, use {PREFIX}help to see the commands list")
+            await ctx.send(
+                f"Command `{ctx.invoked_with}` not found, use {PREFIX}help to see the commands list"
+            )
 
         elif isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send(f"Arguments missing, use `{PREFIX}help {ctx.invoked_with}` to see the arguments list")
+            await ctx.send(
+                f"Arguments missing, use `{PREFIX}help {ctx.invoked_with}` to see the arguments list"
+            )
 
         elif isinstance(error, commands.ConversionError):
             # Conversion errors feedback are handled in my converters
@@ -138,7 +160,9 @@ class InhouseBot(commands.Bot):
             await ctx.send(f"This command can only be used inside a server")
 
         elif isinstance(error, QueueChannelsOnly):
-            await ctx.send(f"This command can only be used in a channel marked as a queue by an admin")
+            await ctx.send(
+                f"This command can only be used in a channel marked as a queue by an admin"
+            )
 
         elif isinstance(error, SameRolesForDuo):
             await ctx.send(f"Duos must have different roles")

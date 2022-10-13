@@ -38,7 +38,9 @@ class RankingChannelHandler:
         """
         Marks the given channel + server combo as a queue
         """
-        channel = ChannelInformation(id=channel_id, server_id=server_id, channel_type="RANKING")
+        channel = ChannelInformation(
+            id=channel_id, server_id=server_id, channel_type="RANKING"
+        )
         with session_scope() as session:
             session.merge(channel)
 
@@ -47,10 +49,14 @@ class RankingChannelHandler:
     def unmark_ranking_channel(self, channel_id):
 
         with session_scope() as session:
-            channel_query = session.query(ChannelInformation).filter(ChannelInformation.id == channel_id)
+            channel_query = session.query(ChannelInformation).filter(
+                ChannelInformation.id == channel_id
+            )
             channel_query.delete(synchronize_session=False)
 
-        self._ranking_channels = [c for c in self._ranking_channels if c.id != channel_id]
+        self._ranking_channels = [
+            c for c in self._ranking_channels if c.id != channel_id
+        ]
 
     async def update_ranking_channels(self, bot: Bot, server_id: Optional[int]):
         if not server_id:
@@ -71,13 +77,17 @@ class RankingChannelHandler:
         ratings = self.get_server_ratings(channel.guild.id, limit=30)
 
         # We need 3 messages because of character limits
-        source = RankingPagesSource(ratings, embed_name_suffix=f"on {channel.guild.name}")
+        source = RankingPagesSource(
+            ratings, embed_name_suffix=f"on {channel.guild.name}"
+        )
 
         new_msgs_ids = set()
         for page in range(0, 3):
             if page < source.get_max_pages():
                 rating_message = await channel.send(
-                    embed=await source.format_page(None, await source.get_page(page), offset=page)
+                    embed=await source.format_page(
+                        None, await source.get_page(page), offset=page
+                    )
                 )
                 new_msgs_ids.add(rating_message.id)
 
@@ -97,7 +107,11 @@ class RankingChannelHandler:
                     PlayerRating.role,
                     func.count().label("count"),
                     (
-                        sqlalchemy.func.sum((Game.winner == GameParticipant.side).cast(sqlalchemy.Integer))
+                        sqlalchemy.func.sum(
+                            (Game.winner == GameParticipant.side).cast(
+                                sqlalchemy.Integer
+                            )
+                        )
                     ).label(
                         "wins"
                     ),  # A bit verbose for sure
@@ -107,7 +121,7 @@ class RankingChannelHandler:
                 .join(GameParticipant)
                 .join(Game)
                 .filter(Player.server_id == server_id)
-                .filter(Game.winner != None)    # No currently running game
+                .filter(Game.winner != None)  # No currently running game
                 .group_by(Player, PlayerRating)
                 .order_by(PlayerRating.mmr.desc())
             )
@@ -118,5 +132,6 @@ class RankingChannelHandler:
             ratings = ratings.limit(limit).all()
 
         return ratings
+
 
 ranking_channel_handler = RankingChannelHandler()

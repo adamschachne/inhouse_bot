@@ -21,9 +21,7 @@ role_thumbnail_dict = {
     "SUP": positions_pictures_url + "utility.png ",
 }
 
-lol_logo = (
-    "https://raw.communitydragon.org/10.5/plugins/rcp-fe-lol-loading-screen/global/default/lol_icon.png"
-)
+lol_logo = "https://raw.communitydragon.org/10.5/plugins/rcp-fe-lol-loading-screen/global/default/lol_icon.png"
 
 # Emoji dict built from environment variables
 role_emoji_dict = {

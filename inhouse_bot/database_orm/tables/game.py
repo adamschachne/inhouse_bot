@@ -13,7 +13,10 @@ from inhouse_bot.database_orm import bot_declarative_base
 from inhouse_bot.database_orm.tables.player import Player
 
 from inhouse_bot.common_utils.fields import roles_list, side_enum
-from inhouse_bot.common_utils.emoji_and_thumbnails import get_role_emoji, get_champion_emoji
+from inhouse_bot.common_utils.emoji_and_thumbnails import (
+    get_role_emoji,
+    get_champion_emoji,
+)
 
 
 class Game(bot_declarative_base):
@@ -41,7 +44,9 @@ class Game(bot_declarative_base):
     # ORM relationship to participants in the game, defined as a [team, role] dictionary
     participants = relationship(
         "GameParticipant",
-        collection_class=mapped_collection(lambda participant: (participant.side, participant.role)),
+        collection_class=mapped_collection(
+            lambda participant: (participant.side, participant.role)
+        ),
         backref="game",
         cascade="all, delete-orphan",
     )
@@ -75,11 +80,16 @@ class Game(bot_declarative_base):
 
     def __str__(self):
         return tabulate(
-            {"BLUE": [p.short_name for p in self.teams.BLUE], "RED": [p.short_name for p in self.teams.BLUE]},
+            {
+                "BLUE": [p.short_name for p in self.teams.BLUE],
+                "RED": [p.short_name for p in self.teams.BLUE],
+            },
             headers="keys",
         )
 
-    def get_embed(self, embed_type: str, validated_players: Optional[List[int]] = None, bot=None) -> Embed:
+    def get_embed(
+        self, embed_type: str, validated_players: Optional[List[int]] = None, bot=None
+    ) -> Embed:
         if embed_type == "GAME_FOUND":
             embed = Embed(
                 title="📢 Game found 📢",
@@ -135,7 +145,8 @@ class Game(bot_declarative_base):
 
         # First, we write down the participants
         self.participants = {
-            (team, role): GameParticipant(team, role, players[team, role]) for team, role in players
+            (team, role): GameParticipant(team, role, players[team, role])
+            for team, role in players
         }
 
         self.server_id = list(self.participants.values())[0].player_server_id

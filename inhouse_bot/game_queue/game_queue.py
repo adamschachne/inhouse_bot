@@ -53,20 +53,27 @@ class GameQueue:
             # Afterwards, we get players currently in a ready check in any other queue in the server
             queue_query = (
                 session.query(
-                    QueuePlayer.player_id, func.max(QueuePlayer.ready_check_id).label("is_in_ready_check"),
+                    QueuePlayer.player_id,
+                    func.max(QueuePlayer.ready_check_id).label("is_in_ready_check"),
                 )
                 .filter(
-                    QueuePlayer.player_id.in_([p.player_id for p in potential_queue_players])
+                    QueuePlayer.player_id.in_(
+                        [p.player_id for p in potential_queue_players]
+                    )
                 )  # We could remove that and run the query in parallel
                 .filter(QueuePlayer.player_server_id == self.server_id)
                 .group_by(QueuePlayer.player_id)
             )
 
-            player_ids_in_ready_check = [r.player_id for r in queue_query if r.is_in_ready_check is not None]
+            player_ids_in_ready_check = [
+                r.player_id for r in queue_query if r.is_in_ready_check is not None
+            ]
 
             # Finally, we can cleanup the queue_players variable with only the players truly in queue here
             self.queue_players = [
-                qp for qp in potential_queue_players if qp.player_id not in player_ids_in_ready_check
+                qp
+                for qp in potential_queue_players
+                if qp.player_id not in player_ids_in_ready_check
             ]
 
             # The starting queue is made of the 2 players per role who have been in queue the longest
@@ -82,7 +89,9 @@ class GameQueue:
 
                     # Else we add our current player if he’s not there yet (could have been added by his duo)
                     # TODO LOW PRIO cleanup that ugly code
-                    if qp.player_id not in [qp.player_id for qp in starting_queue[role]]:
+                    if qp.player_id not in [
+                        qp.player_id for qp in starting_queue[role]
+                    ]:
                         starting_queue[role].append(qp)
 
                     # If he has a duo, we add it if he’s not in queue for his role already
@@ -95,7 +104,9 @@ class GameQueue:
 
                         # We add the duo as part of the queue for his role *if he’s not yet in it*
                         # TODO LOW PRIO find a more readable syntax, all those list comprehensions are really bad
-                        if qp.duo_id not in [qp.player_id for qp in starting_queue[duo_role]]:
+                        if qp.duo_id not in [
+                            qp.player_id for qp in starting_queue[duo_role]
+                        ]:
                             starting_queue[duo_role].append(qp.duo)
 
             # Afterwards we fill the rest of the queue with players in chronological order
@@ -109,10 +120,14 @@ class GameQueue:
 
             # We create a (role, id) list to see who is already in queue more easily
             #   Simple equality does not work because the qp.duo objects are != from the solo qp objects
-            age_sorted_queue_players_ids = [(qp.player_id, qp.role) for qp in age_sorted_queue_players]
+            age_sorted_queue_players_ids = [
+                (qp.player_id, qp.role) for qp in age_sorted_queue_players
+            ]
 
             age_sorted_queue_players += [
-                qp for qp in self.queue_players if (qp.player_id, qp.role) not in age_sorted_queue_players_ids
+                qp
+                for qp in self.queue_players
+                if (qp.player_id, qp.role) not in age_sorted_queue_players_ids
             ]
 
             self.queue_players = age_sorted_queue_players
@@ -134,7 +149,10 @@ class GameQueue:
 
         for role in roles_list:
             rows.append(
-                f"{role}\t" + " ".join(qp.player.name for qp in self.queue_players if qp.role == role)
+                f"{role}\t"
+                + " ".join(
+                    qp.player.name for qp in self.queue_players if qp.role == role
+                )
             )
 
         duos_strings = []
@@ -144,7 +162,7 @@ class GameQueue:
         rows.append(f"DUO\t{', '.join(duos_strings)}")
 
         return "\n".join(rows)
-    
+
     def unique_players_in_queue(self):
         uniquePlayers = set()
         [uniquePlayers.add(qp.player_id) for qp in self.queue_players]
@@ -155,7 +173,10 @@ class GameQueue:
         """
         This dictionary will always have all roles included
         """
-        return {role: [player for player in self.queue_players if player.role == role] for role in roles_list}
+        return {
+            role: [player for player in self.queue_players if player.role == role]
+            for role in roles_list
+        }
 
     @property
     def duos(self) -> List[Tuple[QueuePlayer, QueuePlayer]]:

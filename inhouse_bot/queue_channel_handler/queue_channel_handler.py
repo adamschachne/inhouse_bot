@@ -82,11 +82,15 @@ class QueueChannelHandler:
 
         for role, role_queue in queue.queue_players_dict.items():
             queue_rows.append(
-                f"{get_role_emoji(role)} " + ", ".join(qp.player.short_name for qp in role_queue)
+                f"{get_role_emoji(role)} "
+                + ", ".join(qp.player.short_name for qp in role_queue)
             )
 
         # Hardcoded value(55) to put the player count string in the corner
-        embed.add_field(name=f"{'Queue'.ljust(55)} Players in Queue: {queue.unique_players_in_queue()}", value="\n".join(queue_rows)) 
+        embed.add_field(
+            name=f"{'Queue'.ljust(55)} Players in Queue: {queue.unique_players_in_queue()}",
+            value="\n".join(queue_rows),
+        )
 
         # Adding duos field if it’s not empty
         if queue.duos:
@@ -95,7 +99,10 @@ class QueueChannelHandler:
             for duo in queue.duos:
 
                 duos_strings.append(
-                    " + ".join(f"{qp.player.short_name} {get_role_emoji(qp.role)}" for qp in duo)
+                    " + ".join(
+                        f"{qp.player.short_name} {get_role_emoji(qp.role)}"
+                        for qp in duo
+                    )
                 )
 
             embed.add_field(name="Duos", value=", ".join(duos_strings))
@@ -113,7 +120,10 @@ class QueueChannelHandler:
             )
 
         # We save the message object in our local cache
-        new_queue_message = await channel.send(message_text, embed=embed,)
+        new_queue_message = await channel.send(
+            message_text,
+            embed=embed,
+        )
 
         self.latest_queue_message_ids[channel.id] = new_queue_message.id
 
@@ -136,7 +146,9 @@ class QueueChannelHandler:
         """
         Marks the given channel + server combo as a queue
         """
-        channel = ChannelInformation(id=channel_id, server_id=server_id, channel_type="QUEUE")
+        channel = ChannelInformation(
+            id=channel_id, server_id=server_id, channel_type="QUEUE"
+        )
         with session_scope() as session:
             session.merge(channel)
 
@@ -148,7 +160,9 @@ class QueueChannelHandler:
         game_queue.reset_queue(channel_id)
 
         with session_scope() as session:
-            channel_query = session.query(ChannelInformation).filter(ChannelInformation.id == channel_id)
+            channel_query = session.query(ChannelInformation).filter(
+                ChannelInformation.id == channel_id
+            )
             channel_query.delete(synchronize_session=False)
 
         self._queue_channels = [c for c in self._queue_channels if c.id != channel_id]

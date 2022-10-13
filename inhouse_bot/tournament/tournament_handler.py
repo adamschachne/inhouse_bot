@@ -10,11 +10,12 @@ from inhouse_bot.database_orm import session_scope
 
 tournament_logger = logging.getLogger("tournament_handler")
 
+
 class TournamentHandler:
     bot: Union[Bot, None] = None
     app: Union[FastAPI, None] = None
 
-    def __init__(self):        
+    def __init__(self):
         # Tournaments
         self.tournaments_cache = {}
 
@@ -27,7 +28,7 @@ class TournamentHandler:
             #     .filter(ChannelInformation.channel_type == "QUEUE")
             #     .all()
             # )
-        
+
     def setup(self, bot: Bot, app: FastAPI):
         self.bot = bot
         self.app = app
@@ -39,6 +40,7 @@ class TournamentHandler:
     async def game_result(self, game_result: GameResultParams):
         # TODO Update the tournament with this new result
         return game_result
+
 
 # Singleton export
 tournament_handler = TournamentHandler()
