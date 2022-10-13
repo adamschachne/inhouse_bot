@@ -18,12 +18,20 @@ import matplotlib.pyplot as plt
 from inhouse_bot.common_utils.constants import PREFIX
 from inhouse_bot.common_utils.docstring import doc
 from inhouse_bot.common_utils.emoji_and_thumbnails import get_role_emoji, get_rank_emoji
-from inhouse_bot.database_orm import session_scope, GameParticipant, Game, PlayerRating, Player
+from inhouse_bot.database_orm import (
+    session_scope,
+    GameParticipant,
+    Game,
+    PlayerRating,
+    Player,
+)
 from inhouse_bot.common_utils.fields import ChampionNameConverter, RoleConverter
 from inhouse_bot.common_utils.get_last_game import get_last_game
 
 from inhouse_bot.inhouse_bot import InhouseBot
-from inhouse_bot.ranking_channel_handler.ranking_channel_handler import ranking_channel_handler
+from inhouse_bot.ranking_channel_handler.ranking_channel_handler import (
+    ranking_channel_handler,
+)
 from inhouse_bot.stats_menus.history_pages import HistoryPagesSource
 from inhouse_bot.stats_menus.ranking_pages import RankingPagesSource
 
@@ -42,7 +50,8 @@ class StatsCog(commands.Cog, name="Stats"):
 
     @commands.command()
     @guild_only()
-    @doc(f"""
+    @doc(
+        f"""
         Saves the champion you used in your last game
 
         Older games can be filled with {PREFIX}champion champion_name game_id
@@ -51,9 +60,13 @@ class StatsCog(commands.Cog, name="Stats"):
         Example:
             {PREFIX}champion riven
             {PREFIX}champion riven 1
-    """)
+    """
+    )
     async def champion(
-        self, ctx: commands.Context, champion_name: ChampionNameConverter(), game_id: int = None
+        self,
+        ctx: commands.Context,
+        champion_name: ChampionNameConverter(),
+        game_id: int = None,
     ):
         with session_scope() as session:
             if not game_id:
@@ -80,12 +93,14 @@ class StatsCog(commands.Cog, name="Stats"):
         )
 
     @commands.command(aliases=["match_history", "mh"])
-    @doc(f"""
+    @doc(
+        f"""
         Displays your games history
 
         Example:
             {PREFIX}history
-    """)
+    """
+    )
     async def history(self, ctx: commands.Context):
         # TODO LOW PRIO Add an @ user for admins
 
@@ -102,7 +117,9 @@ class StatsCog(commands.Cog, name="Stats"):
 
             # If we’re on a server, we only show games played on that server
             if ctx.guild:
-                game_participant_query = game_participant_query.filter(Game.server_id == ctx.guild.id)
+                game_participant_query = game_participant_query.filter(
+                    Game.server_id == ctx.guild.id
+                )
 
             game_participant_list = game_participant_query.limit(100).all()
 
@@ -122,12 +139,14 @@ class StatsCog(commands.Cog, name="Stats"):
         await pages.start(ctx)
 
     @commands.command(aliases=["mmr", "rank", "rating"])
-    @doc(f"""
+    @doc(
+        f"""
         Returns your rank, MMR, and games played
 
         Example:
             {PREFIX}rank
-    """)
+    """
+    )
     async def stats(self, ctx: commands.Context):
         with session_scope() as session:
             rating_objects = (
@@ -135,7 +154,11 @@ class StatsCog(commands.Cog, name="Stats"):
                     PlayerRating,
                     sqlalchemy.func.count().label("count"),
                     (
-                        sqlalchemy.func.sum((Game.winner == GameParticipant.side).cast(sqlalchemy.Integer))
+                        sqlalchemy.func.sum(
+                            (Game.winner == GameParticipant.side).cast(
+                                sqlalchemy.Integer
+                            )
+                        )
                     ).label("wins"),
                 )
                 .select_from(PlayerRating)
@@ -146,7 +169,9 @@ class StatsCog(commands.Cog, name="Stats"):
             )
 
             if ctx.guild:
-                rating_objects = rating_objects.filter(PlayerRating.player_server_id == ctx.guild.id)
+                rating_objects = rating_objects.filter(
+                    PlayerRating.player_server_id == ctx.guild.id
+                )
 
             rows = []
 
@@ -155,7 +180,10 @@ class StatsCog(commands.Cog, name="Stats"):
                 rank = (
                     session.query(sqlalchemy.func.count())
                     .select_from(PlayerRating)
-                    .filter(PlayerRating.player_server_id == row.PlayerRating.player_server_id)
+                    .filter(
+                        PlayerRating.player_server_id
+                        == row.PlayerRating.player_server_id
+                    )
                     .filter(PlayerRating.role == row.PlayerRating.role)
                     .filter(PlayerRating.mmr > row.PlayerRating.mmr)
                 ).first()[0]
@@ -172,13 +200,17 @@ class StatsCog(commands.Cog, name="Stats"):
 
                 rows.append(row_string)
 
-            embed = Embed(title=f"Ranks for {ctx.author.display_name}", description="\n".join(rows))
+            embed = Embed(
+                title=f"Ranks for {ctx.author.display_name}",
+                description="\n".join(rows),
+            )
 
             await ctx.send(embed=embed)
 
     @commands.command(aliases=["rankings"])
     @guild_only()
-    @doc(f"""
+    @doc(
+        f"""
         Displays the top players on the server
 
         A role can be supplied to only display the ranking for this role
@@ -186,7 +218,8 @@ class StatsCog(commands.Cog, name="Stats"):
         Example:
             {PREFIX}ranking
             {PREFIX}ranking mid
-    """)
+    """
+    )
     async def ranking(self, ctx: commands.Context, role: RoleConverter() = None):
         ratings = ranking_channel_handler.get_server_ratings(ctx.guild.id, role=role)
 

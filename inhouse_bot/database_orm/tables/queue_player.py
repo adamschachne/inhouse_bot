@@ -22,7 +22,10 @@ class QueuePlayer(bot_declarative_base):
     )
 
     channel_information = relationship(
-        "ChannelInformation", viewonly=True, backref="game_participant_objects", sync_backref=False
+        "ChannelInformation",
+        viewonly=True,
+        backref="game_participant_objects",
+        sync_backref=False,
     )
 
     role = Column(role_enum, primary_key=True)
@@ -53,7 +56,9 @@ class QueuePlayer(bot_declarative_base):
     # Foreign key to Player
     __table_args__ = (
         ForeignKeyConstraint(
-            (player_id, player_server_id), (Player.id, Player.server_id), **foreignkey_cascade_options,
+            (player_id, player_server_id),
+            (Player.id, Player.server_id),
+            **foreignkey_cascade_options,
         ),
         {},
     )

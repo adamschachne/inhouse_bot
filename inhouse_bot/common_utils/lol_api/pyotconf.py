@@ -22,7 +22,7 @@ class LolPipeline(PipelineConf):
                 "summoner_v4_by_name": 100,
                 "match_v4_match": 600,
                 "match_v4_timeline": 600,
-            }
+            },
         },
         {
             "backend": "pyot.stores.cdragon.CDragon",
@@ -30,5 +30,5 @@ class LolPipeline(PipelineConf):
         {
             "backend": "pyot.stores.riotapi.RiotAPI",
             "api_key": os.getenv("INHOUSE_BOT_RIOT_API_KEY"),
-        }
+        },
     ]

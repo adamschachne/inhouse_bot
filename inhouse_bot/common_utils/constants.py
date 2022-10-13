@@ -9,6 +9,9 @@ BACKGROUND_JOBS_INTERVAL = os.environ.get("BACKGROUND_JOBS_INTERVAL") or 60
 
 CONFIG_OPTIONS = [
     ("queue_reset", f"Resets the queues daily at {QUEUE_RESET_TIME} UTC"),
-    ("voice", "Allows the bot to create private voice channels for each team when a game is started."),
-    ("tournament", "Controls whether the bot creates a tournament code for a game.")
+    (
+        "voice",
+        "Allows the bot to create private voice channels for each team when a game is started.",
+    ),
+    ("tournament", "Controls whether the bot creates a tournament code for a game."),
 ]

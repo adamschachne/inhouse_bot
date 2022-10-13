@@ -16,8 +16,12 @@ from pyot.core.exceptions import PyotException
 from inhouse_bot.database_orm.tables.player import Player
 from inhouse_bot.inhouse_bot import InhouseBot
 from inhouse_bot.queue_channel_handler import queue_channel_handler
-from inhouse_bot.ranking_channel_handler.ranking_channel_handler import ranking_channel_handler
-from inhouse_bot.voice_channel_handler.voice_channel_handler import remove_voice_channels
+from inhouse_bot.ranking_channel_handler.ranking_channel_handler import (
+    ranking_channel_handler,
+)
+from inhouse_bot.voice_channel_handler.voice_channel_handler import (
+    remove_voice_channels,
+)
 
 from requests.exceptions import HTTPError
 
@@ -42,7 +46,9 @@ class AdminCog(commands.Cog, name="Admin"):
 
     @admin.command()
     async def reset(
-        self, ctx: commands.Context, member_or_channel: Union[discord.Member, discord.TextChannel] = None
+        self,
+        ctx: commands.Context,
+        member_or_channel: Union[discord.Member, discord.TextChannel] = None,
     ):
         """
         Resets the queue status for a channel or a player
@@ -61,7 +67,9 @@ class AdminCog(commands.Cog, name="Admin"):
             game_queue.remove_player(member_or_channel.id)
             await ctx.send(f"{member_or_channel.name} has been removed from all queues")
 
-        await queue_channel_handler.update_queue_channels(bot=self.bot, server_id=ctx.guild.id)
+        await queue_channel_handler.update_queue_channels(
+            bot=self.bot, server_id=ctx.guild.id
+        )
 
     @admin.command()
     async def won(self, ctx: commands.Context, member: discord.Member):
@@ -70,7 +78,9 @@ class AdminCog(commands.Cog, name="Admin"):
         """
         # TODO LOW PRIO Make a function that recomputes *all* ratings to allow to re-score/delete/cancel any game
 
-        matchmaking_logic.score_game_from_winning_player(player_id=member.id, server_id=ctx.guild.id)
+        matchmaking_logic.score_game_from_winning_player(
+            player_id=member.id, server_id=ctx.guild.id
+        )
         await ranking_channel_handler.update_ranking_channels(self.bot, ctx.guild.id)
 
         await ctx.send(
@@ -86,16 +96,24 @@ class AdminCog(commands.Cog, name="Admin"):
         Only works if the game has not been scored yet
         """
         with session_scope() as session:
-            game, participant = get_last_game(player_id=member.id, server_id=ctx.guild.id, session=session)
+            game, participant = get_last_game(
+                player_id=member.id, server_id=ctx.guild.id, session=session
+            )
 
             if game and game.winner:
-                await ctx.send("The game has already been scored and cannot be canceled anymore")
+                await ctx.send(
+                    "The game has already been scored and cannot be canceled anymore"
+                )
                 return
 
             session.delete(game)
 
-        await ctx.send(f"{member.display_name}’s ongoing game was cancelled and deleted from the database")
-        await queue_channel_handler.update_queue_channels(bot=self.bot, server_id=ctx.guild.id)
+        await ctx.send(
+            f"{member.display_name}’s ongoing game was cancelled and deleted from the database"
+        )
+        await queue_channel_handler.update_queue_channels(
+            bot=self.bot, server_id=ctx.guild.id
+        )
         await remove_voice_channels(ctx, game)
 
     @admin.command()
@@ -110,11 +128,15 @@ class AdminCog(commands.Cog, name="Admin"):
             await ctx.send(f"Current channel marked as a queue channel")
 
         elif channel_type.upper() == "RANKING":
-            ranking_channel_handler.mark_ranking_channel(channel_id=ctx.channel.id, server_id=ctx.guild.id)
+            ranking_channel_handler.mark_ranking_channel(
+                channel_id=ctx.channel.id, server_id=ctx.guild.id
+            )
             await ctx.send(f"Current channel marked as a ranking channel")
 
         else:
-            await ctx.send(f"Accepted values for {PREFIX}admin mark are QUEUE and RANKING")
+            await ctx.send(
+                f"Accepted values for {PREFIX}admin mark are QUEUE and RANKING"
+            )
 
     @admin.command()
     @guild_only()
@@ -129,14 +151,16 @@ class AdminCog(commands.Cog, name="Admin"):
 
     @admin.command()
     @guild_only()
-    @doc(f"""
+    @doc(
+        f"""
         Toggles new features 'ON' or 'OFF'
 
         Example:
             `{PREFIX}admin config voice on` will enable the voice channel creation feature.
 
         `{PREFIX}admin config list` will list all available features.
-    """)
+    """
+    )
     async def config(self, ctx: commands.Context, config_key: str, option: str = ""):
         config_key = config_key.lower()
         option = option.upper()
@@ -148,20 +172,20 @@ class AdminCog(commands.Cog, name="Admin"):
             await ctx.send(info)
             return
 
-        options = {
-            'ON': True,
-            'OFF': False,
-            'STATUS': -1
-        }
+        options = {"ON": True, "OFF": False, "STATUS": -1}
 
         config_keys = map(lambda x: x[0], CONFIG_OPTIONS)
 
         if config_key not in config_keys:
-            await ctx.send(f"This is not a configuration option. For a list of options use {PREFIX}admin config list.")
+            await ctx.send(
+                f"This is not a configuration option. For a list of options use {PREFIX}admin config list."
+            )
             return
 
         if option not in options.keys():
-            await ctx.send(f"Accepted options for {PREFIX}admin config config_key option are: {', '.join(options.keys())}")
+            await ctx.send(
+                f"Accepted options for {PREFIX}admin config config_key option are: {', '.join(options.keys())}"
+            )
             return
 
         with session_scope() as session:
@@ -171,17 +195,19 @@ class AdminCog(commands.Cog, name="Admin"):
                 server_config.config[config_key] = options[option]
                 session.commit()
 
-            value = 'ON' if server_config.config.get(config_key) else 'OFF'
+            value = "ON" if server_config.config.get(config_key) else "OFF"
             await ctx.send(f"{config_key} is: {value}")
 
     @admin.command()
     @guild_only()
-    @doc(f"""
+    @doc(
+        f"""
         Connects a Summoner to a discord account
 
         Example:
             `{PREFIX}admin verify @User <Summoner Name>`
-    """)
+    """
+    )
     async def verify(self, ctx: commands.Context, user: discord.Member, *name_arg: str):
         # did not provide discord member
         if not user:
@@ -191,7 +217,7 @@ class AdminCog(commands.Cog, name="Admin"):
         if not name_arg:
             return await ctx.send("Missing Summoner name.")
 
-        name = ' '.join(name_arg)
+        name = " ".join(name_arg)
         server_id = ctx.guild.id
         try:
             summoner = await get_summoner_by_name(name)
@@ -213,11 +239,20 @@ class AdminCog(commands.Cog, name="Admin"):
                 if player.id == user.id:
                     return await ctx.send("Summoner is already verified")
                 else:
-                    (session.query(Player)
-                    .filter(Player.id == player.id)
-                    .filter(Player.server_id == server_id)
-                    .update({ Player.summoner_puuid: None, Player.name: None }))
+                    (
+                        session.query(Player)
+                        .filter(Player.id == player.id)
+                        .filter(Player.server_id == server_id)
+                        .update({Player.summoner_puuid: None, Player.name: None})
+                    )
 
-            session.merge(Player(id=user.id, server_id=server_id, name=summoner.name, summoner_puuid=summoner.puuid))
-            
+            session.merge(
+                Player(
+                    id=user.id,
+                    server_id=server_id,
+                    name=summoner.name,
+                    summoner_puuid=summoner.puuid,
+                )
+            )
+
         await ctx.send(f"Verified Summoner name: {summoner.name}")

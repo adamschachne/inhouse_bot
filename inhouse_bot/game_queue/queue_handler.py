@@ -48,7 +48,12 @@ def reset_queue(channel_id: Optional[int] = None):
 
 
 def add_player(
-    player_id: int, role: str, channel_id: int, server_id: int = None, name: str = None, jump_ahead=False
+    player_id: int,
+    role: str,
+    channel_id: int,
+    server_id: int = None,
+    name: str = None,
+    jump_ahead=False,
 ):
     # Just in case
     assert role in roles_list
@@ -74,7 +79,9 @@ def add_player(
             player_id=player_id,
             player_server_id=server_id,
             role=role,
-            queue_time=datetime.now() if not jump_ahead else datetime.now() - timedelta(hours=24),
+            queue_time=datetime.now()
+            if not jump_ahead
+            else datetime.now() - timedelta(hours=24),
         )
 
         # We merge for simplicity (allows players to re-queue for the same role)
@@ -97,7 +104,9 @@ def remove_player(player_id: int, channel_id: int = None, role: str = None):
             raise PlayerInReadyCheck
 
         # We select the player’s rows
-        query_player = session.query(QueuePlayer).filter(QueuePlayer.player_id == player_id)
+        query_player = session.query(QueuePlayer).filter(
+            QueuePlayer.player_id == player_id
+        )
         query_duos = session.query(QueuePlayer).filter(QueuePlayer.duo_id == player_id)
 
         # If a role is provided, filter on the particular role we want to leave
@@ -126,7 +135,9 @@ def remove_players(player_ids: Set[int], channel_id: int):
         )
 
 
-def start_ready_check(player_ids: List[int], channel_id: int, ready_check_message_id: int):
+def start_ready_check(
+    player_ids: List[int], channel_id: int, ready_check_message_id: int
+):
     # Checking to make sure everything is fine
     assert len(player_ids) == 10
 
@@ -136,7 +147,9 @@ def start_ready_check(player_ids: List[int], channel_id: int, ready_check_messag
             session.query(QueuePlayer)
             .filter(QueuePlayer.channel_id == channel_id)
             .filter(QueuePlayer.player_id.in_(player_ids))
-            .update({"ready_check_id": ready_check_message_id}, synchronize_session=False)
+            .update(
+                {"ready_check_id": ready_check_message_id}, synchronize_session=False
+            )
         )
 
 
@@ -148,7 +161,9 @@ def remove_players_from_queue(ready_check_id: int):
     with session_scope() as session:
         player_ids = [
             r.player_id
-            for r in session.query(QueuePlayer.player_id).filter(QueuePlayer.ready_check_id == ready_check_id)
+            for r in session.query(QueuePlayer.player_id).filter(
+                QueuePlayer.ready_check_id == ready_check_id
+            )
         ]
 
         (
@@ -159,7 +174,10 @@ def remove_players_from_queue(ready_check_id: int):
 
 
 def cancel_ready_check(
-    ready_check_id: int, ids_to_drop: Optional[List[int]], channel_id=None, server_id=None,
+    ready_check_id: int,
+    ids_to_drop: Optional[List[int]],
+    channel_id=None,
+    server_id=None,
 ):
     """
     Cancels an ongoing ready check by reverting players to ready_check_id=None
@@ -178,20 +196,32 @@ def cancel_ready_check(
 
         if ids_to_drop:
             # TODO This should be shared with remove_player and not duplicated
-            players_query = session.query(QueuePlayer).filter(QueuePlayer.player_id.in_(ids_to_drop))
-            duos_query = session.query(QueuePlayer).filter(QueuePlayer.duo_id.in_(ids_to_drop))
+            players_query = session.query(QueuePlayer).filter(
+                QueuePlayer.player_id.in_(ids_to_drop)
+            )
+            duos_query = session.query(QueuePlayer).filter(
+                QueuePlayer.duo_id.in_(ids_to_drop)
+            )
 
             if server_id and channel_id:
-                raise Exception("channel_id and server_id should not be used together here")
+                raise Exception(
+                    "channel_id and server_id should not be used together here"
+                )
 
             # This removes the player from *all* queues in the server (timeout)
             if server_id:
-                players_query = players_query.filter(QueuePlayer.player_server_id == server_id)
-                duos_query = duos_query.filter(QueuePlayer.player_server_id == server_id)
+                players_query = players_query.filter(
+                    QueuePlayer.player_server_id == server_id
+                )
+                duos_query = duos_query.filter(
+                    QueuePlayer.player_server_id == server_id
+                )
 
             # This removes the player only from the given channel (cancellation)
             if channel_id:
-                players_query = players_query.filter(QueuePlayer.channel_id == channel_id)
+                players_query = players_query.filter(
+                    QueuePlayer.channel_id == channel_id
+                )
                 duos_query = duos_query.filter(QueuePlayer.channel_id == channel_id)
 
             # Drop the player and remove his duo status with other players
@@ -205,7 +235,9 @@ def cancel_all_ready_checks():
     """
     with session_scope() as session:
         # We put all ready_check_id to None
-        session.query(QueuePlayer).update({"ready_check_id": None}, synchronize_session=False)
+        session.query(QueuePlayer).update(
+            {"ready_check_id": None}, synchronize_session=False
+        )
 
 
 def get_active_queues() -> List[int]:
@@ -214,7 +246,10 @@ def get_active_queues() -> List[int]:
     """
     with session_scope() as session:
         output = [
-            r.channel_id for r in session.query(QueuePlayer.channel_id).group_by(QueuePlayer.channel_id)
+            r.channel_id
+            for r in session.query(QueuePlayer.channel_id).group_by(
+                QueuePlayer.channel_id
+            )
         ]
 
     return output
@@ -265,11 +300,17 @@ def add_duo(
     with session_scope() as session:
         # Finally, we add the duos by merging only the newer data (empty fields shouldn’t get merged)
         first_queue_player = QueuePlayer(
-            player_id=first_player_id, role=first_player_role, channel_id=channel_id, duo_id=second_player_id
+            player_id=first_player_id,
+            role=first_player_role,
+            channel_id=channel_id,
+            duo_id=second_player_id,
         )
 
         second_queue_player = QueuePlayer(
-            player_id=second_player_id, role=second_player_role, channel_id=channel_id, duo_id=first_player_id
+            player_id=second_player_id,
+            role=second_player_role,
+            channel_id=channel_id,
+            duo_id=first_player_id,
         )
 
         # We merge the new information
@@ -285,6 +326,10 @@ def remove_duo(player_id: int, channel_id: int):
         (
             session.query(QueuePlayer)
             .filter(QueuePlayer.channel_id == channel_id)
-            .filter(sqlalchemy.or_(QueuePlayer.duo_id == player_id, QueuePlayer.player_id == player_id))
+            .filter(
+                sqlalchemy.or_(
+                    QueuePlayer.duo_id == player_id, QueuePlayer.player_id == player_id
+                )
+            )
             .update({"duo_id": None}, synchronize_session=False)
         )

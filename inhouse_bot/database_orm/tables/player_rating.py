@@ -25,7 +25,9 @@ class PlayerRating(bot_declarative_base):
     # Foreign key to Player
     __table_args__ = (
         ForeignKeyConstraint(
-            (player_id, player_server_id), ["player.id", "player.server_id"], **foreignkey_cascade_options
+            (player_id, player_server_id),
+            ["player.id", "player.server_id"],
+            **foreignkey_cascade_options,
         ),
         {},
     )

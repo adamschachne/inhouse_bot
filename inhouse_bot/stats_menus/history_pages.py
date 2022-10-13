@@ -4,7 +4,11 @@ from typing import Tuple, List
 from discord import Embed
 from discord.ext import menus
 
-from inhouse_bot.common_utils.emoji_and_thumbnails import get_champion_emoji, get_role_emoji, role_thumbnail_dict
+from inhouse_bot.common_utils.emoji_and_thumbnails import (
+    get_champion_emoji,
+    get_role_emoji,
+    role_thumbnail_dict,
+)
 from inhouse_bot.database_orm import GameParticipant, Game
 
 entries_type = List[Tuple[Game, GameParticipant]]
@@ -49,13 +53,19 @@ class HistoryPagesSource(menus.ListPageSource):
             output_string = (
                 f"{result}   {role}   {champion_emoji}  "
                 f"`#{game.id}{' '*id_padding}{game.start.date()}"
-                + ("`" if not self.is_dms else f"  {self.bot.get_guild(game.server_id).name}`")
+                + (
+                    "`"
+                    if not self.is_dms
+                    else f"  {self.bot.get_guild(game.server_id).name}`"
+                )
             )
 
             rows.append(output_string)
 
         embed.set_thumbnail(url=role_thumbnail_dict[role_counter.most_common(1)[0][0]])
 
-        embed.add_field(name=f"{self.player_name}’s match history", value="\n".join(rows))
+        embed.add_field(
+            name=f"{self.player_name}’s match history", value="\n".join(rows)
+        )
 
         return embed

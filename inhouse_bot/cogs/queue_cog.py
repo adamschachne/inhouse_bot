@@ -17,8 +17,13 @@ from inhouse_bot.database_orm import session_scope
 from inhouse_bot.inhouse_bot import InhouseBot
 from inhouse_bot.queue_channel_handler import queue_channel_handler
 from inhouse_bot.queue_channel_handler.queue_channel_handler import queue_channel_only
-from inhouse_bot.ranking_channel_handler.ranking_channel_handler import ranking_channel_handler
-from inhouse_bot.voice_channel_handler.voice_channel_handler import create_voice_channels, remove_voice_channels
+from inhouse_bot.ranking_channel_handler.ranking_channel_handler import (
+    ranking_channel_handler,
+)
+from inhouse_bot.voice_channel_handler.voice_channel_handler import (
+    create_voice_channels,
+    remove_voice_channels,
+)
 
 
 class QueueCog(commands.Cog, name="Queue"):
@@ -36,7 +41,8 @@ class QueueCog(commands.Cog, name="Queue"):
         self.games_getting_scored_ids = set()
 
     async def run_matchmaking_logic(
-        self, ctx: commands.Context,
+        self,
+        ctx: commands.Context,
     ):
         """
         Runs the matchmaking logic in the channel defined by the context
@@ -51,10 +57,14 @@ class QueueCog(commands.Cog, name="Queue"):
             return
 
         elif game and game.matchmaking_score < 0.2:
-            embed = game.get_embed(embed_type="GAME_FOUND", validated_players=[], bot=self.bot)
+            embed = game.get_embed(
+                embed_type="GAME_FOUND", validated_players=[], bot=self.bot
+            )
 
             # We notify the players and send the message
-            ready_check_message = await ctx.send(content=game.players_ping, embed=embed, delete_after=60 * 15)
+            ready_check_message = await ctx.send(
+                content=game.players_ping, embed=embed, delete_after=60 * 15
+            )
 
             # We mark the ready check as ongoing (which will be used to the queue)
             game_queue.start_ready_check(
@@ -64,7 +74,9 @@ class QueueCog(commands.Cog, name="Queue"):
             )
 
             # We update the queue in all channels
-            await queue_channel_handler.update_queue_channels(bot=self.bot, server_id=ctx.guild.id)
+            await queue_channel_handler.update_queue_channels(
+                bot=self.bot, server_id=ctx.guild.id
+            )
 
             # And then we wait for the validation
             try:
@@ -89,7 +101,9 @@ class QueueCog(commands.Cog, name="Queue"):
                     "Please queue again to restart the process"
                 )
 
-                await queue_channel_handler.update_queue_channels(bot=self.bot, server_id=ctx.guild.id)
+                await queue_channel_handler.update_queue_channels(
+                    bot=self.bot, server_id=ctx.guild.id
+                )
 
                 return
 
@@ -103,7 +117,9 @@ class QueueCog(commands.Cog, name="Queue"):
                     game = session.merge(game)  # This gets us the game ID
 
                 queue_channel_handler.mark_queue_related_message(
-                    await ctx.send(embed=game.get_embed("GAME_ACCEPTED"),)
+                    await ctx.send(
+                        embed=game.get_embed("GAME_ACCEPTED"),
+                    )
                 )
 
                 # We create voice channels for each team in this game
@@ -150,18 +166,22 @@ class QueueCog(commands.Cog, name="Queue"):
     @commands.command(aliases=["view_queue", "refresh"])
     @queue_channel_only()
     async def view(
-        self, ctx: commands.Context,
+        self,
+        ctx: commands.Context,
     ):
         """
         Refreshes the queue in the current channel
 
         Almost never needs to get used directly
         """
-        await queue_channel_handler.update_queue_channels(bot=self.bot, server_id=ctx.guild.id)
+        await queue_channel_handler.update_queue_channels(
+            bot=self.bot, server_id=ctx.guild.id
+        )
 
     @commands.command()
     @queue_channel_only()
-    @doc(f"""
+    @doc(
+        f"""
         Adds you to the current channel’s queue for the given role
 
         To duo queue, add @player role at the end (cf examples)
@@ -174,7 +194,8 @@ class QueueCog(commands.Cog, name="Queue"):
             {PREFIX}queue adc
             {PREFIX}queue all
             {PREFIX}queue adc @CoreJJ support
-    """)
+    """
+    )
     async def queue(
         self,
         ctx: commands.Context,
@@ -187,7 +208,9 @@ class QueueCog(commands.Cog, name="Queue"):
         jump_ahead = False
 
         # pop with two arguments returns the second one if the key was not found
-        if cancel_timestamp := self.players_whose_last_game_got_cancelled.pop(ctx.author.id, None):
+        if cancel_timestamp := self.players_whose_last_game_got_cancelled.pop(
+            ctx.author.id, None
+        ):
 
             if datetime.now() - cancel_timestamp < timedelta(hours=1):
                 jump_ahead = True
@@ -256,11 +279,14 @@ class QueueCog(commands.Cog, name="Queue"):
 
         await self.run_matchmaking_logic(ctx=ctx)
 
-        await queue_channel_handler.update_queue_channels(bot=self.bot, server_id=ctx.guild.id)
+        await queue_channel_handler.update_queue_channels(
+            bot=self.bot, server_id=ctx.guild.id
+        )
 
     @commands.command(aliases=["leave_queue", "stop"])
     @queue_channel_only()
-    @doc(f"""
+    @doc(
+        f"""
         Removes you from the queue in the current channel
 
         Example:
@@ -269,27 +295,35 @@ class QueueCog(commands.Cog, name="Queue"):
             {PREFIX}leave jg
             {PREFIX}leave_queue
 
-    """)
+    """
+    )
     async def leave(
-        self, 
+        self,
         ctx: commands.Context,
         role: QueueRoleConverter() = None,
     ):
-        game_queue.remove_player(player_id=ctx.author.id, channel_id=ctx.channel.id, role=role)
-        await queue_channel_handler.update_queue_channels(bot=self.bot, server_id=ctx.guild.id)
+        game_queue.remove_player(
+            player_id=ctx.author.id, channel_id=ctx.channel.id, role=role
+        )
+        await queue_channel_handler.update_queue_channels(
+            bot=self.bot, server_id=ctx.guild.id
+        )
 
     @commands.command(aliases=["win", "wins", "victory"])
     @queue_channel_only()
-    @doc(f"""
+    @doc(
+        f"""
         Scores your last game as a win
 
         Will require validation from at least 6 players in the game
 
         Example:
             {PREFIX}won
-    """)
+    """
+    )
     async def won(
-        self, ctx: commands.Context,
+        self,
+        ctx: commands.Context,
     ):
         with session_scope() as session:
             # Get the latest game
@@ -309,7 +343,9 @@ class QueueCog(commands.Cog, name="Queue"):
                 return
 
             elif game.id in self.games_getting_scored_ids:
-                await ctx.send("There is already a scoring or cancellation message active for this game")
+                await ctx.send(
+                    "There is already a scoring or cancellation message active for this game"
+                )
                 return
 
             else:
@@ -342,7 +378,9 @@ class QueueCog(commands.Cog, name="Queue"):
                 )
             )
 
-        matchmaking_logic.score_game_from_winning_player(player_id=ctx.author.id, server_id=ctx.guild.id)
+        matchmaking_logic.score_game_from_winning_player(
+            player_id=ctx.author.id, server_id=ctx.guild.id
+        )
         await ranking_channel_handler.update_ranking_channels(self.bot, ctx.guild.id)
 
         # If we're here, the game has been scored and the voice channels for this game can be removed
@@ -350,16 +388,19 @@ class QueueCog(commands.Cog, name="Queue"):
 
     @commands.command(aliases=["cancel_game"])
     @queue_channel_only()
-    @doc(f"""
+    @doc(
+        f"""
         Cancels your ongoing game
 
         Will require validation from at least 6 players in the game
 
         Example:
             {PREFIX}cancel
-    """)
+    """
+    )
     async def cancel(
-        self, ctx: commands.Context,
+        self,
+        ctx: commands.Context,
     ):
         with session_scope() as session:
             # Get the latest game
@@ -372,7 +413,9 @@ class QueueCog(commands.Cog, name="Queue"):
                 return
 
             elif game.id in self.games_getting_scored_ids:
-                await ctx.send("There is already a scoring or cancellation message active for this game")
+                await ctx.send(
+                    "There is already a scoring or cancellation message active for this game"
+                )
                 return
 
             else:
@@ -399,7 +442,9 @@ class QueueCog(commands.Cog, name="Queue"):
             else:
 
                 for participant in game.participants.values():
-                    self.players_whose_last_game_got_cancelled[participant.player_id] = datetime.now()
+                    self.players_whose_last_game_got_cancelled[
+                        participant.player_id
+                    ] = datetime.now()
 
                 await remove_voice_channels(ctx, game)
                 session.delete(game)
