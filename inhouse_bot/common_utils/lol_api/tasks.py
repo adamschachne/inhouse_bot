@@ -6,9 +6,12 @@ from pyot.models import lol
 
 
 async def get_summoner_by_name(summoner_name: str):
-    summoner = await lol.Summoner(name=summoner_name).get()
-    return summoner 
-    
+    return await lol.Summoner(name=summoner_name).get()
+
+
+async def get_summoner_by_puuid(puuid: str):
+    return await lol.Summoner(puuid=puuid).get()
+
 
 async def average_win_rate_10_matches(summoner_name: str):
     async with Queue() as queue:

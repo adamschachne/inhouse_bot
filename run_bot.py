@@ -25,6 +25,7 @@ async def startup_event():
     # Run the Discord bot on server startup
     asyncio.create_task(bot.start())
 
+
 PORT = os.getenv("INHOUSE_BOT_API_PORT") or 5000
 
 if __name__ == "__main__":

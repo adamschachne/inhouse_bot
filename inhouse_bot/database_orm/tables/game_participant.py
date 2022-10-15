@@ -1,11 +1,23 @@
-from sqlalchemy import Column, Integer, ForeignKey, Float, ForeignKeyConstraint, BigInteger, String
+from sqlalchemy import (
+    Column,
+    Integer,
+    ForeignKey,
+    Float,
+    ForeignKeyConstraint,
+    BigInteger,
+    String,
+)
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
 from inhouse_bot.database_orm import bot_declarative_base
 from inhouse_bot.database_orm.tables.player_rating import PlayerRating
 from inhouse_bot.database_orm.tables.player import Player
-from inhouse_bot.common_utils.fields import side_enum, role_enum, foreignkey_cascade_options
+from inhouse_bot.common_utils.fields import (
+    side_enum,
+    role_enum,
+    foreignkey_cascade_options,
+)
 
 
 class GameParticipant(bot_declarative_base):
@@ -14,7 +26,9 @@ class GameParticipant(bot_declarative_base):
     __tablename__ = "game_participant"
 
     # Reference to the game table
-    game_id = Column(Integer, ForeignKey("game.id", **foreignkey_cascade_options), primary_key=True)
+    game_id = Column(
+        Integer, ForeignKey("game.id", **foreignkey_cascade_options), primary_key=True
+    )
 
     # Identifier among game participants
     side = Column(side_enum, primary_key=True)
@@ -27,7 +41,10 @@ class GameParticipant(bot_declarative_base):
     # Player & Player Rating relationship
     player = relationship("Player", viewonly=True)
     player_rating = relationship(
-        "PlayerRating", viewonly=True, backref="game_participant_objects", sync_backref=False
+        "PlayerRating",
+        viewonly=True,
+        backref="game_participant_objects",
+        sync_backref=False,
     )
 
     # Champion id, only filled if the player updates it by themselves after the game
@@ -42,7 +59,9 @@ class GameParticipant(bot_declarative_base):
 
     # Foreign key to Player
     __table_args__ = (
-        ForeignKeyConstraint((player_id, player_server_id), (Player.id, Player.server_id)),
+        ForeignKeyConstraint(
+            (player_id, player_server_id), (Player.id, Player.server_id)
+        ),
         ForeignKeyConstraint(
             (player_id, player_server_id, role),
             (PlayerRating.player_id, PlayerRating.player_server_id, PlayerRating.role),

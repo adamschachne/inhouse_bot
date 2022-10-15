@@ -14,7 +14,9 @@ class RankingPagesSource(menus.ListPageSource):
         self.embed_name_suffix = embed_name_suffix
         super().__init__(entries, per_page=10)
 
-    async def format_page(self, menu: Optional[menus.MenuPages], entries, offset=None) -> Embed:
+    async def format_page(
+        self, menu: Optional[menus.MenuPages], entries, offset=None
+    ) -> Embed:
 
         if menu:
             show_footer = True

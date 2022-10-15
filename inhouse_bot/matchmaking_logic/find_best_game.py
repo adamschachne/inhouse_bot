@@ -18,13 +18,17 @@ def find_best_game(queue: GameQueue, game_quality_threshold=0.1) -> Optional[Gam
     # If we get there, we know there are at least 10 players in the queue
     # We start with the 10 players who have been in queue for the longest time
 
-    inhouse_logger.info(f"Matchmaking process started with the following queue:\n{queue}")
+    inhouse_logger.info(
+        f"Matchmaking process started with the following queue:\n{queue}"
+    )
 
     best_game = None
     for players_threshold in range(10, len(queue) + 1):
         # The queue_players are already ordered the right way to take age into account in matchmaking
         #   We first try with the 10 first players, then 11, ...
-        best_game = find_best_game_for_queue_players(queue.queue_players[:players_threshold])
+        best_game = find_best_game_for_queue_players(
+            queue.queue_players[:players_threshold]
+        )
 
         # We stop when we beat the game quality threshold (below 60% winrate for one side)
         if best_game and best_game.matchmaking_score < game_quality_threshold:
@@ -37,7 +41,9 @@ def find_best_game_for_queue_players(queue_players: List[QueuePlayer]) -> Game:
     """
     A sub function to allow us to iterate on QueuePlayers from oldest to newest
     """
-    inhouse_logger.info(f"Trying to find the best game for: {' | '.join(f'{qp}' for qp in queue_players)}")
+    inhouse_logger.info(
+        f"Trying to find the best game for: {' | '.join(f'{qp}' for qp in queue_players)}"
+    )
 
     # Currently simply testing all permutations because it should be pretty lightweight
     # TODO LOW PRIO Spot mirrored team compositions (full blue/red -> red/blue) to not calculate them twice
@@ -51,7 +57,9 @@ def find_best_game_for_queue_players(queue_players: List[QueuePlayer]) -> Game:
         role_permutations.append(
             [
                 queue_player
-                for queue_player in itertools.permutations([qp for qp in queue_players if qp.role == role], 2)
+                for queue_player in itertools.permutations(
+                    [qp for qp in queue_players if qp.role == role], 2
+                )
             ]
         )
 
@@ -74,9 +82,10 @@ def find_best_game_for_queue_players(queue_players: List[QueuePlayer]) -> Game:
         # We transform it to a more manageable dictionary of QueuePlayers
         # {(team, role)} = QueuePlayer
         queue_players_dict = {
-            ("BLUE" if bool(tuple_idx) == shuffle else "RED", roles_list[role_idx]): queue_players_tuple[
-                tuple_idx
-            ]
+            (
+                "BLUE" if bool(tuple_idx) == shuffle else "RED",
+                roles_list[role_idx],
+            ): queue_players_tuple[tuple_idx]
             for role_idx, queue_players_tuple in enumerate(team_composition)
             for tuple_idx in (0, 1)
         }
@@ -92,7 +101,8 @@ def find_best_game_for_queue_players(queue_players: List[QueuePlayer]) -> Game:
                     next(
                         duo_qp
                         for duo_team_tuple, duo_qp in queue_players_dict.items()
-                        if duo_team_tuple[0] == team_tuple[0] and duo_qp.player_id == qp.duo_id
+                        if duo_team_tuple[0] == team_tuple[0]
+                        and duo_qp.player_id == qp.duo_id
                     )
                 except StopIteration:
                     duos_not_in_same_team = True

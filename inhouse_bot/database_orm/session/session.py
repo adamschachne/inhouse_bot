@@ -15,7 +15,6 @@ class GhostSessionMaker:
 
     _session_maker = None
 
-
     @property
     def session_maker(self):
         if not self._session_maker:
@@ -54,5 +53,5 @@ def session_scope():
     finally:
         session.close()
 
-##
 
+##

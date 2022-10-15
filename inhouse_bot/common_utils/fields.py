@@ -32,18 +32,22 @@ class RoleConverter(commands.Converter):
         Converts an input string to a clean role
         """
 
-        matched_string, ratio, _ = rapidfuzz.process.extractOne(argument, list(full_roles_dict.keys()))
+        matched_string, ratio, _ = rapidfuzz.process.extractOne(
+            argument, list(full_roles_dict.keys())
+        )
         if ratio < 85:
             await ctx.send(f"The role was not understood")
             raise ConversionError
         else:
             return full_roles_dict[matched_string]
 
+
 class QueueRoleConverter(RoleConverter):
     async def convert(self, ctx, argument):
-        if str.upper(argument) == 'ALL':
-            return 'ALL'
+        if str.upper(argument) == "ALL":
+            return "ALL"
         return await super().convert(ctx, argument)
+
 
 class ChampionNameConverter(commands.Converter):
     async def convert(self, ctx, argument):
@@ -51,7 +55,9 @@ class ChampionNameConverter(commands.Converter):
         Converts an input string to a clean champion ID
         """
         try:
-            return lol_id_tools.get_id(argument, input_locale="en_US", object_type="champion")
+            return lol_id_tools.get_id(
+                argument, input_locale="en_US", object_type="champion"
+            )
 
         except lol_id_tools.NoMatchingNameFound:
             await ctx.send(f"The champion name was not understood")
