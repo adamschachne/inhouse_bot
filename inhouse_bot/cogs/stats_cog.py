@@ -1,3 +1,4 @@
+from pydoc import describe
 import tempfile
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -14,10 +15,11 @@ from discord.ext.commands import guild_only
 
 import matplotlib
 import matplotlib.pyplot as plt
-
+import inhouse_bot.common_utils.lol_api.tasks as lol
 from inhouse_bot.common_utils.constants import PREFIX
 from inhouse_bot.common_utils.docstring import doc
-from inhouse_bot.common_utils.emoji_and_thumbnails import get_role_emoji, get_rank_emoji
+from inhouse_bot.common_utils.emoji_and_thumbnails import get_role_emoji
+from inhouse_bot.common_utils.stats_helper import get_player_stats, get_player_history, get_roles_most_used_champs
 from inhouse_bot.database_orm import session_scope, GameParticipant, Game, PlayerRating, Player
 from inhouse_bot.common_utils.fields import ChampionNameConverter, RoleConverter
 from inhouse_bot.common_utils.get_last_game import get_last_game
@@ -89,27 +91,11 @@ class StatsCog(commands.Cog, name="Stats"):
     async def history(self, ctx: commands.Context):
         # TODO LOW PRIO Add an @ user for admins
 
-        with session_scope() as session:
-            session.expire_on_commit = False
-
-            game_participant_query = (
-                session.query(Game, GameParticipant)
-                .select_from(Game)
-                .join(GameParticipant)
-                .filter(GameParticipant.player_id == ctx.author.id)
-                .order_by(Game.start.desc())
-            )
-
-            # If we’re on a server, we only show games played on that server
-            if ctx.guild:
-                game_participant_query = game_participant_query.filter(Game.server_id == ctx.guild.id)
-
-            game_participant_list = game_participant_query.limit(100).all()
-
+        game_participant_list = await get_player_history(ctx)
         if not game_participant_list:
             await ctx.send("No games found")
             return
-
+        
         pages = menus.MenuPages(
             source=HistoryPagesSource(
                 game_participant_list,
@@ -120,61 +106,6 @@ class StatsCog(commands.Cog, name="Stats"):
             clear_reactions_after=True,
         )
         await pages.start(ctx)
-
-    @commands.command(aliases=["mmr", "rank", "rating"])
-    @doc(f"""
-        Returns your rank, MMR, and games played
-
-        Example:
-            {PREFIX}rank
-    """)
-    async def stats(self, ctx: commands.Context):
-        with session_scope() as session:
-            rating_objects = (
-                session.query(
-                    PlayerRating,
-                    sqlalchemy.func.count().label("count"),
-                    (
-                        sqlalchemy.func.sum((Game.winner == GameParticipant.side).cast(sqlalchemy.Integer))
-                    ).label("wins"),
-                )
-                .select_from(PlayerRating)
-                .join(GameParticipant)
-                .join(Game)
-                .filter(PlayerRating.player_id == ctx.author.id)
-                .group_by(PlayerRating)
-            )
-
-            if ctx.guild:
-                rating_objects = rating_objects.filter(PlayerRating.player_server_id == ctx.guild.id)
-
-            rows = []
-
-            for row in sorted(rating_objects.all(), key=lambda r: -r.count):
-                # TODO LOW PRIO Make that a subquery
-                rank = (
-                    session.query(sqlalchemy.func.count())
-                    .select_from(PlayerRating)
-                    .filter(PlayerRating.player_server_id == row.PlayerRating.player_server_id)
-                    .filter(PlayerRating.role == row.PlayerRating.role)
-                    .filter(PlayerRating.mmr > row.PlayerRating.mmr)
-                ).first()[0]
-
-                rank_str = get_rank_emoji(rank)
-
-                row_string = (
-                    f"{f'{self.bot.get_guild(row.PlayerRating.player_server_id).name} ' if not ctx.guild else ''}"
-                    f"{get_role_emoji(row.PlayerRating.role)} "
-                    f"{rank_str} "
-                    f"`{int(row.PlayerRating.mmr)} MMR  "
-                    f"{row.wins}W {row.count-row.wins}L`"
-                )
-
-                rows.append(row_string)
-
-            embed = Embed(title=f"Ranks for {ctx.author.display_name}", description="\n".join(rows))
-
-            await ctx.send(embed=embed)
 
     @commands.command(aliases=["rankings"])
     @guild_only()
@@ -260,3 +191,58 @@ class StatsCog(commands.Cog, name="Stats"):
             temp.close()
 
     # TODO MEDIUM PRIO (simple) Add !champions_stats once again!!!
+
+    @commands.command(aliases=["scout", "profile"])
+    @guild_only()
+    @doc(f"""
+        Displays information about a player and champs used in inhouses
+        Example:
+            {PREFIX}scout @User
+            {PREFIX}profile @User
+    """)
+    async def scouting(self, ctx: commands.Context, user: discord.Member):
+        with session_scope() as session:
+            player = (
+                session.query(Player)
+                .select_from(Player)
+                .filter(Player.server_id == ctx.guild.id)
+                .filter(Player.id == user.id)
+            ).one_or_none()
+
+            if not player:
+                await ctx.send("This player has no games played yet.")
+                return
+            
+            # #### Create the initial embed object ####
+            
+            # All Users default to unverified until further data is processed
+            embed = discord.Embed()
+            file = discord.File('riot-ranks/UNVERIFIED.png')  
+            embed.set_thumbnail(url='attachment://UNVERIFIED.png')
+
+            if player.summoner_puuid: 
+                summoner = await lol.get_summoner_by_puuid(player.summoner_puuid)
+                playerRankInfo = await lol.get_summoner_rank_info_by_id(summoner.id)
+                url = "https://www.op.gg/summoners/na/" f"{summoner.name}"
+                url = url.replace(" ", "")
+
+                # If a player has a rank whether it being (Solo/Duo or Flex or TFT)
+                if playerRankInfo:
+                    embed.set_author(name=summoner.name + f": {playerRankInfo['tier']}", url=url)
+                    file = discord.File('riot-ranks/' + f"{playerRankInfo['tier']}"+ '.png', filename=f"{playerRankInfo['tier']}"+ '.png')  
+                    embed.set_thumbnail(url='attachment://' + f"{playerRankInfo['tier']}"+ '.png')
+
+                else:
+                    embed.set_author(name=summoner.name + ": UNRANKED", url=url)
+                    file = discord.File('riot-ranks/UNRANKED.png', filename='UNRANKED.png')  
+                    embed.set_thumbnail(url='attachment://UNRANKED.png')
+
+            player_stats = await get_player_stats(ctx)
+            embed.add_field(name="Role Stats", value="\n".join(player_stats), inline=False)
+
+            champs_used_stats = await get_roles_most_used_champs(ctx)
+            embed.add_field(name="Most Used Champs", value="\n".join(champs_used_stats), inline=False)
+
+            embed.set_footer(text=f"Scouting information about: {player.name}")
+            await ctx.send(file=file, embed=embed)
+        
