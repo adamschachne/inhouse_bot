@@ -112,19 +112,18 @@ async def get_roles_most_used_champs(ctx: commands.Context):
     # Sort map of champs for each role and get the top 3
     for role in roles_list:
         row_string = ()
-        champsFound = []
-        uniqueChampCount = 0
-        for key, value in sorted(
-            roleChampDict[role].items(), key=lambda item: item[1], reverse=True
-        ):
-            if uniqueChampCount >= 3:
-                break
-            champsFound.append(get_champion_name_by_id(key) + f" ({value})")
-            uniqueChampCount += 1
+        champs_collection = []
 
-        if champsFound:
+        most_played = sorted(
+            roleChampDict[role].items(), key=lambda item: item[1], reverse=True
+        )[0:3]
+
+        for key, value in most_played:
+            champs_collection.append(get_champion_name_by_id(key) + f" ({value})")
+
+        if champs_collection:
             row_string = row_string + (
-                f"{get_role_emoji(role)}: {', '.join(champsFound)}",
+                f"{get_role_emoji(role)}: {', '.join(champs_collection)}",
             )
         else:
             row_string = row_string + (f"{get_role_emoji(role)}: No Role Data.",)
