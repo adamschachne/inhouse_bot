@@ -271,12 +271,14 @@ class StatsCog(commands.Cog, name="Stats"):
                     )
                     embed.set_thumbnail(url="attachment://UNRANKED.png")
 
-            player_stats = await get_player_stats(ctx)
+            player_stats = await get_player_stats(player.id, player.server_id)
             embed.add_field(
                 name="Role Stats", value="\n".join(player_stats), inline=False
             )
 
-            champs_used_stats = await get_roles_most_used_champs(ctx)
+            champs_used_stats = await get_roles_most_used_champs(
+                player.id, player.server_id
+            )
             embed.add_field(
                 name="Most Used Champs",
                 value="\n".join(champs_used_stats),

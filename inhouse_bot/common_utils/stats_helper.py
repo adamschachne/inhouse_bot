@@ -15,7 +15,7 @@ from discord.ext import commands
 from inhouse_bot.common_utils.fields import roles_list
 
 
-async def get_player_stats(ctx: commands.Context):
+async def get_player_stats(player_id, server_id):
     with session_scope() as session:
         rating_objects = (
             session.query(
@@ -30,13 +30,13 @@ async def get_player_stats(ctx: commands.Context):
             .select_from(PlayerRating)
             .join(GameParticipant)
             .join(Game)
-            .filter(PlayerRating.player_id == ctx.author.id)
+            .filter(PlayerRating.player_id == player_id)
             .group_by(PlayerRating)
         )
 
-        if ctx.guild:
+        if server_id:
             rating_objects = rating_objects.filter(
-                PlayerRating.player_server_id == ctx.guild.id
+                PlayerRating.player_server_id == server_id
             )
 
         rows = []
@@ -45,7 +45,7 @@ async def get_player_stats(ctx: commands.Context):
             rank = (
                 session.query(sqlalchemy.func.count())
                 .select_from(PlayerRating)
-                .filter(PlayerRating.player_server_id == ctx.guild.id)
+                .filter(PlayerRating.player_server_id == server_id)
                 .filter(PlayerRating.role == row.PlayerRating.role)
                 .filter(PlayerRating.mmr > row.PlayerRating.mmr)
             ).first()[0]
@@ -67,7 +67,7 @@ async def get_player_stats(ctx: commands.Context):
         return rows
 
 
-async def get_player_history(ctx: commands.Context):
+async def get_player_history(player_id, server_id):
     with session_scope() as session:
         session.expire_on_commit = False
 
@@ -75,14 +75,14 @@ async def get_player_history(ctx: commands.Context):
             session.query(Game, GameParticipant)
             .select_from(Game)
             .join(GameParticipant)
-            .filter(GameParticipant.player_id == ctx.author.id)
+            .filter(GameParticipant.player_id == player_id)
             .order_by(Game.start.desc())
         )
 
         # If we’re on a server, we only show games played on that server
-        if ctx.guild:
+        if server_id:
             game_participant_query = game_participant_query.filter(
-                Game.server_id == ctx.guild.id
+                Game.server_id == server_id
             )
 
         game_participant_list = game_participant_query.limit(100).all()
@@ -90,8 +90,8 @@ async def get_player_history(ctx: commands.Context):
         return game_participant_list
 
 
-async def get_roles_most_used_champs(ctx: commands.Context):
-    game_participant_list = await get_player_history(ctx)
+async def get_roles_most_used_champs(player_id, server_id):
+    game_participant_list = await get_player_history(player_id, server_id)
     if not game_participant_list:
         return [("No champions are registered for player.")]
 
