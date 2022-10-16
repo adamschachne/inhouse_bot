@@ -45,8 +45,4 @@ async def get_summoner_rank_info_by_id(summoner_id: str):
         if entry["queueType"] == "RANKED_FLEX_SR":
             return entry
 
-    for entry in summoner._meta.data["entries"]:
-        if entry["queueType"] == "RANKED_TFT_DOUBLE_UP":
-            return entry
-
     return []
