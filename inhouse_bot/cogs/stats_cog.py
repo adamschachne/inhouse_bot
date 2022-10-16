@@ -246,23 +246,22 @@ class StatsCog(commands.Cog, name="Stats"):
             if player.summoner_puuid:
                 summoner = await lol.get_summoner_by_puuid(player.summoner_puuid)
                 playerRankInfo = await lol.get_summoner_rank_info_by_id(summoner.id)
-                url = f"https://www.op.gg/summoners/na/{summoner.name}"
+                embed.title = f"{summoner.name} - OP.GG"
+                embed.url = f"https://www.op.gg/summoners/na/{summoner.name}"
 
-                # If a player has a rank whether it being (Solo/Duo or Flex or TFT)
+                # If a player has a rank whether it being (Solo/Duo or Flex)
                 if playerRankInfo:
-                    embed.set_author(
-                        name=summoner.name + f": {playerRankInfo['tier']}", url=url
-                    )
+                    embed.set_author(name=f"Rank: {playerRankInfo['tier']}")
                     file = discord.File(
-                        "riot-ranks/" + f"{playerRankInfo['tier']}" + ".png",
-                        filename=f"{playerRankInfo['tier']}" + ".png",
+                        f"riot-ranks/{playerRankInfo['tier']}.png",
+                        filename=f"{playerRankInfo['tier']}.png",
                     )
                     embed.set_thumbnail(
-                        url="attachment://" + f"{playerRankInfo['tier']}" + ".png"
+                        url=f"attachment://{playerRankInfo['tier']}.png"
                     )
 
                 else:
-                    embed.set_author(name=summoner.name + ": UNRANKED", url=url)
+                    embed.set_author(name=f"Rank: UNRANKED")
                     file = discord.File(
                         "riot-ranks/UNRANKED.png", filename="UNRANKED.png"
                     )
