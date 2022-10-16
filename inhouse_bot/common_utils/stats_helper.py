@@ -60,6 +60,10 @@ async def get_player_stats(ctx: commands.Context):
                 f"{round(row.wins/row.count, 2) * 100}% WR",
             )
             rows.append("  | ".join(row_string))
+
+        if not rows:
+            return [("Player has no games played yet.")]
+
         return rows
 
 
