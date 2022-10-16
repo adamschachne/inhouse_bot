@@ -246,8 +246,7 @@ class StatsCog(commands.Cog, name="Stats"):
             if player.summoner_puuid:
                 summoner = await lol.get_summoner_by_puuid(player.summoner_puuid)
                 playerRankInfo = await lol.get_summoner_rank_info_by_id(summoner.id)
-                url = "https://www.op.gg/summoners/na/" f"{summoner.name}"
-                url = url.replace(" ", "")
+                url = "https://www.op.gg/summoners/na/" + f"{summoner.name}"
 
                 # If a player has a rank whether it being (Solo/Duo or Flex or TFT)
                 if playerRankInfo:
