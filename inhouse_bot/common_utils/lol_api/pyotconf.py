@@ -22,6 +22,7 @@ class LolPipeline(PipelineConf):
                 "summoner_v4_by_name": 100,
                 "match_v4_match": 600,
                 "match_v4_timeline": 600,
+                "league_v4_summoner_entries": 600,
             },
         },
         {
