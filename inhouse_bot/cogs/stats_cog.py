@@ -18,7 +18,11 @@ import matplotlib.pyplot as plt
 import inhouse_bot.common_utils.lol_api.tasks as lol
 from inhouse_bot.common_utils.constants import PREFIX
 from inhouse_bot.common_utils.docstring import doc
-from inhouse_bot.common_utils.stats_helper import get_player_stats, get_player_history, get_roles_most_used_champs
+from inhouse_bot.common_utils.stats_helper import (
+    get_player_stats,
+    get_player_history,
+    get_roles_most_used_champs,
+)
 from inhouse_bot.common_utils.emoji_and_thumbnails import get_role_emoji, get_rank_emoji
 from inhouse_bot.database_orm import (
     session_scope,
@@ -110,7 +114,7 @@ class StatsCog(commands.Cog, name="Stats"):
         if not game_participant_list:
             await ctx.send("No games found")
             return
-        
+
         pages = menus.MenuPages(
             source=HistoryPagesSource(
                 game_participant_list,
@@ -121,7 +125,7 @@ class StatsCog(commands.Cog, name="Stats"):
             clear_reactions_after=True,
         )
         await pages.start(ctx)
-        
+
     @commands.command(aliases=["rankings"])
     @guild_only()
     @doc(
@@ -211,12 +215,14 @@ class StatsCog(commands.Cog, name="Stats"):
 
     @commands.command(aliases=["scout", "profile"])
     @guild_only()
-    @doc(f"""
+    @doc(
+        f"""
         Displays information about a player and champs used in inhouses
         Example:
             {PREFIX}scout @User
             {PREFIX}profile @User
-    """)
+    """
+    )
     async def scouting(self, ctx: commands.Context, user: discord.Member):
         with session_scope() as session:
             player = (
@@ -229,15 +235,15 @@ class StatsCog(commands.Cog, name="Stats"):
             if not player:
                 await ctx.send("This player has no games played yet.")
                 return
-            
+
             # #### Create the initial embed object ####
-            
+
             # All Users default to unverified until further data is processed
             embed = discord.Embed()
-            file = discord.File('riot-ranks/UNVERIFIED.png')  
-            embed.set_thumbnail(url='attachment://UNVERIFIED.png')
+            file = discord.File("riot-ranks/UNVERIFIED.png")
+            embed.set_thumbnail(url="attachment://UNVERIFIED.png")
 
-            if player.summoner_puuid: 
+            if player.summoner_puuid:
                 summoner = await lol.get_summoner_by_puuid(player.summoner_puuid)
                 playerRankInfo = await lol.get_summoner_rank_info_by_id(summoner.id)
                 url = "https://www.op.gg/summoners/na/" f"{summoner.name}"
@@ -245,21 +251,35 @@ class StatsCog(commands.Cog, name="Stats"):
 
                 # If a player has a rank whether it being (Solo/Duo or Flex or TFT)
                 if playerRankInfo:
-                    embed.set_author(name=summoner.name + f": {playerRankInfo['tier']}", url=url)
-                    file = discord.File('riot-ranks/' + f"{playerRankInfo['tier']}"+ '.png', filename=f"{playerRankInfo['tier']}"+ '.png')  
-                    embed.set_thumbnail(url='attachment://' + f"{playerRankInfo['tier']}"+ '.png')
+                    embed.set_author(
+                        name=summoner.name + f": {playerRankInfo['tier']}", url=url
+                    )
+                    file = discord.File(
+                        "riot-ranks/" + f"{playerRankInfo['tier']}" + ".png",
+                        filename=f"{playerRankInfo['tier']}" + ".png",
+                    )
+                    embed.set_thumbnail(
+                        url="attachment://" + f"{playerRankInfo['tier']}" + ".png"
+                    )
 
                 else:
                     embed.set_author(name=summoner.name + ": UNRANKED", url=url)
-                    file = discord.File('riot-ranks/UNRANKED.png', filename='UNRANKED.png')  
-                    embed.set_thumbnail(url='attachment://UNRANKED.png')
+                    file = discord.File(
+                        "riot-ranks/UNRANKED.png", filename="UNRANKED.png"
+                    )
+                    embed.set_thumbnail(url="attachment://UNRANKED.png")
 
             player_stats = await get_player_stats(ctx)
-            embed.add_field(name="Role Stats", value="\n".join(player_stats), inline=False)
+            embed.add_field(
+                name="Role Stats", value="\n".join(player_stats), inline=False
+            )
 
             champs_used_stats = await get_roles_most_used_champs(ctx)
-            embed.add_field(name="Most Used Champs", value="\n".join(champs_used_stats), inline=False)
+            embed.add_field(
+                name="Most Used Champs",
+                value="\n".join(champs_used_stats),
+                inline=False,
+            )
 
             embed.set_footer(text=f"Scouting information about: {player.name}")
             await ctx.send(file=file, embed=embed)
-        

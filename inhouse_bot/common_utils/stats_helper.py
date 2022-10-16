@@ -1,8 +1,19 @@
-from inhouse_bot.database_orm import session_scope, GameParticipant, Game, PlayerRating, Player
+from inhouse_bot.database_orm import (
+    session_scope,
+    GameParticipant,
+    Game,
+    PlayerRating,
+    Player,
+)
 import sqlalchemy
-from inhouse_bot.common_utils.emoji_and_thumbnails import get_role_emoji, get_rank_emoji, get_champion_name_by_id
+from inhouse_bot.common_utils.emoji_and_thumbnails import (
+    get_role_emoji,
+    get_rank_emoji,
+    get_champion_name_by_id,
+)
 from discord.ext import commands
 from inhouse_bot.common_utils.fields import roles_list
+
 
 async def get_player_stats(ctx: commands.Context):
     with session_scope() as session:
@@ -11,7 +22,9 @@ async def get_player_stats(ctx: commands.Context):
                 PlayerRating,
                 sqlalchemy.func.count().label("count"),
                 (
-                    sqlalchemy.func.sum((Game.winner == GameParticipant.side).cast(sqlalchemy.Integer))
+                    sqlalchemy.func.sum(
+                        (Game.winner == GameParticipant.side).cast(sqlalchemy.Integer)
+                    )
                 ).label("wins"),
             )
             .select_from(PlayerRating)
@@ -22,7 +35,9 @@ async def get_player_stats(ctx: commands.Context):
         )
 
         if ctx.guild:
-            rating_objects = rating_objects.filter(PlayerRating.player_server_id == ctx.guild.id)
+            rating_objects = rating_objects.filter(
+                PlayerRating.player_server_id == ctx.guild.id
+            )
 
         rows = []
         for row in sorted(rating_objects.all(), key=lambda r: -r.count):
@@ -37,15 +52,16 @@ async def get_player_stats(ctx: commands.Context):
 
             rank_str = get_rank_emoji(rank)
 
-            row_string=(
-                    f"{rank_str}",
-                    f"{get_role_emoji(row.PlayerRating.role)}",
-                    f"{int(row.PlayerRating.mmr)} MMR" ,
-                    f"{row.wins}W {row.count-row.wins}L",
-                    f"{round(row.wins/row.count, 2) * 100}% WR",
+            row_string = (
+                f"{rank_str}",
+                f"{get_role_emoji(row.PlayerRating.role)}",
+                f"{int(row.PlayerRating.mmr)} MMR",
+                f"{row.wins}W {row.count-row.wins}L",
+                f"{round(row.wins/row.count, 2) * 100}% WR",
             )
-            rows.append('  | '.join(row_string))
+            rows.append("  | ".join(row_string))
         return rows
+
 
 async def get_player_history(ctx: commands.Context):
     with session_scope() as session:
@@ -61,24 +77,21 @@ async def get_player_history(ctx: commands.Context):
 
         # If we’re on a server, we only show games played on that server
         if ctx.guild:
-            game_participant_query = game_participant_query.filter(Game.server_id == ctx.guild.id)
+            game_participant_query = game_participant_query.filter(
+                Game.server_id == ctx.guild.id
+            )
 
         game_participant_list = game_participant_query.limit(100).all()
-    
+
         return game_participant_list
+
 
 async def get_roles_most_used_champs(ctx: commands.Context):
     game_participant_list = await get_player_history(ctx)
     if not game_participant_list:
         return [("No champions are registered for player.")]
-    
-    roleChampDict = {
-        'BOT': {},
-        'JGL': {},
-        'TOP': {},
-        'MID': {},
-        'SUP': {}
-    }
+
+    roleChampDict = {"BOT": {}, "JGL": {}, "TOP": {}, "MID": {}, "SUP": {}}
 
     # Keeping track of all the champs used for each role
     for game_participant in game_participant_list:
@@ -97,17 +110,21 @@ async def get_roles_most_used_champs(ctx: commands.Context):
         row_string = ()
         champsFound = []
         uniqueChampCount = 0
-        for key, value in sorted(roleChampDict[role].items(), key=lambda item: item[1], reverse=True):
+        for key, value in sorted(
+            roleChampDict[role].items(), key=lambda item: item[1], reverse=True
+        ):
             if uniqueChampCount >= 3:
                 break
             champsFound.append(get_champion_name_by_id(key) + f" ({value})")
             uniqueChampCount += 1
-        
-        if champsFound: 
-            row_string = row_string + (f"{get_role_emoji(role)}: {', '.join(champsFound)}", )
-        else:
-            row_string = row_string + (f"{get_role_emoji(role)}: No Role Data.", )
 
-        rows.append('  | '.join(row_string))
-    
+        if champsFound:
+            row_string = row_string + (
+                f"{get_role_emoji(role)}: {', '.join(champsFound)}",
+            )
+        else:
+            row_string = row_string + (f"{get_role_emoji(role)}: No Role Data.",)
+
+        rows.append("  | ".join(row_string))
+
     return rows

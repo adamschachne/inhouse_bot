@@ -81,5 +81,6 @@ def get_champion_emoji(emoji_input: Optional[Union[int, str]], bot) -> str:
     # Fallback that should only be reached when we don’t find the rights emoji
     return fallback
 
+
 def get_champion_name_by_id(champion_id: int):
     return lol_id_tools.get_name(champion_id)
