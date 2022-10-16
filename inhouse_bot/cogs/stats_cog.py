@@ -223,17 +223,17 @@ class StatsCog(commands.Cog, name="Stats"):
             {PREFIX}profile @User
     """
     )
-    async def scouting(self, ctx: commands.Context, user: discord.Member):
+    async def scouting(self, ctx: commands.Context, name_arg: str):
         with session_scope() as session:
             player = (
                 session.query(Player)
                 .select_from(Player)
                 .filter(Player.server_id == ctx.guild.id)
-                .filter(Player.id == user.id)
+                .filter(Player.name.ilike(f"%{name_arg}%"))
             ).one_or_none()
 
             if not player:
-                await ctx.send("This player has no games played yet.")
+                await ctx.send("This player has no games recorded.")
                 return
 
             # #### Create the initial embed object ####
@@ -247,7 +247,11 @@ class StatsCog(commands.Cog, name="Stats"):
                 summoner = await lol.get_summoner_by_puuid(player.summoner_puuid)
                 playerRankInfo = await lol.get_summoner_rank_info_by_id(summoner.id)
                 embed.title = f"{summoner.name} - OP.GG"
-                embed.url = f"https://www.op.gg/summoners/na/{summoner.name}"
+
+                # Accounting for names with spaces
+                embed.url = f"https://www.op.gg/summoners/na/{summoner.name}".replace(
+                    " ", ""
+                )
 
                 # If a player has a rank whether it being (Solo/Duo or Flex)
                 if playerRankInfo:
