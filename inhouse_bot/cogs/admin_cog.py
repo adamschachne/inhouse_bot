@@ -253,5 +253,4 @@ class AdminCog(commands.Cog, name="Admin"):
                 )
             )
 
-
         await ctx.send(f"Verified Summoner name: {summoner.name}")
