@@ -14,4 +14,4 @@ class ServerConfig(bot_declarative_base):
 
     server_id = Column(BigInteger, unique=True)
 
-    config = Column(MutableDict.as_mutable(JSON))
+    config: MutableDict = Column(MutableDict.as_mutable(JSON))

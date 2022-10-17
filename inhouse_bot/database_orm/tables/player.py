@@ -2,7 +2,6 @@ from sqlalchemy import Column, String, BigInteger, UniqueConstraint
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
-
 from inhouse_bot.database_orm import bot_declarative_base
 
 
@@ -17,10 +16,10 @@ class Player(bot_declarative_base):
     )
 
     # Discord account info
-    id = Column(BigInteger, primary_key=True)
+    id: int = Column(BigInteger, primary_key=True)
 
     # One player object per server_id
-    server_id = Column(BigInteger, primary_key=True)
+    server_id: int = Column(BigInteger, primary_key=True)
 
     # Player nickname and team as defined by themselves
     name = Column(String)

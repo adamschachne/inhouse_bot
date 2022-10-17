@@ -2,7 +2,8 @@ import os
 from contextlib import contextmanager
 
 import sqlalchemy.orm
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import Session, declarative_base
+from sqlalchemy.engine import Engine
 
 # The declarative base that we use for all our SQL alchemy classes
 bot_declarative_base = declarative_base()
@@ -13,7 +14,7 @@ class GhostSessionMaker:
     Small class that only generates the schema in the database when a session is created
     """
 
-    _session_maker = None
+    _session_maker: Session | None = None
 
     @property
     def session_maker(self):
@@ -23,7 +24,7 @@ class GhostSessionMaker:
 
     def _initialize_sqlalchemy(self):
         # We create the engine to connect to the database
-        engine = sqlalchemy.create_engine(
+        engine: Engine = sqlalchemy.create_engine(
             os.environ["INHOUSE_BOT_CONNECTION_STRING"]
         )  # Very conservative settings to make sure it *always* work, slightly overkill
 
@@ -42,7 +43,7 @@ def session_scope():
     """
     Provide a transactional scope around a series of operations.
     """
-    session = ghost_session_maker.session_maker()
+    session: Session = ghost_session_maker.session_maker()
     try:
         yield session
         session.commit()

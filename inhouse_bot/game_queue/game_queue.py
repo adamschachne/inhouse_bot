@@ -5,7 +5,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 
 from inhouse_bot.database_orm import QueuePlayer, PlayerRating, session_scope
-from inhouse_bot.common_utils.fields import roles_list
+from inhouse_bot.common_utils.fields import roles_list, RoleEnum
 
 
 class GameQueue:
@@ -78,7 +78,7 @@ class GameQueue:
 
             # The starting queue is made of the 2 players per role who have been in queue the longest
             #   We also add any duos *required* for the game to fire
-            starting_queue = defaultdict(list)
+            starting_queue: Dict[RoleEnum, List[QueuePlayer]] = defaultdict(list)
 
             for role in self.queue_players_dict:
                 for qp in self.queue_players_dict[role]:
@@ -88,10 +88,8 @@ class GameQueue:
                         continue
 
                     # Else we add our current player if he’s not there yet (could have been added by his duo)
-                    # TODO LOW PRIO cleanup that ugly code
-                    if qp.player_id not in [
-                        qp.player_id for qp in starting_queue[role]
-                    ]:
+                    player_ids = [qp.player_id for qp in starting_queue[role]]
+                    if qp.player_id not in player_ids:
                         starting_queue[role].append(qp)
 
                     # If he has a duo, we add it if he’s not in queue for his role already
@@ -103,15 +101,15 @@ class GameQueue:
                             starting_queue[duo_role].pop()
 
                         # We add the duo as part of the queue for his role *if he’s not yet in it*
-                        # TODO LOW PRIO find a more readable syntax, all those list comprehensions are really bad
-                        if qp.duo_id not in [
+                        duo_player_ids = [
                             qp.player_id for qp in starting_queue[duo_role]
-                        ]:
+                        ]
+                        if qp.duo_id not in duo_player_ids:
                             starting_queue[duo_role].append(qp.duo)
 
             # Afterwards we fill the rest of the queue with players in chronological order
 
-            age_sorted_queue_players = sum(
+            age_sorted_queue_players: List[QueuePlayer] = sum(
                 list(starting_queue.values()), []
             )  # Flattening the QueuePlayer objects to a single list
 
@@ -169,7 +167,7 @@ class GameQueue:
         return len(uniquePlayers)
 
     @property
-    def queue_players_dict(self) -> Dict[str, List[QueuePlayer]]:
+    def queue_players_dict(self) -> Dict[RoleEnum, List[QueuePlayer]]:
         """
         This dictionary will always have all roles included
         """
@@ -180,11 +178,11 @@ class GameQueue:
 
     @property
     def duos(self) -> List[Tuple[QueuePlayer, QueuePlayer]]:
-        duos = []
+        duos: List[Tuple[QueuePlayer, QueuePlayer]] = []
 
         # TODO This should be an sqlalchemy hybrid property and a single list comprehension
         for qp in self.queue_players:
-            if (qp.duo is not None) and (
+            if (qp.duo is not None and qp.duo_id is not None) and (
                 qp.duo_id > qp.player_id
             ):  # Using this inequality to make sure we only have each duo once
                 duos.append((qp, qp.duo))

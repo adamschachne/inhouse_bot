@@ -1,9 +1,10 @@
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 import sqlalchemy
 from discord import TextChannel
 from discord.ext.commands import Bot
 from sqlalchemy import func
+from inhouse_bot.common_utils.fields import RoleEnum
 
 from inhouse_bot.database_orm import (
     ChannelInformation,

@@ -9,9 +9,9 @@ class Admin(bot_declarative_base):
     __tablename__ = "admin"
 
     # Discord ID
-    id = Column(BigInteger, primary_key=True)
+    id: int = Column(BigInteger, primary_key=True)
     # Server ID
-    server_id = Column(BigInteger, primary_key=True)
+    server_id: int = Column(BigInteger, primary_key=True)
 
     def __repr__(self):
         return f"<Admin: {self.id=} | {self.server_id=}>"

@@ -44,8 +44,9 @@ def score_game_from_winning_player(player_id: int, server_id: int):
     with session_scope() as session:
         game, participant = get_last_game(player_id, server_id, session)
 
-        game.winner = participant.side
+        if game and participant:
+            game.winner = participant.side
 
-        update_trueskill(game, session)
+            update_trueskill(game, session)
 
         # Commit will happen here

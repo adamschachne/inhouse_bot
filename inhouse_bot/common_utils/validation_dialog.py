@@ -4,6 +4,7 @@ from typing import Tuple, Optional, List, Set
 
 import discord
 from discord.ext.commands import Bot
+from inhouse_bot.database_orm import Game
 
 from inhouse_bot.queue_channel_handler import queue_channel_handler
 
@@ -17,7 +18,7 @@ async def checkmark_validation(
     validating_players_ids: List[int],
     validation_threshold: int = 10,
     timeout=120,
-    game=None,
+    game: Game = None,
 ) -> Tuple[Optional[bool], Optional[Set[int]]]:
     """
     Implements a checkmark validation on the chosen message.
