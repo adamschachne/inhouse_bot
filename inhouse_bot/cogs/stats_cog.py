@@ -110,7 +110,7 @@ class StatsCog(commands.Cog, name="Stats"):
     async def history(self, ctx: commands.Context):
         # TODO LOW PRIO Add an @ user for admins
 
-        game_participant_list = await get_player_history(ctx)
+        game_participant_list = await get_player_history(ctx.author.id, ctx.guild.id)
         if not game_participant_list:
             await ctx.send("No games found")
             return
