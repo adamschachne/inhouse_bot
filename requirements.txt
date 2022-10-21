@@ -1,6 +1,6 @@
 dateparser==1.1.1
 discord.py==2.0.1
-inflect==6.0.0
+inflect==6.0.2
 lol_id_tools==2.0.1
 matplotlib==3.6.1
 mplcyberpunk==0.6.0
