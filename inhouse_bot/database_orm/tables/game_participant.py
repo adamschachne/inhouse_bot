@@ -54,6 +54,9 @@ class GameParticipant(bot_declarative_base):
     # Champion id, only filled if the player updates it by themselves after the game
     champion_id: int | None = Column(Integer)
 
+    # Name as it was recorded when the game was played
+    name = Column(String)
+
     # Pre-game TrueSkill values
     trueskill_mu = Column(Float)
     trueskill_sigma = Column(Float)
@@ -74,10 +77,16 @@ class GameParticipant(bot_declarative_base):
     def mmr(self):
         return 20 * (self.trueskill_mu - 3 * self.trueskill_sigma + 25)
 
+    @hybrid_property
+    def short_name(self):
+        return self.name[:15]
+
     # Called only from the Game constructor itself
     def __init__(self, side: SideEnum, role: RoleEnum, player: Player):
         self.side = side
         self.role = role
+
+        self.name = player.name
 
         self.player_id = player.id
         self.player_server_id = player.server_id
