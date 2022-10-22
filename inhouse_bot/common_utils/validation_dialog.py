@@ -17,7 +17,7 @@ async def checkmark_validation(
     message: discord.Message,
     validating_players_ids: List[int],
     validation_threshold: int = 10,
-    timeout=120,
+    timeout: float = 120,
     game: Game = None,
 ) -> Tuple[Optional[bool], Optional[Set[int]]]:
     """

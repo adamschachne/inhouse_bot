@@ -37,7 +37,7 @@ class QueuePlayer(bot_declarative_base):
 
     # Duo queue partner
     duo_id: int | None = Column(BigInteger)
-    duo: "QueuePlayer" = relationship(
+    duo: "QueuePlayer" | None = relationship(
         "QueuePlayer",
         primaryjoin=(duo_id == foreign(player_id))
         & (player_id == foreign(duo_id))
