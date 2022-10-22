@@ -409,7 +409,8 @@ class QueueCog(commands.Cog, name="Queue"):
                 player_id=ctx.author.id, server_id=ctx.guild.id, session=session
             )
 
-            if game is None or not isinstance(game.winner, SideEnum):
+            # either there is no game or the last game has a winner (game has finished)
+            if game is None or game.winner is not None:
                 await ctx.send("It does not look like you are part of an ongoing game")
                 return
 
