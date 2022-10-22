@@ -1,3 +1,4 @@
+from typing import Optional
 from sqlalchemy.orm import relationship, foreign
 
 from inhouse_bot.database_orm import bot_declarative_base, ChannelInformation
@@ -37,7 +38,7 @@ class QueuePlayer(bot_declarative_base):
 
     # Duo queue partner
     duo_id: int | None = Column(BigInteger)
-    duo: "QueuePlayer" | None = relationship(
+    duo: Optional["QueuePlayer"] = relationship(
         "QueuePlayer",
         primaryjoin=(duo_id == foreign(player_id))
         & (player_id == foreign(duo_id))
