@@ -51,7 +51,7 @@ class Game(bot_declarative_base):
 
     # ORM relationship to participants in the game, defined as a [team, role] dictionary
     # TODO sqlalchemy2-stubs has a hard time inferring the type
-    participants = relationship(
+    participants = relationship(  # type: ignore
         GameParticipant,
         collection_class=mapped_collection(
             lambda participant: (participant.side, participant.role)
