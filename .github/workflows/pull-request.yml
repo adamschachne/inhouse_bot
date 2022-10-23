@@ -19,7 +19,7 @@ jobs:
       - name: Mypy Check
         uses: jpetrucciani/mypy-check@0.971
         with:
-          requirements: sqlalchemy2-stubs
+          requirements: sqlalchemy sqlalchemy2-stubs
           mypy_flags: '--config-file pyproject.toml'
 
       # TODO run unit tests
