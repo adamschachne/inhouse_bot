@@ -85,7 +85,7 @@ class QueueCog(commands.Cog, name="Queue"):
                     bot=self.bot,
                     message=ready_check_message,
                     validating_players_ids=game.player_ids_list,
-                    validation_threshold=10,
+                    validation_threshold=1,
                     game=game,
                 )
 
@@ -362,7 +362,7 @@ class QueueCog(commands.Cog, name="Queue"):
                 bot=self.bot,
                 message=win_validation_message,
                 validating_players_ids=game.player_ids_list,
-                validation_threshold=6,
+                validation_threshold=1,
             )
 
             # Whatever happens, we’re not scoring it anymore if we get here
@@ -410,7 +410,7 @@ class QueueCog(commands.Cog, name="Queue"):
             )
 
             # either there is no game or the last game has a winner (game has finished)
-            if game is None or game.winner is not None:
+            if game is None or game.winner:
                 await ctx.send("It does not look like you are part of an ongoing game")
                 return
 
@@ -433,7 +433,7 @@ class QueueCog(commands.Cog, name="Queue"):
                 bot=self.bot,
                 message=cancel_validation_message,
                 validating_players_ids=game.player_ids_list,
-                validation_threshold=6,
+                validation_threshold=1,
             )
 
             self.games_getting_scored_ids.remove(game.id)

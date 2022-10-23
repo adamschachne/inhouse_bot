@@ -18,16 +18,9 @@ class QueuePlayer(bot_declarative_base):
 
     channel_id: int = Column(
         BigInteger,
-        ForeignKey("channel_information.id", **foreignkey_cascade_options),
+        ForeignKey(ChannelInformation.id, **foreignkey_cascade_options),
         primary_key=True,
         index=True,
-    )
-
-    channel_information = relationship(
-        ChannelInformation,
-        viewonly=True,
-        backref="game_participant_objects",
-        sync_backref=False,
     )
 
     role: RoleEnum = Column(ENUM(RoleEnum, name="role_enum"), primary_key=True)
@@ -53,16 +46,15 @@ class QueuePlayer(bot_declarative_base):
     ready_check_id = Column(BigInteger)
 
     # Player relationship, which we automatically load
-    player = relationship("Player", viewonly=True, lazy="selectin")
+    player: Player = relationship(Player, viewonly=True, lazy="selectin", uselist=False)
 
     # Foreign key to Player
     __table_args__ = (
         ForeignKeyConstraint(
-            (player_id, player_server_id),
-            (Player.id, Player.server_id),
+            [player_id, player_server_id],
+            [Player.id, Player.server_id],
             **foreignkey_cascade_options,
         ),
-        {},
     )
 
     def __str__(self):

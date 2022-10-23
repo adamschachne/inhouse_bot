@@ -93,7 +93,7 @@ class GameQueue:
                         starting_queue[role].append(qp)
 
                     # If he has a duo, we add it if he’s not in queue for his role already
-                    if qp.duo_id is not None:
+                    if qp.duo and qp.duo_id:
                         duo_role = qp.duo.role
 
                         # If the role queue of the duo is already filled, we pop the youngest player

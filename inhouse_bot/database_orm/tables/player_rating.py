@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Float, BigInteger, ForeignKeyConstraint
 from sqlalchemy.ext.hybrid import hybrid_property
-
+from sqlalchemy.orm import Mapped
 from inhouse_bot.database_orm import bot_declarative_base
 from inhouse_bot.database_orm.tables.player import Player
 from inhouse_bot.common_utils.fields import RoleEnum, foreignkey_cascade_options
@@ -20,17 +20,16 @@ class PlayerRating(bot_declarative_base):
     role: RoleEnum = Column(ENUM(RoleEnum, name="role_enum"), primary_key=True)
 
     # Current TrueSkill rating
-    trueskill_mu = Column(Float)
-    trueskill_sigma = Column(Float)
+    trueskill_mu: Mapped[float] = Column(Float)
+    trueskill_sigma: Mapped[float] = Column(Float)
 
     # Foreign key to Player
     __table_args__ = (
         ForeignKeyConstraint(
-            (player_id, player_server_id),
-            ["player.id", "player.server_id"],
+            [player_id, player_server_id],
+            [Player.id, Player.server_id],
             **foreignkey_cascade_options,
         ),
-        {},
     )
 
     # Conservative rating for MMR display

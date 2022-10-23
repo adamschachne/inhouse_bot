@@ -1,8 +1,13 @@
 from sqlalchemy import Column, String, BigInteger, UniqueConstraint
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
 from sqlalchemy.orm.collections import attribute_mapped_collection
+from inhouse_bot.common_utils.fields import RoleEnum
 from inhouse_bot.database_orm import bot_declarative_base
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from inhouse_bot.database_orm.tables.player_rating import PlayerRating
 
 
 class Player(bot_declarative_base):
@@ -16,29 +21,26 @@ class Player(bot_declarative_base):
     )
 
     # Discord account info
-    id: int = Column(BigInteger, primary_key=True)
+    id: Mapped[int] = Column(BigInteger, primary_key=True)
 
     # One player object per server_id
-    server_id: int = Column(BigInteger, primary_key=True)
+    server_id: Mapped[int] = Column(BigInteger, primary_key=True)
 
     # Player nickname and team as defined by themselves
-    name = Column(String)
-    team = Column(String)
+    name: Mapped[str | None] = Column(String)
+    team: Mapped[str | None] = Column(String)
 
     # Summoner puuid
-    summoner_puuid = Column(String)
+    summoner_puuid: Mapped[str | None] = Column(String)
 
     # We automatically load the ratings when loading a Player object
-    ratings = relationship(
+    ratings: Mapped[dict[RoleEnum, "PlayerRating"]] = relationship(
         "PlayerRating",
         collection_class=attribute_mapped_collection("role"),
         backref="player",
         cascade="all, delete-orphan",
         lazy="selectin",
     )
-
-    # ORM relationship to the GameParticipant table
-    participant_objects = relationship("GameParticipant", viewonly=True)
 
     @hybrid_property
     def short_name(self):

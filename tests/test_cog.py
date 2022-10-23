@@ -6,7 +6,7 @@ from discord.ext.commands import group
 from inhouse_bot.common_utils.emoji_and_thumbnails import get_champion_emoji
 from inhouse_bot.database_orm import session_scope
 from inhouse_bot.common_utils.validation_dialog import checkmark_validation
-from inhouse_bot.common_utils.fields import roles_list, ChampionNameConverter
+from inhouse_bot.common_utils.fields import RoleEnum, roles_list, ChampionNameConverter
 from inhouse_bot.common_utils.get_last_game import get_last_game
 from inhouse_bot.game_queue import GameQueue
 from inhouse_bot.inhouse_bot import InhouseBot
@@ -76,9 +76,9 @@ class TestCog(commands.Cog, name="TEST"):
 
         game_queue.add_duo(
             6,
-            "JGL",
+            RoleEnum.JGL,
             ctx.author.id,
-            "MID",
+            RoleEnum.MID,
             ctx.channel.id,
             ctx.guild.id,
             first_player_name="6",

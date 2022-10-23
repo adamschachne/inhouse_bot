@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-from typing import Tuple, Dict, List, Optional
+from gc import collect
+from re import S
+from typing import Any, Tuple, Dict, List, Optional
 from datetime import datetime
 
 from discord import Embed
@@ -7,7 +9,11 @@ from tabulate import tabulate
 
 from sqlalchemy import Column, Integer, DateTime, Float, BigInteger
 from sqlalchemy.orm import relationship, Mapped
-from sqlalchemy.orm.collections import mapped_collection, MappedCollection
+from sqlalchemy.orm.collections import (
+    mapped_collection,
+    attribute_mapped_collection,
+    column_mapped_collection,
+)
 from sqlalchemy.dialects.postgresql import ENUM
 from inhouse_bot.database_orm import bot_declarative_base
 from inhouse_bot.database_orm.tables.game_participant import GameParticipant
@@ -27,21 +33,24 @@ class Game(bot_declarative_base):
     __tablename__ = "game"
 
     # Auto-incremented ID field
-    id: int = Column(Integer, primary_key=True)
+    id: Mapped[int] = Column(Integer, primary_key=True)
 
     # Game creation date
-    start: datetime = Column(DateTime)
+    start: Mapped[datetime] = Column(DateTime)
 
     # Server the game was played from
-    server_id: int = Column(BigInteger)
+    server_id: Mapped[int] = Column(BigInteger)
 
     # Predicted outcome before the game was played
-    blue_expected_winrate: float = Column(Float)
+    blue_expected_winrate: Mapped[float] = Column(Float)
 
     # Winner, updated at the end of the game
-    winner: SideEnum | None = Column(ENUM(SideEnum, name="team_enum"), nullable=True)
+    winner: Mapped[SideEnum | None] = Column(
+        ENUM(SideEnum, name="team_enum"), nullable=True
+    )
 
     # ORM relationship to participants in the game, defined as a [team, role] dictionary
+    # TODO sqlalchemy2-stubs has a hard time inferring the type
     participants = relationship(
         GameParticipant,
         collection_class=mapped_collection(
@@ -87,7 +96,7 @@ class Game(bot_declarative_base):
         )
 
     def get_embed(
-        self, embed_type: str, validated_players: Optional[List[int]] = None, bot=None
+        self, embed_type: str, validated_players: List[int] = [], bot=None
     ) -> Embed:
         if embed_type == "GAME_FOUND":
             embed = Embed(
@@ -130,7 +139,7 @@ class Game(bot_declarative_base):
 
         return embed
 
-    def __init__(self, players: Dict[Tuple[SideEnum, RoleEnum], Player]):
+    def __init__(self, players: dict[Tuple[SideEnum, RoleEnum], Player]):
         """
         Creates a Game object and its GameParticipant children.
 
@@ -144,12 +153,12 @@ class Game(bot_declarative_base):
         self.start = datetime.now()
 
         # First, we write down the participants
-        self.participants = {  # type: ignore
-            (team, role): GameParticipant(team, role, players[team, role])
+        self.participants = {
+            (team, role): GameParticipant(team, role, players[team, role])  # type: ignore
             for team, role in players
         }
 
-        game_participants: List[GameParticipant] = list(self.participants.values())  # type: ignore
+        game_participants = list(self.participants.values())  # type: ignore
         self.server_id = game_participants[0].player_server_id
 
         # Then, we compute the expected blue side winrate (which we use for matchmaking)
