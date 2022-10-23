@@ -85,7 +85,7 @@ class QueueCog(commands.Cog, name="Queue"):
                     bot=self.bot,
                     message=ready_check_message,
                     validating_players_ids=game.player_ids_list,
-                    validation_threshold=1,
+                    validation_threshold=10,
                     game=game,
                 )
 
@@ -362,7 +362,7 @@ class QueueCog(commands.Cog, name="Queue"):
                 bot=self.bot,
                 message=win_validation_message,
                 validating_players_ids=game.player_ids_list,
-                validation_threshold=1,
+                validation_threshold=6,
             )
 
             # Whatever happens, we’re not scoring it anymore if we get here
@@ -433,7 +433,7 @@ class QueueCog(commands.Cog, name="Queue"):
                 bot=self.bot,
                 message=cancel_validation_message,
                 validating_players_ids=game.player_ids_list,
-                validation_threshold=1,
+                validation_threshold=6,
             )
 
             self.games_getting_scored_ids.remove(game.id)
