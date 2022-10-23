@@ -20,7 +20,7 @@ jobs:
         uses: jpetrucciani/mypy-check@0.971
         with:
           path: "" # files to check are inthe config file
-          requirements: sqlalchemy sqlalchemy2-stubs
-          mypy_flags: '--config-file pyproject.toml'
+          requirements_file: "requirements.txt"
+          mypy_flags: "--config-file pyproject.toml"
 
       # TODO run unit tests
