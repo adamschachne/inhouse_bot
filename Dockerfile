@@ -10,6 +10,7 @@ RUN pip install pytest
 # Copying the bot source code
 WORKDIR /inhouse_bot
 COPY /inhouse_bot/ ./inhouse_bot
+ADD /riot-ranks/ ./riot-ranks/
 COPY /alembic ./alembic
 COPY alembic.ini .
 COPY run_bot.py .

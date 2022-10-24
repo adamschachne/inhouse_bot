@@ -184,7 +184,7 @@ class InhouseBot(commands.Bot):
             elif isinstance(og_error, game_queue.PlayerInReadyCheck):
                 await ctx.send(
                     f"A game has already been found for you and you cannot queue until it is accepted or cancelled\n"
-                    f"If it is a bug, contact an admin and ask them to use `{PREFIX}admin reset` with your name",
+                    f"If it is a bug, post in #bot-dev-and-spam and ask them to use `{PREFIX}admin reset` with your name",
                     delete_after=20,
                 )
 
@@ -192,7 +192,7 @@ class InhouseBot(commands.Bot):
                 # User-facing error
                 await ctx.send(
                     f"There was an error processing the command\n"
-                    f"Use {PREFIX}help for the commands list or contact server admins for bugs",
+                    f"Use {PREFIX}help for the commands list or post in #bot-dev-and-spam for bugs",
                 )
 
                 self.logger.error(og_error)
@@ -201,7 +201,7 @@ class InhouseBot(commands.Bot):
             # User-facing error
             await ctx.send(
                 f"There was an error processing the command\n"
-                f"Use {PREFIX}help for the commands list or contact server admins for bugs",
+                f"Use {PREFIX}help for the commands list or post in #bot-dev-and-spam for bugs",
             )
 
             self.logger.error(error)

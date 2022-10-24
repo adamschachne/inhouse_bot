@@ -2,7 +2,7 @@ version: "3.8"
 services:
   inhouse_bot:
     #To use local dockerile
-    build: 
+    build:
       context: .
       dockerfile: ./Dockerfile
     image: inhouse_bot
@@ -31,19 +31,19 @@ services:
         source: dbsocket
         target: /var/run/postgresql
     depends_on:
-    - db
+      - db
 
   db:
-    image: postgres:alpine
+    image: postgres:14.5-alpine
     restart: always
     volumes:
-    - type: volume
-      source: dbsocket
-      target: /var/run/postgresql
+      - type: volume
+        source: dbsocket
+        target: /var/run/postgresql
 
-    - type: volume
-      source: pgdata
-      target: /var/lib/postgresql/data
+      - type: volume
+        source: pgdata
+        target: /var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: ⚠ POSTGRES PASSWORD ⚠
       POSTGRES_DB: inhouse_bot
