@@ -3,16 +3,16 @@ from typing import Union
 import discord
 from discord.ext import commands
 from discord.ext.commands import guild_only
+from pyot.core.exceptions import PyotException
 
 from inhouse_bot import game_queue, matchmaking_logic
-from inhouse_bot.database_orm import session_scope
 from inhouse_bot.common_utils.constants import CONFIG_OPTIONS, PREFIX
 from inhouse_bot.common_utils.docstring import doc
 from inhouse_bot.common_utils.get_last_game import get_last_game
 from inhouse_bot.common_utils.get_server_config import get_server_config
-from inhouse_bot.common_utils.lol_api.tasks import get_summoner_by_name
 from inhouse_bot.common_utils.is_admin import admin_group_check
-from pyot.core.exceptions import PyotException
+from inhouse_bot.common_utils.lol_api.tasks import get_summoner_by_name
+from inhouse_bot.database_orm import session_scope
 from inhouse_bot.database_orm.tables.player import Player
 from inhouse_bot.inhouse_bot import InhouseBot
 from inhouse_bot.queue_channel_handler import queue_channel_handler
@@ -22,8 +22,6 @@ from inhouse_bot.ranking_channel_handler.ranking_channel_handler import (
 from inhouse_bot.voice_channel_handler.voice_channel_handler import (
     remove_voice_channels,
 )
-
-from requests.exceptions import HTTPError
 
 
 class AdminCog(commands.Cog, name="Admin"):

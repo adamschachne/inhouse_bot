@@ -1,10 +1,12 @@
-from typing import Optional
+from typing import List, Optional, Tuple
 
 import inflect
 from discord import Embed
 from discord.ext import menus
 
 from inhouse_bot.common_utils.emoji_and_thumbnails import get_role_emoji, get_rank_emoji
+from inhouse_bot.common_utils.fields import RoleEnum
+from inhouse_bot.database_orm.tables.player import Player
 
 inflect_engine = inflect.engine()
 
@@ -46,7 +48,7 @@ class RankingPagesSource(menus.ListPageSource):
 
             output_string = (
                 f"{rank_str}{role}  "
-                f"`{row.Player.short_name}{' '*player_padding}{int(row.mmr)} "
+                f"`{player_name}{' '*player_padding}{int(row.mmr)} "
                 f"{wins}W {losses}L`"
             )
 

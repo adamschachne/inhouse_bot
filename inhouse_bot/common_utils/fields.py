@@ -1,15 +1,37 @@
+from typing import List, MutableMapping
 from discord.ext import commands
 from discord.ext.commands import ConversionError
-from sqlalchemy import Enum
+from enum import Enum
 import rapidfuzz
 import lol_id_tools
 
-roles_list = ["TOP", "JGL", "MID", "BOT", "SUP"]
-role_enum = Enum(*roles_list, name="role_enum")
 
-side_enum = Enum("BLUE", "RED", name="team_enum")
+class RoleEnum(str, Enum):
+    TOP = "TOP"
+    JGL = "JGL"
+    MID = "MID"
+    BOT = "BOT"
+    SUP = "SUP"
 
-foreignkey_cascade_options = {"onupdate": "CASCADE", "ondelete": "CASCADE"}
+
+roles_list = [
+    RoleEnum.TOP,
+    RoleEnum.JGL,
+    RoleEnum.MID,
+    RoleEnum.BOT,
+    RoleEnum.SUP,
+]
+
+
+class SideEnum(str, Enum):
+    BLUE = "BLUE"
+    RED = "RED"
+
+
+foreignkey_cascade_options: MutableMapping = {
+    "onupdate": "CASCADE",
+    "ondelete": "CASCADE",
+}
 
 # This is a dict used for fuzzy matching
 full_roles_dict = {

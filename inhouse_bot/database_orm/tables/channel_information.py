@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, BigInteger
-
+from sqlalchemy.orm import Mapped
 from inhouse_bot.database_orm import bot_declarative_base
 
 
@@ -9,13 +9,13 @@ class ChannelInformation(bot_declarative_base):
     __tablename__ = "channel_information"
 
     # Discord ID
-    id = Column(BigInteger, primary_key=True)
+    id: Mapped[int] = Column(BigInteger, primary_key=True)
 
     # Useful for querying
-    server_id = Column(BigInteger)
+    server_id: Mapped[int] = Column(BigInteger, nullable=False)
 
     # Current accepted values are "QUEUE" and "RANKING", but leaving it as a string for ease of updating
-    channel_type = Column(String)
+    channel_type: Mapped[str] = Column(String)
 
     def __repr__(self):
         return f"<ChannelInformation: {self.id=} | {self.server_id=}>"

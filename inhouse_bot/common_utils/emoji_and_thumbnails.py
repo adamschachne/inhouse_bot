@@ -62,19 +62,20 @@ def get_champion_emoji(emoji_input: Optional[Union[int, str]], bot) -> str:
     Accepts champion IDs, "loading", and None
     """
     emoji_name = None
-    fallback = None
+    fallback = "❔"
 
     if emoji_input is None:
-        return "❔"
+        return fallback
     elif emoji_input == "loading":
         emoji_name = emoji_input
         fallback = "❔"
     elif type(emoji_input) == int:
-        fallback = lol_id_tools.get_name(emoji_input, object_type="champion")
+        fallback = (
+            lol_id_tools.get_name(emoji_input, object_type="champion") or fallback
+        )
         emoji_name = no_symbols_regex.sub("", fallback).replace(" ", "")
 
     for emoji in bot.emojis:
-        emoji: Emoji
         if emoji.name == emoji_name:
             return str(emoji)
 

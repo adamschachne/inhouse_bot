@@ -93,12 +93,11 @@ class InhouseBot(commands.Bot):
             f"{ctx.message.content}\t{ctx.author.name}\t{ctx.guild.name}\t{ctx.channel.name}"
         )
 
-    """
-    Runs a timer every BACKGROUND_JOBS_INTERVAL seconds, triggering jobs accordingly.
-    No work should be done in this thread -- jobs should only get added to the event loop
-    """
-
     def background_jobs(self):
+        """
+        Triggers background jobs and sets a timer to execute them again on a timeout.
+        No work should be done in this thread -- jobs should only get added to the event loop
+        """
         now = datetime.now()
 
         try:

@@ -139,7 +139,7 @@ class StatsCog(commands.Cog, name="Stats"):
             {PREFIX}ranking mid
     """
     )
-    async def ranking(self, ctx: commands.Context, role: RoleConverter() = None):
+    async def ranking(self, ctx: commands.Context, role: RoleConverter = None):
         ratings = ranking_channel_handler.get_server_ratings(ctx.guild.id, role=role)
 
         if not ratings:
@@ -197,7 +197,7 @@ class StatsCog(commands.Cog, name="Stats"):
             mmr_history[role]["mmr"].append(latest_role_mmr[role])
 
             plt.plot(mmr_history[role]["dates"], mmr_history[role]["mmr"])
-            legend.append(role)
+            legend.append(role.value)
 
         plt.legend(legend)
         plt.title(f"MMR variation in the last month for {ctx.author.display_name}")

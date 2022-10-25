@@ -3,7 +3,7 @@ import random
 from typing import Optional, List
 
 from inhouse_bot.database_orm import Game, QueuePlayer
-from inhouse_bot.common_utils.fields import roles_list
+from inhouse_bot.common_utils.fields import roles_list, SideEnum
 from inhouse_bot.game_queue import GameQueue
 from inhouse_bot.inhouse_logger import inhouse_logger
 
@@ -22,7 +22,7 @@ def find_best_game(queue: GameQueue, game_quality_threshold=0.1) -> Optional[Gam
         f"Matchmaking process started with the following queue:\n{queue}"
     )
 
-    best_game = None
+    best_game: Game | None = None
     for players_threshold in range(10, len(queue) + 1):
         # The queue_players are already ordered the right way to take age into account in matchmaking
         #   We first try with the 10 first players, then 11, ...
@@ -37,7 +37,7 @@ def find_best_game(queue: GameQueue, game_quality_threshold=0.1) -> Optional[Gam
     return best_game
 
 
-def find_best_game_for_queue_players(queue_players: List[QueuePlayer]) -> Game:
+def find_best_game_for_queue_players(queue_players: List[QueuePlayer]) -> Game | None:
     """
     A sub function to allow us to iterate on QueuePlayers from oldest to newest
     """
@@ -65,7 +65,7 @@ def find_best_game_for_queue_players(queue_players: List[QueuePlayer]) -> Game:
 
     # We do a very simple maximum search
     best_score = 1
-    best_game = None
+    best_game: Game | None = None
 
     # This generates all possible team compositions
     # The format is a list of 5 tuples with the blue and red player objects in the tuple
@@ -83,7 +83,7 @@ def find_best_game_for_queue_players(queue_players: List[QueuePlayer]) -> Game:
         # {(team, role)} = QueuePlayer
         queue_players_dict = {
             (
-                "BLUE" if bool(tuple_idx) == shuffle else "RED",
+                SideEnum.BLUE if bool(tuple_idx) == shuffle else SideEnum.RED,
                 roles_list[role_idx],
             ): queue_players_tuple[tuple_idx]
             for role_idx, queue_players_tuple in enumerate(team_composition)

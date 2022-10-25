@@ -15,7 +15,12 @@ jobs:
         with:
           # File or directory to run black on
           path: "inhouse_bot"
-          # Optional Black flags (refer to `black --help`)
-          # black_flags: # optional, default is
+
+      - name: Mypy Check
+        uses: jpetrucciani/mypy-check@0.971
+        with:
+          path: "" # files to check are inthe config file
+          requirements_file: "requirements.txt"
+          mypy_flags: "--config-file pyproject.toml"
 
       # TODO run unit tests

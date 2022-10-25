@@ -4,7 +4,7 @@ from typing import List, Optional, Set
 import sqlalchemy
 from discord.ext import commands
 
-from inhouse_bot.common_utils.fields import roles_list
+from inhouse_bot.common_utils.fields import RoleEnum, roles_list
 
 from inhouse_bot.database_orm import session_scope, QueuePlayer, Player
 from inhouse_bot.common_utils.get_last_game import get_last_game
@@ -49,9 +49,9 @@ def reset_queue(channel_id: Optional[int] = None):
 
 def add_player(
     player_id: int,
-    role: str,
+    role: RoleEnum,
     channel_id: int,
-    server_id: int = None,
+    server_id: int,
     name: str = None,
     jump_ahead=False,
 ):
@@ -261,11 +261,11 @@ class PlayerInGame(Exception):
 
 def add_duo(
     first_player_id: int,
-    first_player_role: str,
+    first_player_role: RoleEnum,
     second_player_id: int,
-    second_player_role: str,
+    second_player_role: RoleEnum,
     channel_id: int,
-    server_id: int = None,
+    server_id: int,
     first_player_name: str = None,
     second_player_name: str = None,
     jump_ahead=False,

@@ -1,10 +1,12 @@
+from typing import Optional
 from sqlalchemy.orm import relationship, foreign
 
-from inhouse_bot.database_orm import bot_declarative_base
+from inhouse_bot.database_orm import bot_declarative_base, ChannelInformation
 from sqlalchemy import Column, BigInteger, ForeignKeyConstraint, DateTime, ForeignKey
 
 from inhouse_bot.database_orm import Player
-from inhouse_bot.common_utils.fields import role_enum, foreignkey_cascade_options
+from inhouse_bot.common_utils.fields import RoleEnum, foreignkey_cascade_options
+from sqlalchemy.dialects.postgresql import ENUM
 
 
 class QueuePlayer(bot_declarative_base):
@@ -14,29 +16,22 @@ class QueuePlayer(bot_declarative_base):
 
     __tablename__ = "queue_player"
 
-    channel_id = Column(
+    channel_id: int = Column(
         BigInteger,
-        ForeignKey("channel_information.id", **foreignkey_cascade_options),
+        ForeignKey(ChannelInformation.id, **foreignkey_cascade_options),
         primary_key=True,
         index=True,
     )
 
-    channel_information = relationship(
-        "ChannelInformation",
-        viewonly=True,
-        backref="game_participant_objects",
-        sync_backref=False,
-    )
+    role: RoleEnum = Column(ENUM(RoleEnum, name="role_enum"), primary_key=True)
 
-    role = Column(role_enum, primary_key=True)
-
-    # Saving both allows us to going to the Player table
-    player_id = Column(BigInteger, primary_key=True, index=True)
-    player_server_id = Column(BigInteger)
+    # Saving both allows us to go to the Player table
+    player_id: int = Column(BigInteger, primary_key=True, index=True)
+    player_server_id: int = Column(BigInteger)
 
     # Duo queue partner
-    duo_id = Column(BigInteger)
-    duo = relationship(
+    duo_id: int | None = Column(BigInteger)
+    duo: Optional["QueuePlayer"] = relationship(
         "QueuePlayer",
         primaryjoin=(duo_id == foreign(player_id))
         & (player_id == foreign(duo_id))
@@ -51,16 +46,15 @@ class QueuePlayer(bot_declarative_base):
     ready_check_id = Column(BigInteger)
 
     # Player relationship, which we automatically load
-    player = relationship("Player", viewonly=True, lazy="selectin")
+    player: Player = relationship(Player, viewonly=True, lazy="selectin", uselist=False)
 
     # Foreign key to Player
     __table_args__ = (
         ForeignKeyConstraint(
-            (player_id, player_server_id),
-            (Player.id, Player.server_id),
+            [player_id, player_server_id],
+            [Player.id, Player.server_id],
             **foreignkey_cascade_options,
         ),
-        {},
     )
 
     def __str__(self):

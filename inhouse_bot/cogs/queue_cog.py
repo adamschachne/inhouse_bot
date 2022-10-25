@@ -9,11 +9,12 @@ from inhouse_bot import matchmaking_logic
 from inhouse_bot.common_utils.constants import PREFIX
 from inhouse_bot.common_utils.docstring import doc
 from inhouse_bot.common_utils.emoji_and_thumbnails import get_role_emoji
-from inhouse_bot.common_utils.fields import QueueRoleConverter, roles_list
+from inhouse_bot.common_utils.fields import QueueRoleConverter, SideEnum, roles_list
 from inhouse_bot.common_utils.get_last_game import get_last_game
 from inhouse_bot.common_utils.validation_dialog import checkmark_validation
 
 from inhouse_bot.database_orm import session_scope
+from inhouse_bot.database_orm.tables.game import Game
 from inhouse_bot.inhouse_bot import InhouseBot
 from inhouse_bot.queue_channel_handler import queue_channel_handler
 from inhouse_bot.queue_channel_handler.queue_channel_handler import queue_channel_only
@@ -199,9 +200,9 @@ class QueueCog(commands.Cog, name="Queue"):
     async def queue(
         self,
         ctx: commands.Context,
-        role: QueueRoleConverter(),
+        role: QueueRoleConverter,
         duo: discord.Member = None,
-        duo_role: QueueRoleConverter() = None,
+        duo_role: QueueRoleConverter = None,
     ):
         # Checking if the last game of this player got cancelled
         #   If so, we put them in the queue in front of other players
@@ -408,7 +409,8 @@ class QueueCog(commands.Cog, name="Queue"):
                 player_id=ctx.author.id, server_id=ctx.guild.id, session=session
             )
 
-            if game and game.winner:
+            # either there is no game or the last game has a winner (game has finished)
+            if game is None or game.winner:
                 await ctx.send("It does not look like you are part of an ongoing game")
                 return
 
