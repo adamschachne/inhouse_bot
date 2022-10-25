@@ -14,6 +14,7 @@ from inhouse_bot.common_utils.get_last_game import get_last_game
 from inhouse_bot.common_utils.validation_dialog import checkmark_validation
 
 from inhouse_bot.database_orm import session_scope
+from inhouse_bot.database_orm.tables.game import Game
 from inhouse_bot.inhouse_bot import InhouseBot
 from inhouse_bot.queue_channel_handler import queue_channel_handler
 from inhouse_bot.queue_channel_handler.queue_channel_handler import queue_channel_only
