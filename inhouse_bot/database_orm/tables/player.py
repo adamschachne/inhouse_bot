@@ -26,8 +26,10 @@ class Player(bot_declarative_base):
     # One player object per server_id
     server_id: Mapped[int] = Column(BigInteger, primary_key=True)
 
-    # Player nickname and team as defined by themselves
-    name: Mapped[str | None] = Column(String)
+    # Last known Summoner name or Discord name of this player
+    name: Mapped[str] = Column(String, nullable=False)
+
+    # Player team as defined by themselves
     team: Mapped[str | None] = Column(String)
 
     # Summoner puuid
@@ -42,9 +44,22 @@ class Player(bot_declarative_base):
         lazy="selectin",
     )
 
-    @hybrid_property
-    def short_name(self):
-        return self.name[:15]
-
     def __repr__(self):
         return f"<Player: {self.id=} | {self.name=}>"
+
+    async def get_summoner_name(self):
+        from inhouse_bot.common_utils.lol_api.tasks import (
+            get_summoner_by_puuid,
+            PyotException,
+        )
+
+        try:
+            if self.summoner_puuid:
+                summoner = await get_summoner_by_puuid(self.summoner_puuid)
+                self.name = summoner.name
+                return summoner.name
+        except PyotException as ex:
+            # TODO use logger
+            print(f"Error getting summoner name: {ex}")
+
+        return self.name

@@ -30,7 +30,7 @@ class RankingPagesSource(menus.ListPageSource):
 
         rows = []
 
-        max_name_length = max(len(r.Player.short_name) for r in entries)
+        max_name_length = max(len(r.Player.name) for r in entries)
 
         for idx, row in enumerate(entries):
             rank = idx + offset
@@ -39,7 +39,8 @@ class RankingPagesSource(menus.ListPageSource):
 
             role = get_role_emoji(row.role)
 
-            player_name = row.Player.short_name
+            # TODO need typing on row here; row.Player is Any, should be Player
+            player_name = row.Player.name
 
             player_padding = max_name_length - len(player_name) + 2
 

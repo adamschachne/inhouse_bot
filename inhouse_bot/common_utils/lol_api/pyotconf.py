@@ -19,7 +19,8 @@ class LolPipeline(PipelineConf):
         {
             "backend": "pyot.stores.omnistone.Omnistone",
             "expirations": {
-                "summoner_v4_by_name": 100,
+                "summoner_v4_by_name": 1000,
+                "summoner_v4_by_puuid": 1000,
                 "match_v4_match": 600,
                 "match_v4_timeline": 600,
                 "league_v4_summoner_entries": 600,

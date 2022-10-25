@@ -1,3 +1,4 @@
+from typing import List, Tuple
 from inhouse_bot.database_orm import (
     session_scope,
     GameParticipant,
@@ -12,7 +13,7 @@ from inhouse_bot.common_utils.emoji_and_thumbnails import (
     get_champion_name_by_id,
 )
 from discord.ext import commands
-from inhouse_bot.common_utils.fields import roles_list
+from inhouse_bot.common_utils.fields import RoleEnum, roles_list
 
 
 async def get_player_stats(player_id, server_id):
@@ -67,7 +68,9 @@ async def get_player_stats(player_id, server_id):
         return rows
 
 
-async def get_player_history(player_id, server_id):
+async def get_player_history(
+    player_id, server_id
+) -> List[Tuple[Game, GameParticipant]]:
     with session_scope() as session:
         session.expire_on_commit = False
 
@@ -95,14 +98,14 @@ async def get_roles_most_used_champs(player_id, server_id):
     if not game_participant_list:
         return [("No champions are registered for player.")]
 
-    roleChampDict = {"BOT": {}, "JGL": {}, "TOP": {}, "MID": {}, "SUP": {}}
+    roleChampDict = {key: {} for key in RoleEnum}
 
     # Keeping track of all the champs used for each role
     for game_participant in game_participant_list:
         if game_participant[1].champion_id:
             championId = game_participant[1].champion_id
             role = game_participant[1].role
-            occurencyMap = roleChampDict[str(role)]
+            occurencyMap = roleChampDict[role]
             if championId not in occurencyMap:
                 occurencyMap[championId] = 1
             else:

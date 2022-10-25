@@ -60,7 +60,7 @@ class TestCog(commands.Cog, name="TEST"):
         """
         # We put 10 people in the queue
         for i in range(0, 10):
-            game_queue.add_player(i, roles_list[i % 5], ctx.channel.id, ctx.guild.id, name=str(i))
+            await game_queue.add_player(i, roles_list[i % 5], ctx.channel.id, ctx.guild.id, name=str(i))
 
         await ctx.send("The queue has been filled")
         await queue_channel_handler.update_queue_channels(bot=self.bot, server_id=ctx.guild.id)
@@ -72,9 +72,9 @@ class TestCog(commands.Cog, name="TEST"):
         """
         # We put 10 people in the queue
         for i in range(0, 10):
-            game_queue.add_player(i, roles_list[i % 5], ctx.channel.id, ctx.guild.id, name=str(i))
+            await game_queue.add_player(i, roles_list[i % 5], ctx.channel.id, ctx.guild.id, name=str(i))
 
-        game_queue.add_duo(
+        await game_queue.add_duo(
             6,
             RoleEnum.JGL,
             ctx.author.id,
@@ -97,9 +97,9 @@ class TestCog(commands.Cog, name="TEST"):
         # We reset the queue
         # We put 9 people in the queue
         for i in range(0, 9):
-            game_queue.add_player(i, roles_list[i % 5], ctx.channel.id, ctx.guild.id, name=str(i))
+            await game_queue.add_player(i, roles_list[i % 5], ctx.channel.id, ctx.guild.id, name=str(i))
 
-        game_queue.add_player(
+        await game_queue.add_player(
             ctx.author.id, roles_list[4], ctx.channel.id, ctx.guild.id, name=ctx.author.display_name
         )
 
@@ -124,7 +124,7 @@ class TestCog(commands.Cog, name="TEST"):
         for game_count in range(100):
 
             # We add the context creator as well
-            game_queue.add_player(
+            await game_queue.add_player(
                 ctx.author.id, roles_list[4], ctx.channel.id, ctx.guild.id, name=ctx.author.display_name
             )
 

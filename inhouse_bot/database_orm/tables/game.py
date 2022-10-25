@@ -1,7 +1,5 @@
 from dataclasses import dataclass
-from gc import collect
-from re import S
-from typing import Any, Tuple, Dict, List, Optional
+from typing import Tuple, List
 from datetime import datetime
 
 from discord import Embed
@@ -9,11 +7,7 @@ from tabulate import tabulate
 
 from sqlalchemy import Column, Integer, DateTime, Float, BigInteger
 from sqlalchemy.orm import relationship, Mapped
-from sqlalchemy.orm.collections import (
-    mapped_collection,
-    attribute_mapped_collection,
-    column_mapped_collection,
-)
+from sqlalchemy.orm.collections import mapped_collection
 from sqlalchemy.dialects.postgresql import ENUM
 from inhouse_bot.database_orm import bot_declarative_base
 from inhouse_bot.database_orm.tables.game_participant import GameParticipant
@@ -56,6 +50,7 @@ class Game(bot_declarative_base):
         collection_class=mapped_collection(
             lambda participant: (participant.side, participant.role)
         ),
+        lazy="joined",
         cascade="all, delete-orphan",
     )
 
@@ -89,8 +84,8 @@ class Game(bot_declarative_base):
     def __str__(self):
         return tabulate(
             {
-                "BLUE": [p.short_name for p in self.teams.BLUE],
-                "RED": [p.short_name for p in self.teams.BLUE],
+                "BLUE": [p.player.name for p in self.teams.BLUE],
+                "RED": [p.player.name for p in self.teams.BLUE],
             },
             headers="keys",
         )
@@ -117,25 +112,40 @@ class Game(bot_declarative_base):
         else:
             raise ValueError
 
-        # Not the prettiest piece of code but it works well
-        for side in ("BLUE", "RED"):
-            embed.add_field(
-                name=side,
-                value="\n".join(  # This adds one side as an inline field
-                    [
-                        f"{get_role_emoji(roles_list[idx])}"  # We start with the role emoji
-                        + (  # Then add loading or ✅ if we are looking at a validation embed
-                            ""
-                            if embed_type != "GAME_FOUND"
-                            else f" {get_champion_emoji('loading', bot)}"
-                            if p.player_id not in validated_players
-                            else " ✅"
-                        )
-                        + f" {p.short_name}"  # And finally add the player name
-                        for idx, p in enumerate(getattr(self.teams, side))
-                    ]
-                ),
+        # TODO game.get_embed accesses game.participants.player otherwise it will fail.
+        # Game at this point will be detached from a session, so maybe assert that the
+        # objects are loaded?
+
+        # if we want to fetch server names for these players, change this to an async function
+        # and asyncio.gather the async list comprehensions below
+        def get_team_embed_value(idx: int, p: GameParticipant):
+            return (
+                f"{get_role_emoji(roles_list[idx])}"  # We start with the role emoji
+                + (  # Then add loading or ✅ if we are looking at a validation embed
+                    ""
+                    if embed_type != "GAME_FOUND"
+                    else f" {get_champion_emoji('loading', bot)}"
+                    if p.player_id not in validated_players
+                    else " ✅"
+                )
+                + f" {p.player.name}"  # And finally add the player name
             )
+
+        # Blue team
+        embed.add_field(
+            name="BLUE",
+            value="\n".join(
+                get_team_embed_value(idx, p) for idx, p in enumerate(self.teams.BLUE)
+            ),
+        )
+
+        # Red team
+        embed.add_field(
+            name="RED",
+            value="\n".join(
+                get_team_embed_value(idx, p) for idx, p in enumerate(self.teams.RED)
+            ),
+        )
 
         return embed
 

@@ -226,6 +226,7 @@ class AdminCog(commands.Cog, name="Admin"):
             raise ex
 
         with session_scope() as session:
+            # TODO move these queries into a util/service
             player = (
                 session.query(Player)
                 .select_from(Player)
@@ -237,6 +238,7 @@ class AdminCog(commands.Cog, name="Admin"):
                 if player.id == user.id:
                     return await ctx.send("Summoner is already verified")
                 else:
+                    # case when there is already a player with this name -> clear player's name and puuid
                     (
                         session.query(Player)
                         .filter(Player.id == player.id)
@@ -244,6 +246,7 @@ class AdminCog(commands.Cog, name="Admin"):
                         .update({Player.summoner_puuid: None, Player.name: None})
                     )
 
+            # save the new player's summoner name
             session.merge(
                 Player(
                     id=user.id,
@@ -252,5 +255,10 @@ class AdminCog(commands.Cog, name="Admin"):
                     summoner_puuid=summoner.puuid,
                 )
             )
+
+        # refresh the queue channel to display any name change
+        await queue_channel_handler.update_queue_channels(
+            bot=self.bot, server_id=ctx.guild.id
+        )
 
         await ctx.send(f"Verified Summoner name: {summoner.name}")

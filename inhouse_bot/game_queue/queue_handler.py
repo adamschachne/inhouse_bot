@@ -8,6 +8,7 @@ from inhouse_bot.common_utils.fields import RoleEnum, roles_list
 
 from inhouse_bot.database_orm import session_scope, QueuePlayer, Player
 from inhouse_bot.common_utils.get_last_game import get_last_game
+from inhouse_bot.database_orm.session.session import Session
 
 
 class PlayerInReadyCheck(Exception):
@@ -47,48 +48,70 @@ def reset_queue(channel_id: Optional[int] = None):
         query.delete(synchronize_session=False)
 
 
-def add_player(
+async def add_player(
     player_id: int,
     role: RoleEnum,
     channel_id: int,
     server_id: int,
-    name: str = None,
+    name: str,
     jump_ahead=False,
+    session: Session | None = None,
 ):
     # Just in case
     assert role in roles_list
 
-    with session_scope() as session:
+    if not session:
+        with session_scope() as new_session:
+            return await add_player(
+                player_id=player_id,
+                role=role,
+                channel_id=channel_id,
+                server_id=server_id,
+                name=name,
+                jump_ahead=jump_ahead,
+                session=new_session,
+            )
 
-        game, participant = get_last_game(player_id, server_id, session)
+    game, participant = get_last_game(player_id, server_id, session)
 
-        if game and not game.winner:
-            raise PlayerInGame
+    if game and not game.winner:
+        raise PlayerInGame
 
-        # Then check if the player is in a ready-check
-        if is_in_ready_check(player_id, session):
-            raise PlayerInReadyCheck
+    # Then check if the player is in a ready-check
+    if is_in_ready_check(player_id, session):
+        raise PlayerInReadyCheck
 
-        # This is where we add new Players to the server
-        #   This is also useful to automatically update name changes
-        session.merge(Player(id=player_id, server_id=server_id, name=name))
+    # This is where we add new Players to the server
+    # This is also useful to automatically update name changes
+    player = session.merge(Player(id=player_id, server_id=server_id, name=name))
 
-        # Finally, we actually add the player to the queue
-        queue_player = QueuePlayer(
-            channel_id=channel_id,
-            player_id=player_id,
-            player_server_id=server_id,
-            role=role,
-            queue_time=datetime.now()
-            if not jump_ahead
-            else datetime.now() - timedelta(hours=24),
-        )
+    # fetch their summoner name (if possible) and update player.name
+    await player.get_summoner_name()
 
-        # We merge for simplicity (allows players to re-queue for the same role)
-        session.merge(queue_player)
+    # merge this player back into the session
+    session.merge(player)
+
+    # Finally, we actually add the player to the queue
+    queue_player = QueuePlayer(
+        channel_id=channel_id,
+        player_id=player_id,
+        player_server_id=server_id,
+        role=role,
+        queue_time=datetime.now()
+        if not jump_ahead
+        else datetime.now() - timedelta(hours=24),
+    )
+
+    # We merge for simplicity (allows players to re-queue for the same role)
+    session.merge(queue_player)
 
 
-def remove_player(player_id: int, channel_id: int = None, role: str = None):
+def remove_player(
+    player_id: int,
+    channel_id: int = None,
+    role: str = None,
+    session: Session | None = None,
+):
     """
     Removes the player from the queue in the channel
 
@@ -96,43 +119,52 @@ def remove_player(player_id: int, channel_id: int = None, role: str = None):
 
     If no channel id is given, drop him from *all* queues, cross-server
     """
-    with session_scope() as session:
-        # First, check if he’s in a ready-check.
-        if (
-            is_in_ready_check(player_id, session) and channel_id
-        ):  # If we have no channel ID, it’s an !admin reset and we bypass the issue here
-            raise PlayerInReadyCheck
 
-        # We select the player’s rows
-        query_player = session.query(QueuePlayer).filter(
-            QueuePlayer.player_id == player_id
-        )
-        query_duos = session.query(QueuePlayer).filter(QueuePlayer.duo_id == player_id)
+    if not session:
+        with session_scope() as new_session:
+            return remove_player(
+                player_id=player_id,
+                channel_id=channel_id,
+                role=role,
+                session=new_session,
+            )
 
-        # If a role is provided, filter on the particular role we want to leave
-        if role is not None and role != "ALL":
-            query_player = query_player.filter(QueuePlayer.role == role)
+    # First, check if he’s in a ready-check.
+    if (
+        is_in_ready_check(player_id, session) and channel_id
+    ):  # If we have no channel ID, it’s an !admin reset and we bypass the issue here
+        raise PlayerInReadyCheck
 
-        # If given a channel ID (when the user calls !leave), we filter
-        if channel_id:
-            query_player = query_player.filter(QueuePlayer.channel_id == channel_id)
-            query_duos = query_duos.filter(QueuePlayer.channel_id == channel_id)
+    # We select the player’s rows
+    query_player = session.query(QueuePlayer).filter(QueuePlayer.player_id == player_id)
+    query_duos = session.query(QueuePlayer).filter(QueuePlayer.duo_id == player_id)
 
-        query_player.delete(synchronize_session=False)
-        query_duos.update({"duo_id": None}, synchronize_session=False)
+    # If a role is provided, filter on the particular role we want to leave
+    if role is not None and role != "ALL":
+        query_player = query_player.filter(QueuePlayer.role == role)
+
+    # If given a channel ID (when the user calls !leave), we filter
+    if channel_id:
+        query_player = query_player.filter(QueuePlayer.channel_id == channel_id)
+        query_duos = query_duos.filter(QueuePlayer.channel_id == channel_id)
+
+    query_player.delete(synchronize_session=False)
+    query_duos.update({"duo_id": None}, synchronize_session=False)
 
 
-def remove_players(player_ids: Set[int], channel_id: int):
+# I think it's safe to remove this fn
+def remove_players(player_ids: Set[int], channel_id: int, session: Session):
     """
     Removes all players from the queue in all roles in the channel, without any checks
     """
-    with session_scope() as session:
-        (
-            session.query(QueuePlayer)
-            .filter(QueuePlayer.channel_id == channel_id)
-            .filter(QueuePlayer.player_id.in_(player_ids))
-            .delete(synchronize_session=False)
-        )
+    assert session
+
+    (
+        session.query(QueuePlayer)
+        .filter(QueuePlayer.channel_id == channel_id)
+        .filter(QueuePlayer.player_id.in_(player_ids))
+        .delete(synchronize_session=False)
+    )
 
 
 def start_ready_check(
@@ -259,27 +291,45 @@ class PlayerInGame(Exception):
     ...
 
 
-def add_duo(
+async def add_duo(
     first_player_id: int,
     first_player_role: RoleEnum,
     second_player_id: int,
     second_player_role: RoleEnum,
     channel_id: int,
     server_id: int,
-    first_player_name: str = None,
-    second_player_name: str = None,
+    first_player_name: str,
+    second_player_name: str,
     jump_ahead=False,
+    session: Session | None = None,
 ):
+
+    if not session:
+        with session_scope() as new_session:
+            return await add_duo(
+                first_player_id=first_player_id,
+                first_player_role=first_player_role,
+                second_player_id=second_player_id,
+                second_player_role=second_player_role,
+                channel_id=channel_id,
+                server_id=server_id,
+                first_player_name=first_player_name,
+                second_player_name=second_player_name,
+                jump_ahead=jump_ahead,
+                session=new_session,
+            )
+
     # Marks this group of players and roles as a duo
 
     if first_player_role == second_player_role:
         raise SameRolesForDuo
 
     # Just in case, we drop the players from the queue first
-    remove_player(first_player_id, channel_id)
-    remove_player(second_player_id, channel_id)
+    remove_player(session=session, player_id=first_player_id, channel_id=channel_id)
+    remove_player(session=session, player_id=second_player_id, channel_id=channel_id)
 
-    add_player(
+    await add_player(
+        session=session,
         player_id=first_player_id,
         role=first_player_role,
         channel_id=channel_id,
@@ -288,7 +338,8 @@ def add_duo(
         jump_ahead=jump_ahead,
     )
 
-    add_player(
+    await add_player(
+        session=session,
         player_id=second_player_id,
         role=second_player_role,
         channel_id=channel_id,
@@ -297,25 +348,24 @@ def add_duo(
         jump_ahead=jump_ahead,
     )
 
-    with session_scope() as session:
-        # Finally, we add the duos by merging only the newer data (empty fields shouldn’t get merged)
-        first_queue_player = QueuePlayer(
-            player_id=first_player_id,
-            role=first_player_role,
-            channel_id=channel_id,
-            duo_id=second_player_id,
-        )
+    # Finally, we add the duos by merging only the newer data (empty fields shouldn’t get merged)
+    first_queue_player = QueuePlayer(
+        player_id=first_player_id,
+        role=first_player_role,
+        channel_id=channel_id,
+        duo_id=second_player_id,
+    )
 
-        second_queue_player = QueuePlayer(
-            player_id=second_player_id,
-            role=second_player_role,
-            channel_id=channel_id,
-            duo_id=first_player_id,
-        )
+    second_queue_player = QueuePlayer(
+        player_id=second_player_id,
+        role=second_player_role,
+        channel_id=channel_id,
+        duo_id=first_player_id,
+    )
 
-        # We merge the new information
-        session.merge(first_queue_player)
-        session.merge(second_queue_player)
+    # We merge the new information
+    session.merge(first_queue_player)
+    session.merge(second_queue_player)
 
 
 def remove_duo(player_id: int, channel_id: int):

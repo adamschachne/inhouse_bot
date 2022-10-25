@@ -2,8 +2,7 @@ from collections import Counter
 from typing import Tuple, List
 
 from discord import Embed
-from discord.ext import menus
-
+from discord.ext import menus, commands
 from inhouse_bot.common_utils.emoji_and_thumbnails import (
     get_champion_emoji,
     get_role_emoji,
@@ -15,9 +14,11 @@ entries_type = List[Tuple[Game, GameParticipant]]
 
 
 class HistoryPagesSource(menus.ListPageSource):
-    def __init__(self, entries: entries_type, bot, player_name, is_dms=False):
+    def __init__(
+        self, entries: entries_type, bot: commands.Bot, author_name: str, is_dms=False
+    ):
         self.bot = bot
-        self.player_name = player_name
+        self.author_name = author_name
         self.is_dms = is_dms
         super().__init__(entries, per_page=10)
 
@@ -34,7 +35,10 @@ class HistoryPagesSource(menus.ListPageSource):
 
         max_game_id_length = max(len(str(game.id)) for game, participant in entries)
 
+        name: str | None = None
+
         for game, participant in entries:
+            name = participant.player.name
             champion_emoji = get_champion_emoji(participant.champion_id, self.bot)
             role = get_role_emoji(participant.role)
 
@@ -65,7 +69,7 @@ class HistoryPagesSource(menus.ListPageSource):
         embed.set_thumbnail(url=role_thumbnail_dict[role_counter.most_common(1)[0][0]])
 
         embed.add_field(
-            name=f"{self.player_name}’s match history", value="\n".join(rows)
+            name=f"{name or self.author_name}’s match history", value="\n".join(rows)
         )
 
         return embed

@@ -77,7 +77,7 @@ def test_trueskill_draw():
     assert trueskill.DRAW_PROBABILITY == 0.0
 
 
-def test_duo_matchmaking():
+async def test_duo_matchmaking():
     game_queue.reset_queue()
 
     # Playing 100 games with random outcomes and making sure 0 and 9 are always on the same team
@@ -85,12 +85,12 @@ def test_duo_matchmaking():
 
         # We queue for everything except the red support
         for player_id in range(0, 9):
-            game_queue.add_player(
+            await game_queue.add_player(
                 player_id, roles_list[player_id % 5], 0, 0, name=str(player_id)
             )
 
         # We add the last player as duo with player 0
-        game_queue.add_duo(
+        await game_queue.add_duo(
             0,
             "TOP",
             9,
