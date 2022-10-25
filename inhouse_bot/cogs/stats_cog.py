@@ -74,9 +74,6 @@ class StatsCog(commands.Cog, name="Stats"):
         champion_name: ChampionNameConverter(),
         game_id: int = None,
     ):
-        game: Game | None = None
-        participant: GameParticipant | None = None
-
         # TODO move this query to a util function so that it can return a proper typing
         # i.e -> Tuple[Game, GameParticipant] | Tuple[None, None]
         with session_scope() as session:
@@ -101,12 +98,12 @@ class StatsCog(commands.Cog, name="Stats"):
             # Save the champion id to the database
             participant.champion_id = champion_name
 
+            # these should happen within the session scope to ensure participant.player.name exists
             game_id = game.id
-
-        await ctx.send(
-            f"Champion for game {game_id} was set to "
-            f"{lol_id_tools.get_name(champion_name, object_type='champion')} for {participant.player.name}"
-        )
+            await ctx.send(
+                f"Champion for game {game_id} was set to "
+                f"{lol_id_tools.get_name(champion_name, object_type='champion')} for {participant.player.name}"
+            )
 
     @commands.command(aliases=["match_history", "mh"])
     @doc(
