@@ -74,6 +74,8 @@ class StatsCog(commands.Cog, name="Stats"):
         champion_name: ChampionNameConverter(),
         game_id: int = None,
     ):
+        # TODO move this query to a util function so that it can return a proper typing
+        # i.e -> Tuple[Game, GameParticipant] | Tuple[None, None]
         with session_scope() as session:
             if not game_id:
                 game, participant = get_last_game(
@@ -86,17 +88,22 @@ class StatsCog(commands.Cog, name="Stats"):
                     .join(GameParticipant)
                     .filter(Game.id == game_id)
                     .filter(GameParticipant.player_id == ctx.author.id)
-                ).one_or_none()
+                ).one_or_none() or (None, None)
 
-            # We write down the champion
+            if not game or not participant:
+                return await ctx.send(
+                    f"Game {game_id} could not be found for {ctx.author.display_name}"
+                )
+
+            # Save the champion id to the database
             participant.champion_id = champion_name
 
+            # these should happen within the session scope to ensure participant.player.name exists
             game_id = game.id
-
-        await ctx.send(
-            f"Champion for game {game_id} was set to "
-            f"{lol_id_tools.get_name(champion_name, object_type='champion')} for {ctx.author.display_name}"
-        )
+            await ctx.send(
+                f"Champion for game {game_id} was set to "
+                f"{lol_id_tools.get_name(champion_name, object_type='champion')} for {participant.player.name}"
+            )
 
     @commands.command(aliases=["match_history", "mh"])
     @doc(
@@ -119,7 +126,7 @@ class StatsCog(commands.Cog, name="Stats"):
             source=HistoryPagesSource(
                 game_participant_list,
                 self.bot,
-                player_name=ctx.author.display_name,
+                author_name=ctx.author.display_name,
                 is_dms=True if not ctx.guild else False,
             ),
             clear_reactions_after=True,
@@ -170,6 +177,7 @@ class StatsCog(commands.Cog, name="Stats"):
                     GameParticipant.role,
                     GameParticipant.mmr,
                     PlayerRating.mmr.label("latest_mmr"),
+                    Player.name,
                 )
                 .select_from(Game)
                 .join(GameParticipant)
@@ -200,7 +208,7 @@ class StatsCog(commands.Cog, name="Stats"):
             legend.append(role.value)
 
         plt.legend(legend)
-        plt.title(f"MMR variation in the last month for {ctx.author.display_name}")
+        plt.title(f"MMR variation in the last month for {row.name}")
         mplcyberpunk.add_glow_effects()
 
         # This looks to be unnecessary verbose with all the closing by hand, I should take a look

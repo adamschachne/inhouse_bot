@@ -9,7 +9,7 @@ from inhouse_bot import matchmaking_logic
 from inhouse_bot.common_utils.constants import PREFIX
 from inhouse_bot.common_utils.docstring import doc
 from inhouse_bot.common_utils.emoji_and_thumbnails import get_role_emoji
-from inhouse_bot.common_utils.fields import QueueRoleConverter, SideEnum, roles_list
+from inhouse_bot.common_utils.fields import QueueRoleConverter, roles_list
 from inhouse_bot.common_utils.get_last_game import get_last_game
 from inhouse_bot.common_utils.validation_dialog import checkmark_validation
 
@@ -220,7 +220,7 @@ class QueueCog(commands.Cog, name="Queue"):
             if role == "ALL":
                 for r in roles_list:
                     # Simply queuing the player
-                    game_queue.add_player(
+                    await game_queue.add_player(
                         player_id=ctx.author.id,
                         name=ctx.author.display_name,
                         role=r,
@@ -230,7 +230,7 @@ class QueueCog(commands.Cog, name="Queue"):
                     )
             else:
                 # Simply queuing the player
-                game_queue.add_player(
+                await game_queue.add_player(
                     player_id=ctx.author.id,
                     name=ctx.author.display_name,
                     role=role,
@@ -266,7 +266,7 @@ class QueueCog(commands.Cog, name="Queue"):
                 return
 
             # Here, we have a working duo queue
-            game_queue.add_duo(
+            await game_queue.add_duo(
                 first_player_id=ctx.author.id,
                 first_player_role=role,
                 first_player_name=ctx.author.display_name,

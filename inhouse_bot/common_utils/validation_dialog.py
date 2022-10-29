@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from typing import Tuple, Optional, List, Set
 
 import discord
@@ -33,6 +34,10 @@ async def checkmark_validation(
         None with a list of players who did not validate
             It timed out and the players who didn't validate should be dropped
     """
+
+    if os.environ.get("INHOUSE_BOT_TEST"):
+        validation_threshold = 1
+
     checkmark_logger.info(
         f"Starting validation message {message.id} with threshold {validation_threshold}"
         f" for players {' '.join(str(i) for i in validating_players_ids)}"

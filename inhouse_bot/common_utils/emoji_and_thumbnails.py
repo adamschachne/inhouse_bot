@@ -4,6 +4,7 @@ from typing import Optional, Union
 
 import lol_id_tools
 from discord import Emoji
+from discord.ext import commands
 import inflect
 
 # Used to properly name numerals
@@ -57,7 +58,9 @@ def get_rank_emoji(rank: int) -> str:
 no_symbols_regex = re.compile(r"[^\w]")
 
 
-def get_champion_emoji(emoji_input: Optional[Union[int, str]], bot) -> str:
+def get_champion_emoji(
+    emoji_input: Optional[Union[int, str]], bot: commands.Bot
+) -> str:
     """
     Accepts champion IDs, "loading", and None
     """

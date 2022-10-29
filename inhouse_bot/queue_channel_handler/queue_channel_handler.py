@@ -80,10 +80,11 @@ class QueueChannelHandler:
         # Adding queue field
         queue_rows = []
 
+        # TODO this can probably be optimized/simplified
         for role, role_queue in queue.queue_players_dict.items():
             queue_rows.append(
                 f"{get_role_emoji(role)} "
-                + ", ".join(qp.player.short_name for qp in role_queue)
+                + ", ".join(qp.player.name for qp in role_queue)
             )
 
         # Hardcoded value(55) to put the player count string in the corner
@@ -100,8 +101,7 @@ class QueueChannelHandler:
 
                 duos_strings.append(
                     " + ".join(
-                        f"{qp.player.short_name} {get_role_emoji(qp.role)}"
-                        for qp in duo
+                        f"{qp.player.name} {get_role_emoji(qp.role)}" for qp in duo
                     )
                 )
 

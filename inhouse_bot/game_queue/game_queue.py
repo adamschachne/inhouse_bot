@@ -137,8 +137,15 @@ class GameQueue:
         if type(other) != GameQueue:
             return False
 
-        simple_queue = [(qp.player_id, qp.role) for qp in self.queue_players]
-        simple_other_queue = [(qp.player_id, qp.role) for qp in other.queue_players]
+        # I don't know how to do custom typeguards in python; this works
+        other: GameQueue = other
+
+        simple_queue = [
+            (qp.player_id, qp.role, qp.player.name) for qp in self.queue_players
+        ]
+        simple_other_queue = [
+            (qp.player_id, qp.role, qp.player.name) for qp in other.queue_players
+        ]
 
         return simple_queue == simple_other_queue
 

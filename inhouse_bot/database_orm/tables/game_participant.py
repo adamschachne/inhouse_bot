@@ -41,7 +41,7 @@ class GameParticipant(bot_declarative_base):
     player_server_id: Mapped[int] = Column(BigInteger)
 
     # Player & Player Rating relationship
-    player: Mapped[Player] = relationship(Player, uselist=False)
+    player: Mapped[Player] = relationship(Player, lazy="joined", uselist=False)
 
     player_rating: Mapped[PlayerRating] = relationship(
         PlayerRating,
@@ -50,9 +50,6 @@ class GameParticipant(bot_declarative_base):
 
     # Champion id, only filled if the player updates it by themselves after the game
     champion_id: Mapped[int | None] = Column(Integer)
-
-    # Name as it was recorded when the game was played
-    name: Mapped[str | None] = Column(String)
 
     # Pre-game TrueSkill values
     trueskill_mu: Mapped[float] = Column(Float)
@@ -74,17 +71,12 @@ class GameParticipant(bot_declarative_base):
     def mmr(self):
         return 20 * (self.trueskill_mu - 3 * self.trueskill_sigma + 25)
 
-    @hybrid_property
-    def short_name(self):
-        return self.name[:15]
-
     # Called only from the Game constructor itself
     def __init__(self, side: SideEnum, role: RoleEnum, player: Player):
         self.side = side
         self.role = role
 
-        self.name = player.name
-
+        self.player = player
         self.player_id = player.id
         self.player_server_id = player.server_id
 

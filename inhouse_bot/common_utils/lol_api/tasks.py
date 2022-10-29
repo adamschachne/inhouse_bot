@@ -3,14 +3,11 @@ import statistics
 
 from pyot.core.queue import Queue
 from pyot.models import lol
+from pyot.core.exceptions import PyotException
 
 
 async def get_summoner_by_name(summoner_name: str):
     return await lol.Summoner(name=summoner_name).get()
-
-
-async def get_summoner_by_puuid(puuid: str):
-    return await lol.Summoner(puuid=puuid).get()
 
 
 async def average_win_rate_10_matches(summoner_name: str):
