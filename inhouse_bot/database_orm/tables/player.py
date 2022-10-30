@@ -63,3 +63,9 @@ class Player(bot_declarative_base):
             print(f"Error getting summoner name: {ex}")
 
         return self.name
+
+    @hybrid_property
+    def is_verified(self):
+        if self.summoner_puuid:
+            return True
+        return False
