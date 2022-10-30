@@ -12,6 +12,7 @@ from inhouse_bot.common_utils.emoji_and_thumbnails import get_role_emoji
 from inhouse_bot.common_utils.fields import QueueRoleConverter, roles_list
 from inhouse_bot.common_utils.get_last_game import get_last_game
 from inhouse_bot.common_utils.validation_dialog import checkmark_validation
+from inhouse_bot.common_utils.is_verified_user import are_verified_users
 
 from inhouse_bot.database_orm import session_scope
 from inhouse_bot.database_orm.tables.game import Game
@@ -204,6 +205,16 @@ class QueueCog(commands.Cog, name="Queue"):
         duo: discord.Member = None,
         duo_role: QueueRoleConverter = None,
     ):
+        server_id = ctx.guild.id
+
+        # Check if user is verified before allowing them to use queue
+        usersToVerify = [ctx.author.id]
+        if duo:
+            usersToVerify.append(duo.id)
+
+        if not await are_verified_users(ctx, usersToVerify, server_id):
+            return
+
         # Checking if the last game of this player got cancelled
         #   If so, we put them in the queue in front of other players
         jump_ahead = False
@@ -225,7 +236,7 @@ class QueueCog(commands.Cog, name="Queue"):
                         name=ctx.author.display_name,
                         role=r,
                         channel_id=ctx.channel.id,
-                        server_id=ctx.guild.id,
+                        server_id=server_id,
                         jump_ahead=jump_ahead,
                     )
             else:
@@ -235,7 +246,7 @@ class QueueCog(commands.Cog, name="Queue"):
                     name=ctx.author.display_name,
                     role=role,
                     channel_id=ctx.channel.id,
-                    server_id=ctx.guild.id,
+                    server_id=server_id,
                     jump_ahead=jump_ahead,
                 )
 
@@ -274,14 +285,14 @@ class QueueCog(commands.Cog, name="Queue"):
                 second_player_role=duo_role,
                 second_player_name=duo.display_name,
                 channel_id=ctx.channel.id,
-                server_id=ctx.guild.id,
+                server_id=server_id,
                 jump_ahead=jump_ahead,
             )
 
         await self.run_matchmaking_logic(ctx=ctx)
 
         await queue_channel_handler.update_queue_channels(
-            bot=self.bot, server_id=ctx.guild.id
+            bot=self.bot, server_id=server_id
         )
 
     @commands.command(aliases=["leave_queue", "stop"])
