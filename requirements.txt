@@ -14,7 +14,7 @@ psycopg2==2.9.4
 git+https://github.com/Rapptz/discord-ext-menus
 alembic==1.8.1
 pyot==6.0.5
-fastapi==0.85.2
+fastapi==0.86.0
 uvicorn==0.19.0
 black==22.10.0
 mypy==0.982
