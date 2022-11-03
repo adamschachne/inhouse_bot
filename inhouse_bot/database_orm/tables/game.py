@@ -92,7 +92,7 @@ class Game(bot_declarative_base):
         )
 
     def get_embed(
-        self, embed_type: str, validated_players: set[int] = [], bot=None
+        self, embed_type: str, validated_players: List[int] = [], bot=None
     ) -> Embed:
         if embed_type == "GAME_FOUND":
             embed = Embed(
