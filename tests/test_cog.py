@@ -12,7 +12,9 @@ from inhouse_bot.game_queue import GameQueue
 from inhouse_bot.inhouse_bot import InhouseBot
 from inhouse_bot import game_queue, matchmaking_logic
 from inhouse_bot.queue_channel_handler import queue_channel_handler
-from inhouse_bot.ranking_channel_handler.ranking_channel_handler import ranking_channel_handler
+from inhouse_bot.ranking_channel_handler.ranking_channel_handler import (
+    ranking_channel_handler,
+)
 
 
 class TestCog(commands.Cog, name="TEST"):
@@ -51,7 +53,9 @@ class TestCog(commands.Cog, name="TEST"):
         )
 
         await ctx.send(f"{ready=}\n{players_to_drop=}")
-        await queue_channel_handler.update_queue_channels(bot=self.bot, server_id=ctx.guild.id)
+        await queue_channel_handler.update_queue_channels(
+            bot=self.bot, server_id=ctx.guild.id
+        )
 
     @test.command()
     async def queue(self, ctx: commands.Context):
@@ -60,10 +64,14 @@ class TestCog(commands.Cog, name="TEST"):
         """
         # We put 10 people in the queue
         for i in range(0, 10):
-            await game_queue.add_player(i, roles_list[i % 5], ctx.channel.id, ctx.guild.id, name=str(i))
+            await game_queue.add_player(
+                i, roles_list[i % 5], ctx.channel.id, ctx.guild.id, name=str(i)
+            )
 
         await ctx.send("The queue has been filled")
-        await queue_channel_handler.update_queue_channels(bot=self.bot, server_id=ctx.guild.id)
+        await queue_channel_handler.update_queue_channels(
+            bot=self.bot, server_id=ctx.guild.id
+        )
 
     @test.command()
     async def duo(self, ctx: commands.Context):
@@ -72,7 +80,9 @@ class TestCog(commands.Cog, name="TEST"):
         """
         # We put 10 people in the queue
         for i in range(0, 10):
-            await game_queue.add_player(i, roles_list[i % 5], ctx.channel.id, ctx.guild.id, name=str(i))
+            await game_queue.add_player(
+                i, roles_list[i % 5], ctx.channel.id, ctx.guild.id, name=str(i)
+            )
 
         await game_queue.add_duo(
             6,
@@ -85,9 +95,13 @@ class TestCog(commands.Cog, name="TEST"):
             second_player_name=ctx.author.display_name,
         )
 
-        await ctx.send("The queue has been filled and you have been put in mid/jgl duo with player 6")
+        await ctx.send(
+            "The queue has been filled and you have been put in mid/jgl duo with player 6"
+        )
 
-        await queue_channel_handler.update_queue_channels(bot=self.bot, server_id=ctx.guild.id)
+        await queue_channel_handler.update_queue_channels(
+            bot=self.bot, server_id=ctx.guild.id
+        )
 
     @test.command()
     async def game(self, ctx: commands.Context):
@@ -97,10 +111,16 @@ class TestCog(commands.Cog, name="TEST"):
         # We reset the queue
         # We put 9 people in the queue
         for i in range(0, 9):
-            await game_queue.add_player(i, roles_list[i % 5], ctx.channel.id, ctx.guild.id, name=str(i))
+            await game_queue.add_player(
+                i, roles_list[i % 5], ctx.channel.id, ctx.guild.id, name=str(i)
+            )
 
         await game_queue.add_player(
-            ctx.author.id, roles_list[4], ctx.channel.id, ctx.guild.id, name=ctx.author.display_name
+            ctx.author.id,
+            roles_list[4],
+            ctx.channel.id,
+            ctx.guild.id,
+            name=ctx.author.display_name,
         )
 
         game = matchmaking_logic.find_best_game(GameQueue(ctx.channel.id))
@@ -108,11 +128,17 @@ class TestCog(commands.Cog, name="TEST"):
         with session_scope() as session:
             session.add(game)
 
-        msg = await ctx.send("The queue has been reset, filled again, and a game created (with no winner)")
+        msg = await ctx.send(
+            "The queue has been reset, filled again, and a game created (with no winner)"
+        )
 
-        game_queue.start_ready_check([i for i in range(0, 9)] + [ctx.author.id], ctx.channel.id, msg.id)
+        game_queue.start_ready_check(
+            [i for i in range(0, 9)] + [ctx.author.id], ctx.channel.id, msg.id
+        )
         game_queue.remove_players_from_queue(msg.id)
-        await queue_channel_handler.update_queue_channels(bot=self.bot, server_id=ctx.guild.id)
+        await queue_channel_handler.update_queue_channels(
+            bot=self.bot, server_id=ctx.guild.id
+        )
 
     @test.command()
     async def games(self, ctx: commands.Context):
@@ -125,12 +151,18 @@ class TestCog(commands.Cog, name="TEST"):
 
             # We add the context creator as well
             await game_queue.add_player(
-                ctx.author.id, roles_list[4], ctx.channel.id, ctx.guild.id, name=ctx.author.display_name
+                ctx.author.id,
+                roles_list[4],
+                ctx.channel.id,
+                ctx.guild.id,
+                name=ctx.author.display_name,
             )
 
             # We put 15 people in the queue, but only the first ones should get picked
             for i in range(0, 15):
-                game_queue.add_player(i, roles_list[i % 5], ctx.channel.id, ctx.guild.id, name=str(i))
+                await game_queue.add_player(
+                    i, roles_list[i % 5], ctx.channel.id, ctx.guild.id, name=str(i)
+                )
 
             game = matchmaking_logic.find_best_game(GameQueue(ctx.channel.id))
 
@@ -138,25 +170,39 @@ class TestCog(commands.Cog, name="TEST"):
                 session.add(game)
                 winner = game.player_ids_list[int(random.random() * 10)]
 
-            game_queue.start_ready_check([i for i in range(0, 9)] + [ctx.author.id], ctx.channel.id, 0)
+            game_queue.start_ready_check(
+                [i for i in range(0, 9)] + [ctx.author.id], ctx.channel.id, 0
+            )
             game_queue.remove_players_from_queue(0)
 
-            matchmaking_logic.score_game_from_winning_player(player_id=winner, server_id=ctx.guild.id)
+            matchmaking_logic.score_game_from_winning_player(
+                player_id=winner, server_id=ctx.guild.id
+            )
 
-            await ranking_channel_handler.update_ranking_channels(self.bot, ctx.guild.id)
+            await ranking_channel_handler.update_ranking_channels(
+                self.bot, ctx.guild.id
+            )
 
         await ctx.send("100 games have been created in the database")
-        await queue_channel_handler.update_queue_channels(bot=self.bot, server_id=ctx.guild.id)
+        await queue_channel_handler.update_queue_channels(
+            bot=self.bot, server_id=ctx.guild.id
+        )
 
     @test.command()
     async def score(self, ctx: commands.Context):
         """
         Scores your last game as a win for (mostly made to be used after !test game)
         """
-        matchmaking_logic.score_game_from_winning_player(player_id=ctx.author.id, server_id=ctx.guild.id)
+        matchmaking_logic.score_game_from_winning_player(
+            player_id=ctx.author.id, server_id=ctx.guild.id
+        )
 
-        await ctx.send(f"{ctx.author.display_name}’s last game has been scored as a win")
-        await queue_channel_handler.update_queue_channels(bot=self.bot, server_id=ctx.guild.id)
+        await ctx.send(
+            f"{ctx.author.display_name}’s last game has been scored as a win"
+        )
+        await queue_channel_handler.update_queue_channels(
+            bot=self.bot, server_id=ctx.guild.id
+        )
 
     @test.command()
     async def cancel(self, ctx: commands.Context):
@@ -170,8 +216,12 @@ class TestCog(commands.Cog, name="TEST"):
 
             session.delete(game)
 
-        await ctx.send(f"{ctx.author.display_name}’s last game was cancelled and deleted from the database")
-        await queue_channel_handler.update_queue_channels(bot=self.bot, server_id=ctx.guild.id)
+        await ctx.send(
+            f"{ctx.author.display_name}’s last game was cancelled and deleted from the database"
+        )
+        await queue_channel_handler.update_queue_channels(
+            bot=self.bot, server_id=ctx.guild.id
+        )
 
     @test.command()
     async def emoji(self, ctx: commands.Context, champion_id: ChampionNameConverter()):
