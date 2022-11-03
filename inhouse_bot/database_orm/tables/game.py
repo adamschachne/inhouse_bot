@@ -16,6 +16,7 @@ from inhouse_bot.common_utils.fields import RoleEnum, SideEnum, roles_list
 from inhouse_bot.common_utils.emoji_and_thumbnails import (
     get_role_emoji,
     get_champion_emoji,
+    generate_team_opgg,
 )
 
 
@@ -91,7 +92,7 @@ class Game(bot_declarative_base):
         )
 
     def get_embed(
-        self, embed_type: str, validated_players: List[int] = [], bot=None
+        self, embed_type: str, validated_players: set[int] = [], bot=None
     ) -> Embed:
         if embed_type == "GAME_FOUND":
             embed = Embed(
@@ -146,6 +147,22 @@ class Game(bot_declarative_base):
                 get_team_embed_value(idx, p) for idx, p in enumerate(self.teams.RED)
             ),
         )
+        if embed_type == "GAME_ACCEPTED":
+            embed.add_field(
+                name="\u200B",
+                value="\u200B",
+            )
+            embed.add_field(
+                name="BLUE Team",
+                value=f"[OP.GG]({generate_team_opgg(self.teams.BLUE)})",
+                inline=True,
+            )
+
+            embed.add_field(
+                name="RED Team",
+                value=f"[OP.GG]({generate_team_opgg(self.teams.RED)})",
+                inline=True,
+            )
 
         return embed
 
