@@ -1,7 +1,7 @@
 import os
 import re
-from typing import Optional, Union
-
+from typing import Optional, Union, List
+from inhouse_bot.database_orm.tables.game_participant import GameParticipant
 import lol_id_tools
 from discord import Emoji
 from discord.ext import commands
@@ -88,3 +88,10 @@ def get_champion_emoji(
 
 def get_champion_name_by_id(champion_id: int):
     return lol_id_tools.get_name(champion_id)
+
+
+def generate_team_opgg(team: List[GameParticipant]) -> str:
+    base_url = "https://www.op.gg/multisearch/na?summoners="
+    summoner_names = ",".join(participant.player.name for participant in team)
+
+    return (base_url + summoner_names).replace(" ", "")
