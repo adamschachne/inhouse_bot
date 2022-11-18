@@ -343,11 +343,11 @@ class QueueCog(commands.Cog, name="Queue"):
                 player_id=ctx.author.id, server_id=ctx.guild.id, session=session
             )
 
-            if not game:
+            if not game or not participant:
                 await ctx.send("You have not played a game on this server yet")
                 return
 
-            elif game and game.winner and participant:
+            elif game and game.winner:
                 await ctx.send(
                     "Your last game seem to have already been scored\n"
                     "If there was an issue, please contact an admin"
