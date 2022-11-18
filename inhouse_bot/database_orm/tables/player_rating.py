@@ -38,7 +38,7 @@ class PlayerRating(bot_declarative_base):
         return 20 * (self.trueskill_mu - 3 * self.trueskill_sigma + 25)
 
     def __repr__(self):
-        return f"<PlayerRating: player_id={self.player_id} role={self.role}>"
+        return f"<PlayerRating: player_id={self.player_id} role={self.role.value}>"
 
     def __init__(self, player: Player, role):
         self.player_id = player.id
