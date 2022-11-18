@@ -343,7 +343,7 @@ class QueueCog(commands.Cog, name="Queue"):
                 player_id=ctx.author.id, server_id=ctx.guild.id, session=session
             )
 
-            if not game:
+            if not game or not participant:
                 await ctx.send("You have not played a game on this server yet")
                 return
 
@@ -365,7 +365,7 @@ class QueueCog(commands.Cog, name="Queue"):
 
             win_validation_message = await ctx.send(
                 f"{game.players_ping}"
-                f"{ctx.author.display_name} wants to score game {game.id} as a win for {participant.side}\n"
+                f"{ctx.author.display_name} wants to score game {game.id} as a win for {participant.side.value}\n"
                 f"Result will be validated once 6 players from the game press ✅"
             )
 
@@ -386,7 +386,7 @@ class QueueCog(commands.Cog, name="Queue"):
             # If we get there, the score was validated and we can simply update the game and the ratings
             queue_channel_handler.mark_queue_related_message(
                 await ctx.send(
-                    f"Game {game.id} has been scored as a win for {participant.side} and ratings have been updated"
+                    f"Game {game.id} has been scored as a win for {participant.side.value} and ratings have been updated"
                 )
             )
 
