@@ -43,7 +43,7 @@ async def get_team_mmr(team: List[GameParticipant]) -> int:
     for gameparticipant in team:
         print(gameparticipant.player.name)
         summoner = await lol.get_summoner_by_puuid(
-            gameparticipant.player.summoner_puuid
+            str(gameparticipant.player.summoner_puuid)
         )
         playerRankInfo = await lol.get_summoner_rank_info_by_id(summoner.id)
         if playerRankInfo:
