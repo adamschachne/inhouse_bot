@@ -53,12 +53,12 @@ class QueueCog(commands.Cog, name="Queue"):
         """
         queue = game_queue.GameQueue(ctx.channel.id)
 
-        game = matchmaking_logic.find_best_game(queue)
+        game = await matchmaking_logic.find_best_game(queue)
 
         if not game:
             return
 
-        elif game and game.matchmaking_score < 0.2:
+        elif game:
             embed = game.get_embed(
                 embed_type="GAME_FOUND", validated_players=[], bot=self.bot
             )
@@ -157,13 +157,6 @@ class QueueCog(commands.Cog, name="Queue"):
 
                 # We restart the matchmaking logic
                 await self.run_matchmaking_logic(ctx)
-
-        elif game and game.matchmaking_score >= 0.2:
-            # One side has over 70% predicted winrate, we do not start anything
-            await ctx.send(
-                f"The best match found had a side with a {(.5 + game.matchmaking_score)*100:.1f}%"
-                f" predicted winrate and was not started"
-            )
 
     @commands.command(aliases=["view_queue", "refresh"])
     @queue_channel_only()

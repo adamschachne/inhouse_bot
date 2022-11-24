@@ -37,7 +37,7 @@ class Game(bot_declarative_base):
     server_id: Mapped[int] = Column(BigInteger)
 
     # Predicted outcome before the game was played
-    blue_expected_winrate: Mapped[float] = Column(Float)
+    # blue_expected_winrate: Mapped[float] = Column(Float)
 
     # Winner, updated at the end of the game
     winner: Mapped[SideEnum | None] = Column(
@@ -72,7 +72,7 @@ class Game(bot_declarative_base):
 
     @property
     def matchmaking_score(self):
-        return abs(0.5 - self.blue_expected_winrate)
+        return abs(0.5)
 
     @property
     def player_ids_list(self):
@@ -97,7 +97,7 @@ class Game(bot_declarative_base):
         if embed_type == "GAME_FOUND":
             embed = Embed(
                 title="📢 Game found 📢",
-                description=f"Blue side expected winrate is {self.blue_expected_winrate * 100:.1f}%\n"
+                description=f"Blue side expected winrate is {0.5 * 100:.1f}%\n"
                 "If you are ready to play, press ✅\n"
                 "If you cannot play, press ❌\n"
                 "The queue will timeout after a few minutes and AFK players will be automatically dropped "
@@ -175,7 +175,6 @@ class Game(bot_declarative_base):
         """
         # We use local imports to not have circular imports
         from inhouse_bot.database_orm import GameParticipant
-        from inhouse_bot.matchmaking_logic import evaluate_game
 
         self.start = datetime.now()
 
@@ -188,5 +187,10 @@ class Game(bot_declarative_base):
         game_participants = list(self.participants.values())  # type: ignore
         self.server_id = game_participants[0].player_server_id
 
+    async def matchmake_game(self) -> int:
+        from inhouse_bot.matchmaking_logic import evaluate_game
+
         # Then, we compute the expected blue side winrate (which we use for matchmaking)
-        self.blue_expected_winrate = evaluate_game(self)
+        # self.blue_expected_winrate = 0.45
+
+        return await evaluate_game(self)
