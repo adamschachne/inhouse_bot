@@ -8,7 +8,7 @@ from inhouse_bot.database_orm import Game, GameParticipant
 from sqlalchemy import BigInteger
 
 
-async def get_team_mmr(team: List[GameParticipant]):
+async def get_team_mmr(team: List[GameParticipant]) -> int:
     mmrValues = {
         "IRONIV": 200,
         "IRONIII": 400,
@@ -35,8 +35,8 @@ async def get_team_mmr(team: List[GameParticipant]):
         "DIAMONDII": 2450,
         "DIAMONDI": 2500,
         "MASTERI": 2750,
-        "GRANDMASTER": 3000,
-        "CHALLENGER": 3250,
+        "GRANDMASTERI": 3000,
+        "CHALLENGERI": 3250,
     }
 
     mmr = 0
