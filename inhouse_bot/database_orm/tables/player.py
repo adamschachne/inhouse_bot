@@ -1,3 +1,4 @@
+import logging
 from sqlalchemy import Column, String, BigInteger, UniqueConstraint
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, Mapped
@@ -59,8 +60,7 @@ class Player(bot_declarative_base):
                 self.name = summoner.name
                 return summoner.name
         except PyotException as ex:
-            # TODO use logger
-            print(f"Error getting summoner name: {ex}")
+            logging.warn(f"Error getting summoner name: {ex}")
 
         return self.name
 

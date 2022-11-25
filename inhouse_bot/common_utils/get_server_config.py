@@ -1,10 +1,11 @@
+from typing import Dict
 from inhouse_bot.common_utils.constants import CONFIG_OPTIONS
 from inhouse_bot.database_orm import ServerConfig
 from inhouse_bot.database_orm.session.session import session_scope
 
 
 def get_server_config(server_id: int, session) -> ServerConfig:
-    server_config = (
+    server_config: ServerConfig | None = (
         session.query(ServerConfig)
         .select_from(ServerConfig)
         .filter(ServerConfig.server_id == server_id)

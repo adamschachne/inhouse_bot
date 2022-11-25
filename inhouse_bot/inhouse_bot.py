@@ -12,12 +12,18 @@ from fastapi import FastAPI
 
 from inhouse_bot import game_queue
 from inhouse_bot.common_utils.constants import (
+    INHOUSE_BOT_TEST,
+    INHOUSE_BOT_TOKEN,
+    INHOUSE_BOT_TOURNAMENTS,
     PREFIX,
     BACKGROUND_JOBS_INTERVAL,
     QUEUE_RESET_TIME,
+    VERSION,
 )
 from inhouse_bot.common_utils.docstring import doc
-from inhouse_bot.common_utils.get_server_config import get_server_config
+from inhouse_bot.common_utils.get_server_config import (
+    get_server_config_by_key,
+)
 from inhouse_bot.common_utils.is_admin import AdminGroupOnly
 from inhouse_bot.database_orm import session_scope
 from inhouse_bot.game_queue.queue_handler import SameRolesForDuo
@@ -41,19 +47,16 @@ class InhouseBot(commands.Bot):
     A bot handling role-based matchmaking for LoL games
     """
 
+    app: FastAPI
+
     def __init__(self, app: FastAPI, **options):
         super().__init__(PREFIX, intents=intents, case_insensitive=True, **options)
-
-        # Set up handlers if necessary
-        tournament_handler.setup(bot=self, app=app)
+        self.app = app
 
         # Setting up the on_message listener that will handle queue channels
         self.add_listener(
             queue_channel_handler.queue_channel_message_listener, "on_message"
         )
-
-        # Setting up some basic logging
-        self.logger = logging.getLogger("inhouse_bot")
 
         self.add_listener(self.command_logging, "on_command")
 
@@ -63,12 +66,14 @@ class InhouseBot(commands.Bot):
         from inhouse_bot.cogs.admin_cog import AdminCog
         from inhouse_bot.cogs.stats_cog import StatsCog
 
+        if INHOUSE_BOT_TOURNAMENTS:
+            await tournament_handler.setup(bot=self, app=self.app)
+
         # Putting this here because there's not a category that makes sense yet
         @commands.command()
         @doc(f"Displays the running bot version")
         async def version(ctx: commands.Context):
-            version = os.getenv("VERSION")
-            await ctx.send(version)
+            await ctx.send(VERSION)
 
         self.add_command(version)
 
@@ -77,19 +82,19 @@ class InhouseBot(commands.Bot):
         await self.add_cog(StatsCog(self))
 
         # While I hate mixing production and testing code, this is the most convenient solution to test the bot
-        if os.environ.get("INHOUSE_BOT_TEST"):
+        if INHOUSE_BOT_TEST:
             from tests.test_cog import TestCog
 
             await self.add_cog(TestCog(self))
 
     async def start(self, *args, **kwargs):
-        await super().start(os.environ["INHOUSE_BOT_TOKEN"], *args, **kwargs)
+        await super().start(INHOUSE_BOT_TOKEN, *args, **kwargs)
 
     async def command_logging(self, ctx: discord.ext.commands.Context):
         """
         Listener called on command-trigger messages to add some logging
         """
-        self.logger.info(
+        logging.info(
             f"{ctx.message.content}\t{ctx.author.name}\t{ctx.guild.name}\t{ctx.channel.name}"
         )
 
@@ -101,15 +106,12 @@ class InhouseBot(commands.Bot):
         now = datetime.now()
 
         try:
-            with session_scope() as session:
-                # TODO this only retrieves the config for the first guild.
-                # This could cause problems if the bot is in multiple guilds.
-                config = get_server_config(
-                    server_id=self.guilds[0].id, session=session
-                ).config
+            queue_reset = get_server_config_by_key(
+                server_id=self.guilds[0].id, key="queue_reset"
+            )
 
             if now.strftime("%H:%M") == QUEUE_RESET_TIME:
-                if config["queue_reset"]:
+                if queue_reset:
                     game_queue.reset_queue()
                     self.loop.create_task(
                         queue_channel_handler.update_queue_channels(
@@ -117,16 +119,16 @@ class InhouseBot(commands.Bot):
                         )
                     )
 
-            if config["tournament"]:
+            if INHOUSE_BOT_TOURNAMENTS:
                 self.loop.create_task(tournament_check(bot=self, server_id=None))
         except Exception as e:
-            self.logger.error(f"[Background Job Scheduler] error {e}")
+            logging.error(f"error {e}")
         finally:
             # Always make sure the next jobs are scheduled
             threading.Timer(BACKGROUND_JOBS_INTERVAL, self.background_jobs).start()
 
     async def on_ready(self):
-        self.logger.info(f"{self.user.name} has connected to Discord")
+        logging.info(f"{self.user.name} has connected to Discord")
 
         # We cancel all ready-checks, and queue_channel_handler will handle rewriting the queues
         game_queue.cancel_all_ready_checks()
@@ -195,7 +197,7 @@ class InhouseBot(commands.Bot):
                     f"Use {PREFIX}help for the commands list or post in #bot-dev-and-spam for bugs",
                 )
 
-                self.logger.error(og_error)
+                logging.error(og_error)
 
         else:
             # User-facing error
@@ -204,4 +206,4 @@ class InhouseBot(commands.Bot):
                 f"Use {PREFIX}help for the commands list or post in #bot-dev-and-spam for bugs",
             )
 
-            self.logger.error(error)
+            logging.error(error)

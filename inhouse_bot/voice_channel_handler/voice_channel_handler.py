@@ -2,13 +2,14 @@ import os
 import discord
 from string import Template
 from discord.ext import commands
+from inhouse_bot.common_utils.constants import (
+    VOICE_CATEGORY,
+    VOICE_PUBLIC_CHANNEL,
+    VOICE_TEAM_CHANNEL,
+)
 
 from inhouse_bot.common_utils.get_server_config import get_server_config_by_key
 from inhouse_bot.database_orm import Game
-
-VOICE_CATEGORY = os.getenv("VOICE_CATEGORY", "▬▬ Team Voice Chat ▬▬")
-VOICE_PUBLIC_CHANNEL = os.getenv("VOICE_PUBLIC_CHANNEL", "-- Game #$game_id --")
-VOICE_TEAM_CHANNEL = os.getenv("VOICE_TEAM_CHANNEL", "--> $side Team #$game_id")
 
 
 async def create_voice_channels(ctx: commands.Context, game: Game):
