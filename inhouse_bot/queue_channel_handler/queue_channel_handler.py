@@ -12,8 +12,6 @@ from inhouse_bot.common_utils.embeds import embeds_color
 from inhouse_bot.common_utils.emoji_and_thumbnails import get_role_emoji
 from inhouse_bot.database_orm import session_scope, ChannelInformation
 
-queue_logger = logging.getLogger("queue_channel_handler")
-
 
 class QueueChannelHandler:
     def __init__(self):
@@ -154,7 +152,7 @@ class QueueChannelHandler:
 
         self._queue_channels.append(channel)
 
-        queue_logger.info(f"Marked {channel_id} as a queue channel")
+        logging.info(f"Marked {channel_id} as a queue channel")
 
     def unmark_queue_channel(self, channel_id):
         game_queue.reset_queue(channel_id)
@@ -167,7 +165,7 @@ class QueueChannelHandler:
 
         self._queue_channels = [c for c in self._queue_channels if c.id != channel_id]
 
-        queue_logger.info(f"Unmarked {channel_id} as a queue channel")
+        logging.info(f"Unmarked {channel_id} as a queue channel")
 
     def mark_queue_related_message(self, msg):
         self.permanent_messages.add(msg.id)

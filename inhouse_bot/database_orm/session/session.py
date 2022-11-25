@@ -5,6 +5,8 @@ import sqlalchemy.orm
 from sqlalchemy.orm import Session, declarative_base
 from sqlalchemy.engine import Engine
 
+from inhouse_bot.common_utils.constants import INHOUSE_BOT_CONNECTION_STRING
+
 # The declarative base that we use for all our SQL alchemy classes
 bot_declarative_base = declarative_base()
 
@@ -25,7 +27,7 @@ class GhostSessionMaker:
     def _initialize_sqlalchemy(self):
         # We create the engine to connect to the database
         engine: Engine = sqlalchemy.create_engine(
-            os.environ["INHOUSE_BOT_CONNECTION_STRING"]
+            INHOUSE_BOT_CONNECTION_STRING
         )  # Very conservative settings to make sure it *always* work, slightly overkill
 
         # We create all the tables and columns as required by the classes in the other parts of the program

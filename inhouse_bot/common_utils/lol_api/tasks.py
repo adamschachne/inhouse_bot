@@ -43,3 +43,12 @@ async def get_summoner_rank_info_by_id(summoner_id: str):
             return entry
 
     return []
+
+
+async def create_provider(callback_url: str):
+    provider = (
+        await lol.TournamentProvider("americas")
+        .body(region="NA", url=callback_url)
+        .post()
+    )
+    return provider.id

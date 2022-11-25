@@ -2,6 +2,8 @@ import os
 from pyot.conf.model import activate_model, ModelConf
 from pyot.conf.pipeline import activate_pipeline, PipelineConf
 
+from inhouse_bot.common_utils.constants import RIOT_API_KEY
+
 
 @activate_model("lol")
 class LolModel(ModelConf):
@@ -31,6 +33,6 @@ class LolPipeline(PipelineConf):
         },
         {
             "backend": "pyot.stores.riotapi.RiotAPI",
-            "api_key": os.getenv("INHOUSE_BOT_RIOT_API_KEY"),
+            "api_key": RIOT_API_KEY,
         },
     ]
