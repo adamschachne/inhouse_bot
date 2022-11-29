@@ -4,7 +4,7 @@ import inflect
 from discord import Embed
 from discord.ext import menus
 
-from inhouse_bot.common_utils.emoji_and_thumbnails import get_role_emoji, get_rank_emoji
+from inhouse_bot.common_utils.emoji_and_thumbnails import get_role_emoji
 from inhouse_bot.common_utils.fields import RoleEnum
 from inhouse_bot.database_orm.tables.player import Player
 
@@ -33,9 +33,6 @@ class RankingPagesSource(menus.ListPageSource):
         max_name_length = max(len(r.Player.name) for r in entries)
 
         for idx, row in enumerate(entries):
-            rank = idx + offset
-
-            rank_str = get_rank_emoji(rank)
 
             role = get_role_emoji(row.role)
 
@@ -48,15 +45,13 @@ class RankingPagesSource(menus.ListPageSource):
             losses = row.count - row.wins
 
             output_string = (
-                f"{rank_str}{role}  "
-                f"`{player_name}{' '*player_padding}{int(row.mmr)} "
-                f"{wins}W {losses}L`"
+                f"{role}  " f"`{player_name}{' '*player_padding} " f"{wins}W {losses}L`"
             )
 
             rows.append(output_string)
 
         embed = Embed(
-            title=f"Ranking & MMR {self.embed_name_suffix}"
+            title=f"Game History for {self.embed_name_suffix}"
             if menu
             or (
                 not show_footer and offset == 0
