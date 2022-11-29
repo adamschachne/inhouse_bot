@@ -1,9 +1,10 @@
 import inhouse_bot.common_utils.lol_api.tasks as lol
 from typing import List, Dict
 from inhouse_bot.database_orm import Game, GameParticipant
+from sqlalchemy import BigInteger
 
 
-async def get_team_mmr(team: List[GameParticipant]) -> int:
+async def get_team_mmr(team: List[GameParticipant]) -> BigInteger:
     mmrValues = {
         "IRONIV": 200,
         "IRONIII": 400,
@@ -52,7 +53,7 @@ async def get_team_mmr(team: List[GameParticipant]) -> int:
     return mmr
 
 
-async def evaluate_game(game: Game) -> Dict[str, int]:
+async def evaluate_game(game: Game) -> Dict[str, BigInteger]:
     """
     Returns based on the mmrs of each
     """
