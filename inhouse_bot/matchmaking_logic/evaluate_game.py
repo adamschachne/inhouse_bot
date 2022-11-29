@@ -4,7 +4,7 @@ from inhouse_bot.database_orm import Game, GameParticipant
 from sqlalchemy import BigInteger
 
 
-async def get_team_mmr(team: List[GameParticipant]) -> BigInteger:
+async def get_team_mmr(team: List[GameParticipant]) -> int:
     mmrValues = {
         "IRONIV": 200,
         "IRONIII": 400,
@@ -53,7 +53,7 @@ async def get_team_mmr(team: List[GameParticipant]) -> BigInteger:
     return mmr
 
 
-async def evaluate_game(game: Game) -> Dict[str, BigInteger]:
+async def evaluate_game(game: Game) -> Dict[str, int]:
     """
     Returns based on the mmrs of each
     """

@@ -37,8 +37,8 @@ class Game(bot_declarative_base):
     server_id: Mapped[int] = Column(BigInteger)
 
     # Pre-game team mmr
-    blue_team_mmr: Mapped[BigInteger] = Column(BigInteger)
-    red_team_mmr: Mapped[BigInteger] = Column(BigInteger)
+    blue_team_mmr: Mapped[int] = Column(BigInteger)
+    red_team_mmr: Mapped[int] = Column(BigInteger)
 
     # Winner, updated at the end of the game
     winner: Mapped[SideEnum | None] = Column(
