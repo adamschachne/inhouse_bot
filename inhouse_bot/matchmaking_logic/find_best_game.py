@@ -9,9 +9,7 @@ from inhouse_bot.game_queue import GameQueue
 from inhouse_bot.inhouse_logger import inhouse_logger
 
 
-async def find_best_game(
-    queue: GameQueue, game_quality_threshold=0.1
-) -> Optional[Game]:
+async def find_best_game(queue: GameQueue) -> Optional[Game]:
     # Do not do anything if there’s not at least 2 players in queue per role
 
     for role_queue in queue.queue_players_dict.values():
@@ -32,10 +30,6 @@ async def find_best_game(
         best_game = await find_best_game_for_queue_players(
             queue.queue_players[:players_threshold]
         )
-
-        # We stop when we beat the game quality threshold (below 60% winrate for one side)
-        if best_game and best_game.matchmaking_score < game_quality_threshold:
-            return best_game
 
     return best_game
 
@@ -68,7 +62,7 @@ async def find_best_game_for_queue_players(
             ]
         )
 
-    # We do a very simple maximum search
+    # Search for the smallest difference between teams
     best_score = math.inf
     best_game: Game | None = None
 
@@ -129,9 +123,14 @@ async def find_best_game_for_queue_players(
 
         # Importantly, we do *not* add the game to the session, as that will be handled by the bot logic itself
         if score < best_score:
-            inhouse_logger.info(f"Minimum difference in score {score}")
+            inhouse_logger.info(f"The best difference in score {score}")
             best_game = game
             best_score = score
 
-    print("The best difference in score: ", best_score)
+        # Different variation of code above:
+        # if score < 200 (can choose any low value, 200 seems like a good choice):
+        #     # Store each game:
+        #     game_list.append(game)
+        # return  random.choice(game_list)
+        # Reasoning: To give the algorithm some variety when the players in queue don't change, collect all permuations that are 'good' and choose one by random
     return best_game

@@ -1,11 +1,6 @@
-import itertools
-import math
-
-import trueskill
 import inhouse_bot.common_utils.lol_api.tasks as lol
-from typing import List
+from typing import List, Dict
 from inhouse_bot.database_orm import Game, GameParticipant
-from sqlalchemy import BigInteger
 
 
 async def get_team_mmr(team: List[GameParticipant]) -> int:
@@ -38,10 +33,10 @@ async def get_team_mmr(team: List[GameParticipant]) -> int:
         "GRANDMASTERI": 3000,
         "CHALLENGERI": 3250,
     }
+    # TODO: Log this functions data to see it returns succesfully
 
     mmr = 0
     for gameparticipant in team:
-        print(gameparticipant.player.name)
         summoner = await lol.get_summoner_by_puuid(
             str(gameparticipant.player.summoner_puuid)
         )
@@ -51,46 +46,24 @@ async def get_team_mmr(team: List[GameParticipant]) -> int:
             value = mmrValues[rankString]
             mmr += value
         else:
-            # We assume players without function at a silver level (TODO: Come up with some reasoning on what value this should be)
-            mmr += 1400
-    print("\n")
+            # We assume players without rank play at a silver level
+            # (TODO: Silver 4 can still be too high for unranked players, consider going to bronze/iron if matchmaking is really bad)
+            mmr += mmrValues["SILVERIV"]
     return mmr
 
 
-async def evaluate_game(game: Game) -> int:
+async def evaluate_game(game: Game) -> Dict[str, int]:
     """
     Returns based on the mmrs of each
     """
-    print("Blue Team")
+    # TODO: Log this functions data to see it returns succesfully
     blueTeamMMR = await get_team_mmr(game.teams.BLUE)
-    print("Red Team")
     redTeamMMR = await get_team_mmr(game.teams.RED)
 
-    print("Blue Team MMR", blueTeamMMR)
-    print("Red Team MMR", redTeamMMR)
-    print("\n")
-    return abs(blueTeamMMR - redTeamMMR)
-    blue_team_ratings = [
-        trueskill.Rating(mu=p.trueskill_mu, sigma=p.trueskill_sigma)
-        for p in game.teams.BLUE
-    ]
-    red_team_ratings = [
-        trueskill.Rating(mu=p.trueskill_mu, sigma=p.trueskill_sigma)
-        for p in game.teams.RED
-    ]
+    gameInfo = {
+        "blueTeamMMR": blueTeamMMR,
+        "redTeamMMR": redTeamMMR,
+        "difference": abs(blueTeamMMR - redTeamMMR),
+    }
 
-    delta_mu = sum(r.mu for r in blue_team_ratings) - sum(
-        r.mu for r in red_team_ratings
-    )
-
-    sum_sigma = sum(
-        r.sigma**2 for r in itertools.chain(blue_team_ratings, red_team_ratings)
-    )
-
-    size = len(blue_team_ratings) + len(red_team_ratings)
-
-    denominator = math.sqrt(size * (trueskill.BETA * trueskill.BETA) + sum_sigma)
-
-    ts = trueskill.global_env()
-
-    return ts.cdf(delta_mu / denominator)
+    return gameInfo
