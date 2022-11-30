@@ -16,7 +16,7 @@ pyot==6.0.5
 fastapi==0.88.0
 uvicorn==0.20.0
 black==22.10.0
-mypy==0.982
+mypy==0.991
 discord-ext-menus==1.1
 # remove with sqlalchemy 2.0
 sqlalchemy2-stubs==0.0.2a29
