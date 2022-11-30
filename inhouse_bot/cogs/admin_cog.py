@@ -98,13 +98,17 @@ class AdminCog(commands.Cog, name="Admin"):
                 player_id=member.id, server_id=ctx.guild.id, session=session
             )
 
-            if game and game.winner:
-                await ctx.send(
-                    "The game has already been scored and cannot be canceled anymore"
-                )
+            if game:
+                if game.winner:
+                    await ctx.send(
+                        "The game has already been scored and cannot be canceled anymore"
+                    )
+                    return
+                else:
+                    session.delete(game)
+            else:
+                await ctx.send("The player has no ongoing game")
                 return
-
-            session.delete(game)
 
         await ctx.send(
             f"{member.display_name}’s ongoing game was cancelled and deleted from the database"
