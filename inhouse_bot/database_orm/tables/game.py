@@ -187,7 +187,7 @@ class Game(bot_declarative_base):
         from inhouse_bot.matchmaking_logic import evaluate_game
 
         gameInfo = await evaluate_game(self)
-        self.blue_team_mmr = gameInfo["blueTeamMMR"]
-        self.red_team_mmr = gameInfo["redTeamMMR"]
+        self.blue_team_mmr = gameInfo.blueTeamMMR
+        self.red_team_mmr = gameInfo.redTeamMMR
 
-        return gameInfo["difference"]
+        return gameInfo.teamDifference

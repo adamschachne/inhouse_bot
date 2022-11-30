@@ -1,6 +1,7 @@
 import inhouse_bot.common_utils.lol_api.tasks as lol
-from typing import List, Dict
+from typing import List
 from inhouse_bot.database_orm import Game, GameParticipant
+from inhouse_bot.dataclasses import GameInfo
 from sqlalchemy import BigInteger
 
 
@@ -53,7 +54,7 @@ async def get_team_mmr(team: List[GameParticipant]) -> int:
     return mmr
 
 
-async def evaluate_game(game: Game) -> Dict[str, int]:
+async def evaluate_game(game: Game) -> GameInfo:
     """
     Returns based on the mmrs of each
     """
@@ -61,10 +62,5 @@ async def evaluate_game(game: Game) -> Dict[str, int]:
     blueTeamMMR = await get_team_mmr(game.teams.BLUE)
     redTeamMMR = await get_team_mmr(game.teams.RED)
 
-    gameInfo = {
-        "blueTeamMMR": blueTeamMMR,
-        "redTeamMMR": redTeamMMR,
-        "difference": abs(blueTeamMMR - redTeamMMR),
-    }
-
-    return gameInfo
+    gameInfoObj = GameInfo(blueTeamMMR, redTeamMMR, abs(blueTeamMMR - redTeamMMR))
+    return gameInfoObj
