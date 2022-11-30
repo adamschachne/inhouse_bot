@@ -1,16 +1,14 @@
-from typing import Optional, List, Tuple
+from typing import Optional, List
 
 import sqlalchemy
 from discord import TextChannel
 from discord.ext.commands import Bot
 from sqlalchemy import func
-from inhouse_bot.common_utils.fields import RoleEnum
 
 from inhouse_bot.database_orm import (
     ChannelInformation,
     session_scope,
     Player,
-    PlayerRating,
     Game,
     GameParticipant,
 )
@@ -103,9 +101,8 @@ class RankingChannelHandler:
             ratings = (
                 session.query(
                     Player,
-                    PlayerRating.player_server_id,
-                    PlayerRating.mmr,
-                    PlayerRating.role,
+                    Player.server_id,
+                    GameParticipant.role,
                     func.count().label("count"),
                     (
                         sqlalchemy.func.sum(
@@ -118,17 +115,15 @@ class RankingChannelHandler:
                     ),  # A bit verbose for sure
                 )
                 .select_from(Player)
-                .join(PlayerRating)
                 .join(GameParticipant)
                 .join(Game)
                 .filter(Player.server_id == server_id)
                 .filter(Game.winner != None)  # No currently running game
-                .group_by(Player, PlayerRating)
-                .order_by(PlayerRating.mmr.desc())
+                .group_by(Player, GameParticipant.role)
             )
 
             if role:
-                ratings = ratings.filter(PlayerRating.role == role)
+                ratings = ratings.filter(GameParticipant.role == role)
 
             ratings = ratings.limit(limit).all()
 

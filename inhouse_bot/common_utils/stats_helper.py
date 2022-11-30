@@ -3,13 +3,11 @@ from inhouse_bot.database_orm import (
     session_scope,
     GameParticipant,
     Game,
-    PlayerRating,
     Player,
 )
 import sqlalchemy
 from inhouse_bot.common_utils.emoji_and_thumbnails import (
     get_role_emoji,
-    get_rank_emoji,
     get_champion_name_by_id,
 )
 from discord.ext import commands
@@ -20,45 +18,43 @@ async def get_player_stats(player_id, server_id):
     with session_scope() as session:
         rating_objects = (
             session.query(
-                PlayerRating,
+                Player,
+                Player.server_id,
+                GameParticipant.role,
                 sqlalchemy.func.count().label("count"),
                 (
                     sqlalchemy.func.sum(
                         (Game.winner == GameParticipant.side).cast(sqlalchemy.Integer)
                     )
-                ).label("wins"),
+                ).label(
+                    "wins"
+                ),  # A bit verbose for sure
             )
-            .select_from(PlayerRating)
+            .select_from(Player)
             .join(GameParticipant)
             .join(Game)
-            .filter(PlayerRating.player_id == player_id)
-            .group_by(PlayerRating)
+            .filter(Player.id == player_id)
+            .filter(Game.winner != None)  # No currently running game
+            .group_by(Player, GameParticipant.role)
         )
 
         if server_id:
-            rating_objects = rating_objects.filter(
-                PlayerRating.player_server_id == server_id
-            )
+            rating_objects = rating_objects.filter(Player.server_id == server_id)
 
         rows = []
         for row in sorted(rating_objects.all(), key=lambda r: -r.count):
             # TODO LOW PRIO Make that a subquery
             rank = (
                 session.query(sqlalchemy.func.count())
-                .select_from(PlayerRating)
-                .filter(PlayerRating.player_server_id == server_id)
-                .filter(PlayerRating.role == row.PlayerRating.role)
-                .filter(PlayerRating.mmr > row.PlayerRating.mmr)
+                .select_from(GameParticipant)
+                .filter(GameParticipant.player_server_id == server_id)
+                .filter(GameParticipant.role == row.role)
             ).first()[0]
 
-            rank_str = get_rank_emoji(rank)
-
             row_string = (
-                f"{rank_str}",
-                f"{get_role_emoji(row.PlayerRating.role)}",
-                f"{int(row.PlayerRating.mmr)} MMR",
+                f"{get_role_emoji(row.role)}",
                 f"{row.wins}W {row.count-row.wins}L",
-                f"{round(row.wins/row.count, 2) * 100}% WR",
+                f"{int(round(row.wins/row.count, 2) * 100)}% WR",
             )
             rows.append("  | ".join(row_string))
 
