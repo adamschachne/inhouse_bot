@@ -7,5 +7,6 @@ from inhouse_bot.database_orm.tables.player import Player
 from inhouse_bot.database_orm.tables.player_rating import PlayerRating
 from inhouse_bot.database_orm.tables.queue_player import QueuePlayer
 from inhouse_bot.database_orm.tables.server_config import ServerConfig
+from inhouse_bot.database_orm.tables.tournament import Tournament
 
 bot_declarative_base.registry.configure()

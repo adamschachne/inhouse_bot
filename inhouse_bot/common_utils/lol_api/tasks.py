@@ -26,6 +26,8 @@ async def average_win_rate_10_matches(summoner_name: str):
 
 
 async def get_summoner_by_puuid(puuid: str):
+    if (puuid is None) or (puuid == ""):
+        return None
     summoner = await lol.Summoner(puuid=puuid).get()
     return summoner
 
@@ -45,10 +47,51 @@ async def get_summoner_rank_info_by_id(summoner_id: str):
     return []
 
 
-async def create_provider(callback_url: str):
+async def get_provider(callback_url: str):
     provider = (
         await lol.TournamentProvider("americas")
         .body(region="NA", url=callback_url)
         .post()
     )
     return provider.id
+
+
+async def get_tournament(name: str, provider_id: int):
+    tournament = (
+        await lol.Tournament("americas")
+        .body(name=name, provider_id=provider_id)
+        .post()
+    )
+    return tournament.id
+
+async def get_tournament_codes(
+    tournament_id: str,
+    map_type: str,
+    pick_type: str,
+    team_size: int,
+    spectator_type: str,
+    count: int,
+    allowed_summoner_ids: List[str] = None,
+    metadata: str = None,
+):
+    if allowed_summoner_ids and len(allowed_summoner_ids) < team_size * 2:
+        raise Exception("Not enough players to fill teams.")
+
+    code = (
+        await lol.TournamentCodes(region="americas")
+        .query(tournament_id=tournament_id, count=count)
+        .body(
+            map_type=map_type,
+            pick_type=pick_type,
+            team_size=team_size,
+            spectator_type=spectator_type,
+            allowed_summoner_ids=allowed_summoner_ids,
+            metadata=metadata,
+        )
+        .post()
+    )
+
+    return code.codes
+
+async def get_match_info_by_id(match_id: str):
+    return await lol.Match(id=match_id).get()

@@ -13,3 +13,8 @@ async def tournament_check(bot: commands.Bot, server_id: Optional[int]):
 
     logging.info("Checking for completed matches")
     # with session_scope() as session:
+
+    # TODO query for tournaments whose games do not have a winner
+    # get the first player from those games, search their matches for a completed match with a tournament_code
+    # matching the tournament_code of the tournament
+    # => if found, update the game with the winner
