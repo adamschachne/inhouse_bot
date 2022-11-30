@@ -66,8 +66,8 @@ class Game(bot_declarative_base):
             RED: List[GameParticipant]
 
         return Teams(
-            BLUE=[self.participants[SideEnum.BLUE, role] for role in roles_list], # type: ignore
-            RED=[self.participants[SideEnum.RED, role] for role in roles_list], # type: ignore
+            BLUE=[self.participants[SideEnum.BLUE, role] for role in roles_list],  # type: ignore
+            RED=[self.participants[SideEnum.RED, role] for role in roles_list],  # type: ignore
         )
 
     @property
@@ -76,7 +76,7 @@ class Game(bot_declarative_base):
 
     @property
     def player_ids_list(self) -> List[int]:
-        return [p.player_id for p in self.participants.values()] # type: ignore
+        return [p.player_id for p in self.participants.values()]  # type: ignore
 
     @property
     def players_ping(self) -> str:
@@ -185,7 +185,7 @@ class Game(bot_declarative_base):
             for team, role in players
         }
 
-        game_participants = list(self.participants.values()) # type: ignore
+        game_participants = list(self.participants.values())  # type: ignore
         self.server_id = game_participants[0].player_server_id
 
         # Then, we compute the expected blue side winrate (which we use for matchmaking)
