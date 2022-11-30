@@ -108,8 +108,8 @@ async def add_player(
 
 def remove_player(
     player_id: int,
-    channel_id: int = None,
-    role: str = None,
+    channel_id: int | None = None,
+    role: str | None = None,
     session: Session | None = None,
 ):
     """
