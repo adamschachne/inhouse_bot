@@ -59,7 +59,7 @@ class RoleConverter(commands.Converter):
         )
         if ratio < 85:
             await ctx.send(f"The role was not understood")
-            raise ConversionError
+            raise ConversionError(self, Exception("Role not understood"))
         else:
             return full_roles_dict[matched_string]
 
@@ -83,4 +83,4 @@ class ChampionNameConverter(commands.Converter):
 
         except lol_id_tools.NoMatchingNameFound:
             await ctx.send(f"The champion name was not understood")
-            raise ConversionError
+            raise ConversionError(self, Exception("Champion name not understood"))

@@ -1,6 +1,5 @@
-import os
 from contextlib import contextmanager
-
+from typing import Callable
 import sqlalchemy.orm
 from sqlalchemy.orm import Session, declarative_base
 from sqlalchemy.engine import Engine
@@ -16,7 +15,7 @@ class GhostSessionMaker:
     Small class that only generates the schema in the database when a session is created
     """
 
-    _session_maker: Session | None = None
+    _session_maker: Callable[[], Session] | None = None
 
     @property
     def session_maker(self):
