@@ -1,12 +1,12 @@
 import itertools
 import random
 import math
+import logging
 from typing import Optional, List
 
 from inhouse_bot.database_orm import Game, QueuePlayer
 from inhouse_bot.common_utils.fields import roles_list, SideEnum
 from inhouse_bot.game_queue import GameQueue
-from inhouse_bot.inhouse_logger import inhouse_logger
 
 
 async def find_best_game(queue: GameQueue) -> Optional[Game]:
@@ -19,9 +19,7 @@ async def find_best_game(queue: GameQueue) -> Optional[Game]:
     # If we get there, we know there are at least 10 players in the queue
     # We start with the 10 players who have been in queue for the longest time
 
-    inhouse_logger.info(
-        f"Matchmaking process started with the following queue:\n{queue}"
-    )
+    logging.info(f"Matchmaking process started with the following queue:\n{queue}")
 
     best_game: Game | None = None
     for players_threshold in range(10, len(queue) + 1):
@@ -40,7 +38,7 @@ async def find_best_game_for_queue_players(
     """
     A sub function to allow us to iterate on QueuePlayers from oldest to newest
     """
-    inhouse_logger.info(
+    logging.info(
         f"Trying to find the best game for: {' | '.join(f'{qp}' for qp in queue_players)}"
     )
 
@@ -123,7 +121,7 @@ async def find_best_game_for_queue_players(
 
         # Importantly, we do *not* add the game to the session, as that will be handled by the bot logic itself
         if score < best_score:
-            inhouse_logger.info(f"The best difference in score {score}")
+            logging.info(f"The best difference in score {score}")
             best_game = game
             best_score = score
 

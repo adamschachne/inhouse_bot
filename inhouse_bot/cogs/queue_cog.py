@@ -1,6 +1,7 @@
-from datetime import datetime, timedelta
-
+import logging
 import discord
+
+from datetime import datetime, timedelta
 from discord.ext import commands
 
 from inhouse_bot import game_queue
@@ -22,6 +23,7 @@ from inhouse_bot.queue_channel_handler.queue_channel_handler import queue_channe
 from inhouse_bot.ranking_channel_handler.ranking_channel_handler import (
     ranking_channel_handler,
 )
+from inhouse_bot.tournament.tournament_handler import tournament_api_check
 from inhouse_bot.voice_channel_handler.voice_channel_handler import (
     create_voice_channels,
     remove_voice_channels,
@@ -92,7 +94,7 @@ class QueueCog(commands.Cog, name="Queue"):
 
             # We catch every error here to make sure it does not become blocking
             except Exception as e:
-                self.bot.logger.error(e)
+                logging.error(e)
                 game_queue.cancel_ready_check(
                     ready_check_id=ready_check_message.id,
                     ids_to_drop=game.player_ids_list,
@@ -314,6 +316,7 @@ class QueueCog(commands.Cog, name="Queue"):
             bot=self.bot, server_id=ctx.guild.id
         )
 
+    @tournament_api_check(is_enabled=False)
     @commands.command(aliases=["win", "wins", "victory"])
     @queue_channel_only()
     @doc(

@@ -1,6 +1,13 @@
 import os
 import re
 from typing import Optional, Union, List
+from inhouse_bot.common_utils.constants import (
+    BOT_EMOJI,
+    JGL_EMOJI,
+    MID_EMOJI,
+    SUP_EMOJI,
+    TOP_EMOJI,
+)
 from inhouse_bot.database_orm.tables.game_participant import GameParticipant
 import lol_id_tools
 from discord import Emoji
@@ -26,11 +33,11 @@ lol_logo = "https://raw.communitydragon.org/10.5/plugins/rcp-fe-lol-loading-scre
 
 # Emoji dict built from environment variables
 role_emoji_dict = {
-    "TOP": os.environ.get("INHOUSE_BOT_TOP_EMOJI") or "TOP",
-    "JGL": os.environ.get("INHOUSE_BOT_JGL_EMOJI") or "JGL",
-    "MID": os.environ.get("INHOUSE_BOT_MID_EMOJI") or "MID",
-    "BOT": os.environ.get("INHOUSE_BOT_BOT_EMOJI") or "BOT",
-    "SUP": os.environ.get("INHOUSE_BOT_SUP_EMOJI") or "SUP",
+    "TOP": TOP_EMOJI,
+    "JGL": JGL_EMOJI,
+    "MID": MID_EMOJI,
+    "BOT": BOT_EMOJI,
+    "SUP": SUP_EMOJI,
 }
 
 # Default rank emoji
