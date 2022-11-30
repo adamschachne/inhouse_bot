@@ -21,7 +21,7 @@ INHOUSE_BOT_TOKEN = os.environ.get("INHOUSE_BOT_TOKEN") or None
 RIOT_API_KEY = os.environ.get("INHOUSE_BOT_RIOT_API_KEY") or None
 
 # database connection string
-INHOUSE_BOT_CONNECTION_STRING = os.environ.get("INHOUSE_BOT_CONNECTION_STRING") or None
+INHOUSE_BOT_CONNECTION_STRING = os.environ.get("INHOUSE_BOT_CONNECTION_STRING") or ""
 
 VERSION = os.environ.get("VERSION") or "dev"
 
