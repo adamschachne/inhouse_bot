@@ -67,14 +67,14 @@ class Game(bot_declarative_base):
             RED: List[GameParticipant]
 
         return Teams(
-            BLUE=[self.participants[SideEnum.BLUE, role] for role in roles_list],
-            RED=[self.participants[SideEnum.RED, role] for role in roles_list],
+            BLUE=[self.participants[SideEnum.BLUE, role] for role in roles_list],  # type: ignore
+            RED=[self.participants[SideEnum.RED, role] for role in roles_list],  # type: ignore
         )
 
     @property
-    def player_ids_list(self):
-        return [p.player_id for p in self.participants.values()]
-
+    def player_ids_list(self) -> List[int]:
+        return [p.player_id for p in self.participants.values()]  # type: ignore
+        
     @property
     def players_ping(self) -> str:
         return f"||{' '.join([f'<@{discord_id}>' for discord_id in self.player_ids_list])}||\n"

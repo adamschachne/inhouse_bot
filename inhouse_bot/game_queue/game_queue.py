@@ -123,11 +123,8 @@ class GameQueue:
         return len(self.queue_players)
 
     def __eq__(self, other):
-        if type(other) != GameQueue:
+        if not isinstance(other, GameQueue):
             return False
-
-        # I don't know how to do custom typeguards in python; this works
-        other: GameQueue = other
 
         simple_queue = [
             (qp.player_id, qp.role, qp.player.name) for qp in self.queue_players
@@ -159,7 +156,8 @@ class GameQueue:
 
     def unique_players_in_queue(self):
         uniquePlayers = set()
-        [uniquePlayers.add(qp.player_id) for qp in self.queue_players]
+        for qp in self.queue_players:
+            uniquePlayers.add(qp.player_id)
         return len(uniquePlayers)
 
     @property
