@@ -74,7 +74,7 @@ class Game(bot_declarative_base):
     @property
     def player_ids_list(self) -> List[int]:
         return [p.player_id for p in self.participants.values()]  # type: ignore
-        
+
     @property
     def players_ping(self) -> str:
         return f"||{' '.join([f'<@{discord_id}>' for discord_id in self.player_ids_list])}||\n"
