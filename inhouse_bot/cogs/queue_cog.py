@@ -117,24 +117,40 @@ class QueueCog(commands.Cog, name="Queue"):
                 # We drop all 10 players from the queue
                 game_queue.remove_players_from_queue(ready_check_message.id)
 
+                tournament: Tournament | None = None
+
                 # We commit the game to the database (without a winner)
                 with session_scope() as session:
                     session.expire_on_commit = False
-                    game = session.merge(game)  # This gets us the game ID
 
-                if game:
-                    # Create a tournament code if the feature is enabled
-                    if INHOUSE_BOT_TOURNAMENTS:
-                        tournament = await tournament_handler.create_tournament(game=game)
+                    # create a transaction savepoint to rollback to if there is an error
+                    with session.begin_nested():
+                        game = session.merge(game)  # This gets us the game ID
 
-                    queue_channel_handler.mark_queue_related_message(
-                        await ctx.send(
-                            embed=game.get_embed("GAME_ACCEPTED"),
+                        # need to commit in order to get the game id
+                        session.commit()
+
+                        if INHOUSE_BOT_TOURNAMENTS:
+                            # Create a tournament code if the feature is enabled
+                            tournament = await tournament_handler.create_tournament(
+                                game=game
+                            )
+
+                            # add the tournament code to the database
+                            session.add(tournament)
+
+                # accounce in the channel that the game is created
+                queue_channel_handler.mark_queue_related_message(
+                    await ctx.send(
+                        embed=game.get_embed(
+                            embed_type="GAME_ACCEPTED",
+                            tournament_code=tournament.code if tournament else None,
                         )
                     )
+                )
 
-                    # We create voice channels for each team in this game
-                    await create_voice_channels(ctx, game)
+                # We create voice channels for each team in this game
+                await create_voice_channels(ctx, game)
 
             elif ready is False:
                 # We remove the player who cancelled

@@ -58,11 +58,10 @@ async def get_provider(callback_url: str):
 
 async def get_tournament(name: str, provider_id: int):
     tournament = (
-        await lol.Tournament("americas")
-        .body(name=name, provider_id=provider_id)
-        .post()
+        await lol.Tournament("americas").body(name=name, provider_id=provider_id).post()
     )
     return tournament.id
+
 
 async def get_tournament_codes(
     tournament_id: str,
@@ -71,8 +70,8 @@ async def get_tournament_codes(
     team_size: int,
     spectator_type: str,
     count: int,
-    allowed_summoner_ids: List[str] = None,
-    metadata: str = None,
+    allowed_summoner_ids: List[str] | None = None,
+    metadata: str | None = None,
 ):
     if allowed_summoner_ids and len(allowed_summoner_ids) < team_size * 2:
         raise Exception("Not enough players to fill teams.")
@@ -92,6 +91,7 @@ async def get_tournament_codes(
     )
 
     return code.codes
+
 
 async def get_match_info_by_id(match_id: str):
     return await lol.Match(id=match_id).get()

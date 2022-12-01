@@ -12,6 +12,7 @@ from inhouse_bot.common_utils.constants import (
     INHOUSE_BOT_TOURNAMENTS,
 )
 from inhouse_bot.database_orm import session_scope
+from inhouse_bot.database_orm.session.session import Session
 from inhouse_bot.common_utils.lol_api.tasks import (
     get_match_info_by_id,
     get_provider,
@@ -79,67 +80,63 @@ class TournamentHandler:
 
     async def create_tournament(self, game: Game) -> Tournament:
         """
-        Create a tournament code for the given Game
+        Create a Tournament entity for the given Game. It does not add it to the database.
         """
-        with session_scope() as session:
-            session.expire_on_commit = False
+        summoners = await asyncio.gather(
+            *[
+                get_summoner_by_puuid(puuid)
+                for puuid in game.player_puuids
+                if bool(puuid)
+            ]
+        )
 
-            summoners = await asyncio.gather(
-                *[
-                    get_summoner_by_puuid(puuid)
-                    for puuid in game.player_puuids
-                    if bool(puuid)
-                ]
-            )
+        summoners.append(await get_summoner_by_name("Azula"))
 
-            summoners.append(await get_summoner_by_name("Azula"))
+        # map_type = "SUMMONERS_RIFT"
+        map_type = "HOWLING_ABYSS"
+        pick_type = "TOURNAMENT_DRAFT"
+        team_size = 1
+        spectator_type = "LOBBYONLY"
+        allowed_summoner_ids = [summoner.id for summoner in summoners]
 
-            # map_type = "SUMMONERS_RIFT"
-            map_type = "HOWLING_ABYSS"
-            pick_type = "TOURNAMENT_DRAFT"
-            team_size = 1
-            spectator_type = "LOBBYONLY"
-            allowed_summoner_ids = [summoner.id for summoner in summoners]
+        # tournament_id = await get_tournament(
+        #     name=game.id, provider_id=self.provider
+        # )
+        tournament_id = 2646831
 
-            tournament_id = await get_tournament(
-                name=game.id, provider_id=self.provider
-            )
+        # generate a secure random string
+        tournament_secret = secrets.token_urlsafe(16)
 
-            # generate a secure random string
-            tournament_secret = secrets.token_urlsafe(16)
+        codes = ["NA04b7e-f0afbbe6-3852-47c9-a5df-472fc33d92fd"]
+        # codes = await get_tournament_codes(
+        #     tournament_id=tournament_id,
+        #     map_type=map_type,
+        #     pick_type=pick_type,
+        #     team_size=team_size,
+        #     count=1,
+        #     spectator_type=spectator_type,
+        #     allowed_summoner_ids=allowed_summoner_ids,
+        #     metadata=tournament_secret,
+        # )
 
-            codes = await get_tournament_codes(
-                tournament_id=tournament_id,
-                map_type=map_type,
-                pick_type=pick_type,
-                team_size=team_size,
-                count=1,
-                spectator_type=spectator_type,
-                allowed_summoner_ids=allowed_summoner_ids,
-                metadata=tournament_secret,
-            )
+        code = codes[0]
 
-            code = codes[0]
+        # create the Tournament entity
+        tournament = Tournament(
+            code=code,
+            game=game,
+            name=game.id,
+            tournament_id=tournament_id,
+            provider_id=self.provider,
+            allowed_summoner_ids=allowed_summoner_ids,
+            team_size=team_size,
+            pick_type=pick_type,
+            spectator_type=spectator_type,
+            map_type=map_type,
+            game_id=game.id,
+            tournament_metadata=tournament_secret,
+        )
 
-            # create the Tournament entity
-            tournament = Tournament(
-                code=code,
-                game=game,
-                name=game.id,
-                tournament_id=tournament_id,
-                provider_id=self.provider,
-                allowed_summoner_ids=allowed_summoner_ids,
-                team_size=team_size,
-                pick_type=pick_type,
-                spectator_type=spectator_type,
-                map_type=map_type,
-                game_id=game.id,
-                tournament_metadata=tournament_secret,
-            )
-
-            # add the tournament to the database
-            session.add(tournament)
-            session.commit()
         return tournament
 
     async def _fallback(self, request: Request, path_name: str):
@@ -160,25 +157,27 @@ class TournamentHandler:
             if tournament is None:
                 logging.error("Tournament not found: tournament_id=%s", code)
                 return
-            
+
             # verify the tournament secret
             if tournament.tournament_metadata != game_result.metaData:
-                logging.error("Tournament secret does not match: tournament_id=%s, game_result.metaData=%s", code, game_result.metaData)
+                logging.error(
+                    "Tournament secret does not match: tournament_id=%s, game_result.metaData=%s",
+                    code,
+                    game_result.metaData,
+                )
                 return
-            
+
             # i.e. NA1_1234567890
             tournament.match_id = f"{game_result.region}_{game_result.gameId}"
-            
+
             # get the match details from the riot API
             match = await get_match_info_by_id(tournament.match_id)
-            
+
             # first team is always blue team I think? (teamid 100)
             # if match.info.teams[0].win:
-                # await 
+            # await
             # merge the tournament into the database
             session.merge(tournament)
-
-
 
         return {"message": "Success"}
 

@@ -1,13 +1,12 @@
 import logging
-import os
 import threading
+
 from datetime import datetime
 
 import discord
 from discord.ext import commands
-
-
 from discord.ext.commands import NoPrivateMessage
+
 from fastapi import FastAPI
 
 from inhouse_bot import game_queue

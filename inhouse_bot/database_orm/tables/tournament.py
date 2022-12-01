@@ -25,7 +25,9 @@ class Tournament(bot_declarative_base):
     provider_id: Mapped[int] = Column(Integer, nullable=False)
 
     # The optional list of summoner ids that are allowed in this game
-    allowed_summoner_ids: Mapped[List[str] | None] = Column(ARRAY(String, as_tuple=False, dimensions=1), nullable=True)
+    allowed_summoner_ids: Mapped[List[str] | None] = Column(
+        ARRAY(String, as_tuple=False, dimensions=1), nullable=True
+    )
 
     # size of each team (default 5v5), Valid values are 1-5.
     team_size: Mapped[int] = Column(Integer, default=5, nullable=False)
@@ -47,7 +49,9 @@ class Tournament(bot_declarative_base):
 
     # The match id of the game.
     match_id: Mapped[str] = Column(String, nullable=True)
-    
+
     # The Game for this tournament
-    game_id: Mapped[int] = Column(Integer, ForeignKey(Game.id, **foreignkey_cascade_options), nullable=False)
+    game_id: Mapped[int] = Column(
+        Integer, ForeignKey(Game.id, **foreignkey_cascade_options), nullable=False
+    )
     game: Mapped[Game] = relationship(Game, uselist=False)
