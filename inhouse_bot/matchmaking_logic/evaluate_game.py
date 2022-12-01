@@ -3,6 +3,7 @@ from typing import List
 from inhouse_bot.database_orm import Game, GameParticipant
 from inhouse_bot.dataclasses import GameInfo
 from sqlalchemy import BigInteger
+import logging
 
 
 async def get_team_mmr(team: List[GameParticipant]) -> int:
@@ -35,7 +36,6 @@ async def get_team_mmr(team: List[GameParticipant]) -> int:
         "GRANDMASTERI": 3000,
         "CHALLENGERI": 3250,
     }
-    # TODO: Log this functions data to see it returns succesfully
 
     mmr = 0
     for gameparticipant in team:
@@ -58,9 +58,9 @@ async def evaluate_game(game: Game) -> GameInfo:
     """
     Returns based on the mmrs of each
     """
-    # TODO: Log this functions data to see it returns succesfully
     blueTeamMMR = await get_team_mmr(game.teams.BLUE)
     redTeamMMR = await get_team_mmr(game.teams.RED)
 
     gameInfoObj = GameInfo(blueTeamMMR, redTeamMMR, abs(blueTeamMMR - redTeamMMR))
+    logging.info(f"TeamMMRInfo: {gameInfoObj}")
     return gameInfoObj
