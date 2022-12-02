@@ -125,15 +125,18 @@ class AdminCog(commands.Cog, name="Admin"):
         Marks the current channel as a queue or ranking channel
         """
         if channel_type.upper() == "QUEUE":
-            queue_channel_handler.mark_queue_channel(ctx.channel.id, ctx.guild.id)
-
-            await ctx.send(f"Current channel marked as a queue channel")
+            if queue_channel_handler.mark_queue_channel(ctx.channel.id, ctx.guild.id):
+                await ctx.send(f"Current channel marked as a queue channel")
+            else:
+                await ctx.send(f"Current channel is already a queue channel")
 
         elif channel_type.upper() == "RANKING":
-            ranking_channel_handler.mark_ranking_channel(
+            if ranking_channel_handler.mark_ranking_channel(
                 channel_id=ctx.channel.id, server_id=ctx.guild.id
-            )
-            await ctx.send(f"Current channel marked as a ranking channel")
+            ):
+                await ctx.send(f"Current channel marked as a ranking channel")
+            else:
+                await ctx.send(f"Current channel is already a ranking channel")
 
         else:
             await ctx.send(
