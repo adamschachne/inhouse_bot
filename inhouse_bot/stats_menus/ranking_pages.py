@@ -12,8 +12,8 @@ inflect_engine = inflect.engine()
 
 
 class RankingPagesSource(menus.ListPageSource):
-    def __init__(self, entries, embed_name_suffix):
-        self.embed_name_suffix = embed_name_suffix
+    def __init__(self, entries, embed_name: str):
+        self.embed_name = embed_name
         super().__init__(entries, per_page=10)
 
     async def format_page(
@@ -51,7 +51,7 @@ class RankingPagesSource(menus.ListPageSource):
             rows.append(output_string)
 
         embed = Embed(
-            title=f"Game History for {self.embed_name_suffix}"
+            title=f"Game History for {self.embed_name}"
             if menu
             or (
                 not show_footer and offset == 0

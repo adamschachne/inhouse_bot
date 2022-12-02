@@ -81,9 +81,7 @@ class RankingChannelHandler:
         ratings = self.get_server_ratings(channel.guild.id, limit=30)
 
         # We need 3 messages because of character limits
-        source = RankingPagesSource(
-            ratings, embed_name_suffix=f"on {channel.guild.name}"
-        )
+        source = RankingPagesSource(ratings, embed_name=channel.guild.name)
 
         new_msgs_ids = set()
         for page in range(0, 3):
