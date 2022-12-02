@@ -6,7 +6,9 @@ from inhouse_bot.game_queue import GameQueue
 
 # Ideally, that should not be hardcoded
 # This needs to be called after the first part is it creates a session
-from inhouse_bot.queue_channel_handler import queue_channel_handler
+from inhouse_bot.queue_channel_handler.queue_channel_handler import (
+    queue_channel_handler,
+)
 
 
 # This will recreate the tables and mark the channels as possible queues

@@ -7,10 +7,10 @@ class GameResultParams(BaseModel):
     winningTeam: List[Dict]
     losingTeam: List[Dict]
     shortCode: str
-    metaData: str
     gameId: int
     gameName: str
     gameType: str
     gameMap: int
     gameMode: str
     region: str
+    metaData: str | None = None

@@ -74,6 +74,10 @@ class Game(bot_declarative_base):
     def players_ping(self) -> str:
         return f"||{' '.join([f'<@{discord_id}>' for discord_id in self.player_ids_list])}||\n"
 
+    @property
+    def player_puuids(self) -> List[str | None]:
+        return [p.player.summoner_puuid for p in self.participants.values()]  # type: ignore
+
     def __str__(self):
         return tabulate(
             {
@@ -84,7 +88,11 @@ class Game(bot_declarative_base):
         )
 
     def get_embed(
-        self, embed_type: str, validated_players: List[int] = [], bot=None
+        self,
+        embed_type: str,
+        validated_players: List[int] = [],
+        bot=None,
+        tournament_code: str | None = None,
     ) -> Embed:
         if embed_type == "GAME_FOUND":
             embed = Embed(
@@ -138,11 +146,13 @@ class Game(bot_declarative_base):
                 get_team_embed_value(idx, p) for idx, p in enumerate(self.teams.RED)
             ),
         )
+
         if embed_type == "GAME_ACCEPTED":
             embed.add_field(
                 name="\u200B",
                 value="\u200B",
             )
+
             embed.add_field(
                 name="BLUE Team",
                 value=f"[OP.GG]({generate_team_opgg(self.teams.BLUE)})",
@@ -154,6 +164,11 @@ class Game(bot_declarative_base):
                 value=f"[OP.GG]({generate_team_opgg(self.teams.RED)})",
                 inline=True,
             )
+
+            if tournament_code is not None:
+                embed.add_field(
+                    name="Tournament code", value=f"`{tournament_code}`", inline=False
+                )
 
         return embed
 

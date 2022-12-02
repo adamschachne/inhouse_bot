@@ -6,7 +6,11 @@ from discord.ext.commands import guild_only
 from pyot.core.exceptions import PyotException
 
 from inhouse_bot import game_queue, matchmaking_logic
-from inhouse_bot.common_utils.constants import CONFIG_OPTIONS, PREFIX
+from inhouse_bot.common_utils.constants import (
+    CONFIG_OPTIONS,
+    INHOUSE_BOT_TOURNAMENTS,
+    PREFIX,
+)
 from inhouse_bot.common_utils.docstring import doc
 from inhouse_bot.common_utils.get_last_game import get_last_game
 from inhouse_bot.common_utils.get_server_config import get_server_config
@@ -15,7 +19,9 @@ from inhouse_bot.common_utils.lol_api.tasks import get_summoner_by_name
 from inhouse_bot.database_orm import session_scope
 from inhouse_bot.database_orm.tables.player import Player
 from inhouse_bot.inhouse_bot import InhouseBot
-from inhouse_bot.queue_channel_handler import queue_channel_handler
+from inhouse_bot.queue_channel_handler.queue_channel_handler import (
+    queue_channel_handler,
+)
 from inhouse_bot.ranking_channel_handler.ranking_channel_handler import (
     ranking_channel_handler,
 )
@@ -31,6 +37,11 @@ class AdminCog(commands.Cog, name="Admin"):
 
     def __init__(self, bot: InhouseBot):
         self.bot = bot
+
+        # players may use the Tournament feature incorrectly and need to score their games manually
+        # If you want prevent players from scoring games manually, uncomment the following code:
+        # if INHOUSE_BOT_TOURNAMENTS:
+        #     self.admin.remove_command(self.won.name)
 
     @commands.group(case_insensitive=True)
     @admin_group_check()
@@ -98,13 +109,17 @@ class AdminCog(commands.Cog, name="Admin"):
                 player_id=member.id, server_id=ctx.guild.id, session=session
             )
 
-            if game and game.winner:
-                await ctx.send(
-                    "The game has already been scored and cannot be canceled anymore"
-                )
+            if game:
+                if game.winner:
+                    await ctx.send(
+                        "The game has already been scored and cannot be canceled anymore"
+                    )
+                    return
+                else:
+                    session.delete(game)
+            else:
+                await ctx.send("The player has no ongoing game")
                 return
-
-            session.delete(game)
 
         await ctx.send(
             f"{member.display_name}’s ongoing game was cancelled and deleted from the database"
@@ -121,15 +136,22 @@ class AdminCog(commands.Cog, name="Admin"):
         Marks the current channel as a queue or ranking channel
         """
         if channel_type.upper() == "QUEUE":
-            queue_channel_handler.mark_queue_channel(ctx.channel.id, ctx.guild.id)
-
-            await ctx.send(f"Current channel marked as a queue channel")
+            if queue_channel_handler.is_queue_channel(ctx.channel.id):
+                await ctx.send(f"Current channel is already a queue channel")
+            else:
+                queue_channel_handler.mark_queue_channel(
+                    channel_id=ctx.channel.id, server_id=ctx.guild.id
+                )
+                await ctx.send(f"Current channel marked as a queue channel")
 
         elif channel_type.upper() == "RANKING":
-            ranking_channel_handler.mark_ranking_channel(
-                channel_id=ctx.channel.id, server_id=ctx.guild.id
-            )
-            await ctx.send(f"Current channel marked as a ranking channel")
+            if ranking_channel_handler.is_ranking_channel(ctx.channel.id):
+                await ctx.send(f"Current channel is already a ranking channel")
+            else:
+                ranking_channel_handler.mark_ranking_channel(
+                    channel_id=ctx.channel.id, server_id=ctx.guild.id
+                )
+                await ctx.send(f"Current channel marked as a ranking channel")
 
         else:
             await ctx.send(

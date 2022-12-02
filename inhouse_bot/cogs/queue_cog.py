@@ -7,7 +7,7 @@ from discord.ext import commands
 from inhouse_bot import game_queue
 from inhouse_bot import matchmaking_logic
 
-from inhouse_bot.common_utils.constants import PREFIX
+from inhouse_bot.common_utils.constants import INHOUSE_BOT_TOURNAMENTS, PREFIX
 from inhouse_bot.common_utils.docstring import doc
 from inhouse_bot.common_utils.emoji_and_thumbnails import get_role_emoji
 from inhouse_bot.common_utils.fields import QueueRoleConverter, roles_list
@@ -17,13 +17,16 @@ from inhouse_bot.common_utils.is_verified_user import are_verified_users
 
 from inhouse_bot.database_orm import session_scope
 from inhouse_bot.database_orm.tables.game import Game
+from inhouse_bot.database_orm.tables.tournament import Tournament
 from inhouse_bot.inhouse_bot import InhouseBot
-from inhouse_bot.queue_channel_handler import queue_channel_handler
-from inhouse_bot.queue_channel_handler.queue_channel_handler import queue_channel_only
+from inhouse_bot.queue_channel_handler.queue_channel_handler import (
+    queue_channel_handler,
+    queue_channel_only,
+)
 from inhouse_bot.ranking_channel_handler.ranking_channel_handler import (
     ranking_channel_handler,
 )
-from inhouse_bot.tournament.tournament_handler import tournament_api_check
+from inhouse_bot.tournament import tournament_handler
 from inhouse_bot.voice_channel_handler.voice_channel_handler import (
     create_voice_channels,
     remove_voice_channels,
@@ -43,6 +46,11 @@ class QueueCog(commands.Cog, name="Queue"):
         self.players_whose_last_game_got_cancelled = {}
 
         self.games_getting_scored_ids = set()
+
+        # uncomment this code to disable !won
+        # It's left because players may use the Tournament feature incorrectly and need to score their games manually
+        # if INHOUSE_BOT_TOURNAMENTS:
+        #     self.bot.remove_command(self.won.name)
 
     async def run_matchmaking_logic(
         self,
@@ -115,14 +123,35 @@ class QueueCog(commands.Cog, name="Queue"):
                 # We drop all 10 players from the queue
                 game_queue.remove_players_from_queue(ready_check_message.id)
 
+                tournament: Tournament | None = None
+
                 # We commit the game to the database (without a winner)
                 with session_scope() as session:
                     session.expire_on_commit = False
-                    game = session.merge(game)  # This gets us the game ID
 
+                    # create a transaction savepoint to rollback to if there is an error
+                    with session.begin_nested():
+                        game = session.merge(game)  # This gets us the game ID
+
+                        # need to commit in order to get the game id
+                        session.commit()
+
+                        if INHOUSE_BOT_TOURNAMENTS:
+                            # Create a tournament code if the feature is enabled
+                            tournament = await tournament_handler.create_tournament(
+                                game=game
+                            )
+
+                            # add the tournament code to the database
+                            session.add(tournament)
+
+                # accounce in the channel that the game is created
                 queue_channel_handler.mark_queue_related_message(
                     await ctx.send(
-                        embed=game.get_embed("GAME_ACCEPTED"),
+                        embed=game.get_embed(
+                            embed_type="GAME_ACCEPTED",
+                            tournament_code=tournament.code if tournament else None,
+                        )
                     )
                 )
 
@@ -316,7 +345,6 @@ class QueueCog(commands.Cog, name="Queue"):
             bot=self.bot, server_id=ctx.guild.id
         )
 
-    @tournament_api_check(is_enabled=False)
     @commands.command(aliases=["win", "wins", "victory"])
     @queue_channel_only()
     @doc(
@@ -334,6 +362,7 @@ class QueueCog(commands.Cog, name="Queue"):
         ctx: commands.Context,
     ):
         with session_scope() as session:
+            session.expire_on_commit = False
             # Get the latest game
             game, participant = get_last_game(
                 player_id=ctx.author.id, server_id=ctx.guild.id, session=session
@@ -379,12 +408,12 @@ class QueueCog(commands.Cog, name="Queue"):
                 await ctx.send("Score input was either cancelled or timed out")
                 return
 
-            # If we get there, the score was validated and we can simply update the game and the ratings
-            queue_channel_handler.mark_queue_related_message(
-                await ctx.send(
-                    f"Game {game.id} has been scored as a win for {participant.side.value} and ratings have been updated"
-                )
+        # If we get there, the score was validated and we can simply update the game and the ratings
+        queue_channel_handler.mark_queue_related_message(
+            await ctx.send(
+                f"Game {game.id} has been scored as a win for {participant.side.value} and ratings have been updated"
             )
+        )
 
         matchmaking_logic.score_game_from_winning_player(
             player_id=ctx.author.id, server_id=ctx.guild.id

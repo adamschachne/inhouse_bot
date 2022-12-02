@@ -144,15 +144,16 @@ class QueueChannelHandler:
         """
         Marks the given channel + server combo as a queue
         """
+
+        if self.is_queue_channel(channel_id):
+            return
+
         channel = ChannelInformation(
             id=channel_id, server_id=server_id, channel_type="QUEUE"
         )
         with session_scope() as session:
             session.merge(channel)
-
         self._queue_channels.append(channel)
-
-        logging.info(f"Marked {channel_id} as a queue channel")
 
     def unmark_queue_channel(self, channel_id):
         game_queue.reset_queue(channel_id)

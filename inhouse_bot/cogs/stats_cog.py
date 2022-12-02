@@ -154,7 +154,7 @@ class StatsCog(commands.Cog, name="Stats"):
         pages = menus.MenuPages(
             source=RankingPagesSource(
                 ratings,
-                embed_name_suffix=f"{ctx.guild.name}{f' - {get_role_emoji(role)}' if role else ''}",
+                embed_name=f"{ctx.guild.name}{f' - {get_role_emoji(role)}' if role else ''}",
             ),
             clear_reactions_after=True,
         )

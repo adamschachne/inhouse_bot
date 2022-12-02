@@ -4,16 +4,34 @@ from discord.ext import commands
 from discord.ext.commands import group
 
 from inhouse_bot.common_utils.emoji_and_thumbnails import get_champion_emoji
+from inhouse_bot.common_utils.lol_api.tasks import get_summoner_by_name
 from inhouse_bot.database_orm import session_scope
 from inhouse_bot.common_utils.validation_dialog import checkmark_validation
 from inhouse_bot.common_utils.fields import RoleEnum, roles_list, ChampionNameConverter
 from inhouse_bot.common_utils.get_last_game import get_last_game
+from inhouse_bot.database_orm.tables.player import Player
 from inhouse_bot.game_queue import GameQueue
 from inhouse_bot.inhouse_bot import InhouseBot
 from inhouse_bot import game_queue, matchmaking_logic
-from inhouse_bot.queue_channel_handler import queue_channel_handler
+from inhouse_bot.queue_channel_handler.queue_channel_handler import (
+    queue_channel_handler,
+)
 from inhouse_bot.ranking_channel_handler.ranking_channel_handler import (
     ranking_channel_handler,
+)
+
+# These are summoner names that can be use for testing
+TEST_SUMMONER_NAMES = (
+    "Anivia",
+    "Ashe",
+    "Ezreal",
+    "Sivir",
+    "Lulu",
+    "Tryndamere",
+    "Ryze",
+    "Hecarim",
+    "Morgana",
+    "Bard",
 )
 
 
@@ -58,6 +76,31 @@ class TestCog(commands.Cog, name="TEST"):
         )
 
     @test.command()
+    async def setup(self, ctx: commands.Context):
+        await ctx.send("Setting up test players...")
+        with session_scope() as session:
+            for i in range(len(TEST_SUMMONER_NAMES)):
+                summoner = await get_summoner_by_name(TEST_SUMMONER_NAMES[i])
+                player = session.merge(
+                    Player(
+                        id=i,
+                        server_id=ctx.guild.id,
+                        name=summoner.name,
+                        summoner_puuid=summoner.puuid,
+                    )
+                )
+                session.add(player)
+        await ctx.send("Finished setup")
+
+    @test.command()
+    async def cleanup(self, ctx: commands.Context):
+        with session_scope() as session:
+            session.query(Player).filter(
+                Player.id.in_(list(range(len(TEST_SUMMONER_NAMES))))
+            ).delete()
+        await ctx.send("Cleaned up test players from db")
+
+    @test.command()
     async def queue(self, ctx: commands.Context):
         """
         Testing the queue pop message
@@ -65,7 +108,11 @@ class TestCog(commands.Cog, name="TEST"):
         # We put 10 people in the queue
         for i in range(0, 10):
             await game_queue.add_player(
-                i, roles_list[i % 5], ctx.channel.id, ctx.guild.id, name=str(i)
+                i,
+                roles_list[i % 5],
+                ctx.channel.id,
+                ctx.guild.id,
+                name=TEST_SUMMONER_NAMES[i],
             )
 
         await ctx.send("The queue has been filled")
@@ -81,7 +128,11 @@ class TestCog(commands.Cog, name="TEST"):
         # We put 10 people in the queue
         for i in range(0, 10):
             await game_queue.add_player(
-                i, roles_list[i % 5], ctx.channel.id, ctx.guild.id, name=str(i)
+                i,
+                roles_list[i % 5],
+                ctx.channel.id,
+                ctx.guild.id,
+                name=TEST_SUMMONER_NAMES[i],
             )
 
         await game_queue.add_duo(
@@ -91,7 +142,7 @@ class TestCog(commands.Cog, name="TEST"):
             RoleEnum.MID,
             ctx.channel.id,
             ctx.guild.id,
-            first_player_name="6",
+            first_player_name=TEST_SUMMONER_NAMES[6],
             second_player_name=ctx.author.display_name,
         )
 
@@ -112,7 +163,11 @@ class TestCog(commands.Cog, name="TEST"):
         # We put 9 people in the queue
         for i in range(0, 9):
             await game_queue.add_player(
-                i, roles_list[i % 5], ctx.channel.id, ctx.guild.id, name=str(i)
+                i,
+                roles_list[i % 5],
+                ctx.channel.id,
+                ctx.guild.id,
+                name=TEST_SUMMONER_NAMES[i],
             )
 
         await game_queue.add_player(

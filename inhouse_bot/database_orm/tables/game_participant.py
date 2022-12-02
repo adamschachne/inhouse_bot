@@ -46,7 +46,9 @@ class GameParticipant(bot_declarative_base):
     # Foreign key to Player
     __table_args__ = (
         ForeignKeyConstraint(
-            [player_id, player_server_id], [Player.id, Player.server_id]
+            [player_id, player_server_id],
+            [Player.id, Player.server_id],
+            **foreignkey_cascade_options
         ),
     )
 
