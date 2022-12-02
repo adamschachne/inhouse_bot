@@ -1,5 +1,6 @@
 import itertools
 import random
+import math
 import logging
 from typing import Optional, List
 
@@ -8,7 +9,7 @@ from inhouse_bot.common_utils.fields import roles_list, SideEnum
 from inhouse_bot.game_queue import GameQueue
 
 
-def find_best_game(queue: GameQueue, game_quality_threshold=0.1) -> Optional[Game]:
+async def find_best_game(queue: GameQueue) -> Optional[Game]:
     # Do not do anything if there’s not at least 2 players in queue per role
 
     for role_queue in queue.queue_players_dict.values():
@@ -24,18 +25,16 @@ def find_best_game(queue: GameQueue, game_quality_threshold=0.1) -> Optional[Gam
     for players_threshold in range(10, len(queue) + 1):
         # The queue_players are already ordered the right way to take age into account in matchmaking
         #   We first try with the 10 first players, then 11, ...
-        best_game = find_best_game_for_queue_players(
+        best_game = await find_best_game_for_queue_players(
             queue.queue_players[:players_threshold]
         )
-
-        # We stop when we beat the game quality threshold (below 60% winrate for one side)
-        if best_game and best_game.matchmaking_score < game_quality_threshold:
-            return best_game
 
     return best_game
 
 
-def find_best_game_for_queue_players(queue_players: List[QueuePlayer]) -> Game | None:
+async def find_best_game_for_queue_players(
+    queue_players: List[QueuePlayer],
+) -> Game | None:
     """
     A sub function to allow us to iterate on QueuePlayers from oldest to newest
     """
@@ -61,8 +60,8 @@ def find_best_game_for_queue_players(queue_players: List[QueuePlayer]) -> Game |
             ]
         )
 
-    # We do a very simple maximum search
-    best_score = 1
+    # Search for the smallest difference between teams
+    best_score = math.inf
     best_game: Game | None = None
 
     # This generates all possible team compositions
@@ -118,18 +117,18 @@ def find_best_game_for_queue_players(queue_players: List[QueuePlayer]) -> Game |
 
         # We create a Game object for easier handling, and it will compute the matchmaking score
         game = Game(players)
+        score = await game.matchmake_game()
 
         # Importantly, we do *not* add the game to the session, as that will be handled by the bot logic itself
-
-        if game.matchmaking_score < best_score:
-            logging.info(
-                f"New best game found with {game.blue_expected_winrate*100:.2f} blue side expected winrate"
-            )
-
+        if score < best_score:
+            logging.info(f"The best difference in score {score}")
             best_game = game
-            best_score = game.matchmaking_score
-            # If the game is seen as being below 51% winrate for one side, we simply stop there (helps with big lists)
-            if best_score < 0.01:
-                break
+            best_score = score
 
+        # Different variation of code above:
+        # if score < 200 (can choose any low value, 200 seems like a good choice):
+        #     # Store each game:
+        #     game_list.append(game)
+        # return  random.choice(game_list)
+        # Reasoning: To give the algorithm some variety when the players in queue don't change, collect all permuations that are 'good' and choose one by random
     return best_game

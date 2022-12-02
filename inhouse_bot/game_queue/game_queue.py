@@ -4,7 +4,7 @@ from typing import Dict, List, Tuple
 from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 
-from inhouse_bot.database_orm import QueuePlayer, PlayerRating, session_scope
+from inhouse_bot.database_orm import QueuePlayer, session_scope
 from inhouse_bot.common_utils.fields import roles_list, RoleEnum
 
 
@@ -38,17 +38,6 @@ class GameQueue:
 
             # Else, we have our server_id from the players themselves
             self.server_id = potential_queue_players[0].player_server_id
-
-            # We make sure all our queue players have the right ratings
-            for queue_player in potential_queue_players:
-                try:
-                    assert queue_player.player.ratings[queue_player.role]
-                except KeyError:
-                    # If not, we create a new rating object
-                    queue_player.player.ratings[queue_player.role] = PlayerRating(
-                        queue_player.player, queue_player.role
-                    )
-                    session.commit()
 
             # Afterwards, we get players currently in a ready check in any other queue in the server
             queue_query = (
