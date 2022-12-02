@@ -122,7 +122,9 @@ class InhouseBot(commands.Bot):
             # Check for completed matches once every 5 job cycles
             if INHOUSE_BOT_TOURNAMENTS and self.job_counter % 5 == 0:
                 # TODO this is only checking the first server, but it should check all servers
-                self.loop.create_task(tournament_check(bot=self, server_id=self.guilds[0].id))
+                self.loop.create_task(
+                    tournament_check(bot=self, server_id=self.guilds[0].id)
+                )
         except Exception as e:
             logging.error(f"error {e}")
         finally:

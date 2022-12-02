@@ -21,7 +21,7 @@ from inhouse_bot.database_orm.tables.tournament import Tournament
 from inhouse_bot.inhouse_bot import InhouseBot
 from inhouse_bot.queue_channel_handler.queue_channel_handler import (
     queue_channel_handler,
-    queue_channel_only
+    queue_channel_only,
 )
 from inhouse_bot.ranking_channel_handler.ranking_channel_handler import (
     ranking_channel_handler,

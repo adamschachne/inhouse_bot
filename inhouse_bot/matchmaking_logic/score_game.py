@@ -38,7 +38,9 @@ def update_trueskill(game: Game, session: Session):
             session.merge(player_rating)
 
 
-def score_game_from_winning_player(player_id: int, server_id: int, session: Session | None = None):
+def score_game_from_winning_player(
+    player_id: int, server_id: int, session: Session | None = None
+):
     """
     Scores the last game of the player on the server as a *win*
     """

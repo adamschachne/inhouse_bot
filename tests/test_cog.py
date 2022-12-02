@@ -11,7 +11,9 @@ from inhouse_bot.common_utils.get_last_game import get_last_game
 from inhouse_bot.game_queue import GameQueue
 from inhouse_bot.inhouse_bot import InhouseBot
 from inhouse_bot import game_queue, matchmaking_logic
-from inhouse_bot.queue_channel_handler.queue_channel_handler import queue_channel_handler
+from inhouse_bot.queue_channel_handler.queue_channel_handler import (
+    queue_channel_handler,
+)
 from inhouse_bot.ranking_channel_handler.ranking_channel_handler import (
     ranking_channel_handler,
 )
