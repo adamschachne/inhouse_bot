@@ -27,7 +27,7 @@ def get_active_games(session: Session) -> List[Tuple[Game, Tournament]]:
 
 async def tournament_check(bot: commands.Bot, server_id: int):
     """
-    Tournaments API background job. This looks at the active games tries to find a completed tournament match
+    Tournaments background job. This looks at the active games and tries to find a completed tournament match
     """
 
     logging.info("Checking for completed matches")
