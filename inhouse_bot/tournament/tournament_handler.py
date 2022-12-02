@@ -100,9 +100,7 @@ class TournamentHandler:
         spectator_type = "LOBBYONLY"
         allowed_summoner_ids = [summoner.id for summoner in summoners]
 
-        tournament_id = await get_tournament(
-            name=game.id, provider_id=self.provider
-        )
+        tournament_id = await get_tournament(name=game.id, provider_id=self.provider)
 
         # generate a secure random string
         tournament_secret = secrets.token_urlsafe(16)
