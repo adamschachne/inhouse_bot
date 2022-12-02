@@ -33,13 +33,16 @@ class RankingChannelHandler:
     def get_server_ranking_channels(self, server_id: int) -> List[int]:
         return [c.id for c in self._ranking_channels if c.server_id == server_id]
 
-    def mark_ranking_channel(self, channel_id, server_id) -> bool:
+    def is_ranking_channel(self, channel_id: int) -> bool:
+        return channel_id in self.ranking_channel_ids
+
+    def mark_ranking_channel(self, channel_id: int, server_id):
         """
         Marks the given channel + server combo as a queue. Returns True if the channel was not already marked
         """
 
-        if any(c.id == channel_id for c in self._ranking_channels):
-            return False
+        if self.is_ranking_channel(channel_id):
+            return
 
         channel = ChannelInformation(
             id=channel_id, server_id=server_id, channel_type="RANKING"
@@ -48,7 +51,6 @@ class RankingChannelHandler:
             session.merge(channel)
 
         self._ranking_channels.append(channel)
-        return True
 
     def unmark_ranking_channel(self, channel_id):
 

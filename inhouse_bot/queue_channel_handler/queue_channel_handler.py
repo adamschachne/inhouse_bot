@@ -140,13 +140,13 @@ class QueueChannelHandler:
             msg.id not in self.latest_queue_message_ids.values()
         )
 
-    def mark_queue_channel(self, channel_id, server_id) -> bool:
+    def mark_queue_channel(self, channel_id, server_id):
         """
-        Marks the given channel + server combo as a queue. Returns True if the channel was not already a queue channel
+        Marks the given channel + server combo as a queue
         """
 
-        if any(c.id == channel_id for c in self._queue_channels):
-            return False
+        if self.is_queue_channel(channel_id):
+            return
 
         channel = ChannelInformation(
             id=channel_id, server_id=server_id, channel_type="QUEUE"
@@ -154,8 +154,6 @@ class QueueChannelHandler:
         with session_scope() as session:
             session.merge(channel)
         self._queue_channels.append(channel)
-
-        return True
 
     def unmark_queue_channel(self, channel_id):
         game_queue.reset_queue(channel_id)
