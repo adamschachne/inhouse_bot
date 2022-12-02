@@ -1,8 +1,8 @@
 """tournament
 
-Revision ID: 512409880220
-Revises: 54b2441edc64
-Create Date: 2022-11-30 13:03:01.962993
+Revision ID: 089ebe529fd3
+Revises: 52693750d371
+Create Date: 2022-12-02 10:06:18.410978
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '512409880220'
-down_revision = '54b2441edc64'
+revision = '089ebe529fd3'
+down_revision = '52693750d371'
 branch_labels = None
 depends_on = None
 
