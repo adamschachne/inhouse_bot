@@ -1,7 +1,7 @@
 import inhouse_bot.common_utils.lol_api.tasks as lol
 from typing import List
 from inhouse_bot.database_orm import Game, GameParticipant
-from inhouse_bot.dataclasses import GameInfo
+from inhouse_bot.dataclasses.GameInfo import GameInfo
 from sqlalchemy import BigInteger
 import logging
 

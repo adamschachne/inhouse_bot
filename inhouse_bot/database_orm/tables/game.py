@@ -59,7 +59,7 @@ class Game(bot_declarative_base):
     # We define teams only as properties as it should be easier to work with
     @property
     def teams(self):
-        import inhouse_bot.dataclasses.Teams as Teams
+        from inhouse_bot.dataclasses.Teams import Teams
 
         return Teams(
             BLUE=[self.participants[SideEnum.BLUE, role] for role in roles_list],  # type: ignore
