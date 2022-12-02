@@ -38,6 +38,8 @@ class AdminCog(commands.Cog, name="Admin"):
     def __init__(self, bot: InhouseBot):
         self.bot = bot
 
+        # players may use the Tournament feature incorrectly and need to score their games manually
+        # If you want prevent players from scoring games manually, uncomment the following code:
         # if INHOUSE_BOT_TOURNAMENTS:
         #     self.admin.remove_command(self.won.name)
 
