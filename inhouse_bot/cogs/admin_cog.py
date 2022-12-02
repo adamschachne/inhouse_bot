@@ -6,7 +6,7 @@ from discord.ext.commands import guild_only
 from pyot.core.exceptions import PyotException
 
 from inhouse_bot import game_queue, matchmaking_logic
-from inhouse_bot.common_utils.constants import CONFIG_OPTIONS, PREFIX
+from inhouse_bot.common_utils.constants import CONFIG_OPTIONS, INHOUSE_BOT_TOURNAMENTS, PREFIX
 from inhouse_bot.common_utils.docstring import doc
 from inhouse_bot.common_utils.get_last_game import get_last_game
 from inhouse_bot.common_utils.get_server_config import get_server_config
@@ -15,7 +15,7 @@ from inhouse_bot.common_utils.lol_api.tasks import get_summoner_by_name
 from inhouse_bot.database_orm import session_scope
 from inhouse_bot.database_orm.tables.player import Player
 from inhouse_bot.inhouse_bot import InhouseBot
-from inhouse_bot.queue_channel_handler import queue_channel_handler
+from inhouse_bot.queue_channel_handler.queue_channel_handler import queue_channel_handler
 from inhouse_bot.ranking_channel_handler.ranking_channel_handler import (
     ranking_channel_handler,
 )
@@ -31,6 +31,9 @@ class AdminCog(commands.Cog, name="Admin"):
 
     def __init__(self, bot: InhouseBot):
         self.bot = bot
+
+        # if INHOUSE_BOT_TOURNAMENTS:
+        #     self.admin.remove_command(self.won.name)
 
     @commands.group(case_insensitive=True)
     @admin_group_check()
@@ -68,7 +71,7 @@ class AdminCog(commands.Cog, name="Admin"):
         await queue_channel_handler.update_queue_channels(
             bot=self.bot, server_id=ctx.guild.id
         )
-
+    
     @admin.command()
     async def won(self, ctx: commands.Context, member: discord.Member):
         """

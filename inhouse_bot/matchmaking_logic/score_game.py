@@ -52,5 +52,3 @@ def score_game_from_winning_player(player_id: int, server_id: int, session: Sess
         game.winner = participant.side
 
         update_trueskill(game, session)
-
-        # Commit will happen here

@@ -19,13 +19,14 @@ from inhouse_bot.database_orm import session_scope
 from inhouse_bot.database_orm.tables.game import Game
 from inhouse_bot.database_orm.tables.tournament import Tournament
 from inhouse_bot.inhouse_bot import InhouseBot
-from inhouse_bot.queue_channel_handler import queue_channel_handler
-from inhouse_bot.queue_channel_handler.queue_channel_handler import queue_channel_only
+from inhouse_bot.queue_channel_handler.queue_channel_handler import (
+    queue_channel_handler,
+    queue_channel_only
+)
 from inhouse_bot.ranking_channel_handler.ranking_channel_handler import (
     ranking_channel_handler,
 )
 from inhouse_bot.tournament import tournament_handler
-from inhouse_bot.tournament.tournament_handler import tournament_api_check
 from inhouse_bot.voice_channel_handler.voice_channel_handler import (
     create_voice_channels,
     remove_voice_channels,
@@ -45,6 +46,11 @@ class QueueCog(commands.Cog, name="Queue"):
         self.players_whose_last_game_got_cancelled = {}
 
         self.games_getting_scored_ids = set()
+
+        # uncomment this code to disable !won
+        # It's left because players may use the Tournament feature incorrectly and need to score their games manually
+        # if INHOUSE_BOT_TOURNAMENTS:
+        #     self.bot.remove_command(self.won.name)
 
     async def run_matchmaking_logic(
         self,
@@ -346,7 +352,6 @@ class QueueCog(commands.Cog, name="Queue"):
             bot=self.bot, server_id=ctx.guild.id
         )
 
-    @tournament_api_check(is_enabled=False)
     @commands.command(aliases=["win", "wins", "victory"])
     @queue_channel_only()
     @doc(

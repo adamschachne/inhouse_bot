@@ -8,7 +8,7 @@ from discord.ext.commands import Bot
 from inhouse_bot.common_utils.constants import INHOUSE_BOT_TEST
 from inhouse_bot.database_orm import Game
 
-from inhouse_bot.queue_channel_handler import queue_channel_handler
+from inhouse_bot.queue_channel_handler.queue_channel_handler import queue_channel_handler
 
 
 async def checkmark_validation(

@@ -47,6 +47,7 @@ class InhouseBot(commands.Bot):
     """
 
     app: FastAPI
+    job_counter: int = 0
 
     def __init__(self, app: FastAPI, **options):
         super().__init__(PREFIX, intents=intents, case_insensitive=True, **options)
@@ -118,11 +119,14 @@ class InhouseBot(commands.Bot):
                         )
                     )
 
-            if INHOUSE_BOT_TOURNAMENTS:
-                self.loop.create_task(tournament_check(bot=self, server_id=None))
+            # Check for completed matches once every 5 job cycles
+            if INHOUSE_BOT_TOURNAMENTS and self.job_counter % 5 == 0:
+                # TODO this is only checking the first server, but it should check all servers
+                self.loop.create_task(tournament_check(bot=self, server_id=self.guilds[0].id))
         except Exception as e:
             logging.error(f"error {e}")
         finally:
+            self.job_counter += 1
             # Always make sure the next jobs are scheduled
             threading.Timer(BACKGROUND_JOBS_INTERVAL, self.background_jobs).start()
 
@@ -176,9 +180,15 @@ class InhouseBot(commands.Bot):
 
             if isinstance(og_error, game_queue.PlayerInGame):
                 await ctx.send(
-                    f"Your last game was not scored and you are not allowed to queue at the moment\n"
-                    f"One of the winners can score the game with `{PREFIX}won`, "
-                    f"or players can agree to cancel it with `{PREFIX}cancel`",
+                    (
+                        f"Your last game was not scored and you are not allowed to queue at the moment.\n"
+                        + (
+                            f"The game will automatically be scored shortly after it ends, "
+                            if INHOUSE_BOT_TOURNAMENTS
+                            else f"One of the winners can score the game with `{PREFIX}won`, "
+                        )
+                        + f"or players can agree to cancel it with `{PREFIX}cancel`"
+                    ),
                     delete_after=20,
                 )
 

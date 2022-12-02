@@ -95,3 +95,11 @@ async def get_tournament_codes(
 
 async def get_match_info_by_id(match_id: str):
     return await lol.Match(id=match_id).get()
+
+
+async def get_tournament_match_history(puuid: str, start_timestamp: int):
+    return (
+        await lol.MatchHistory(puuid=puuid)
+        .query(type="tourney", start_time=start_timestamp)
+        .get()
+    )
