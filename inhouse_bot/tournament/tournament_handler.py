@@ -94,34 +94,29 @@ class TournamentHandler:
             ]
         )
 
-        summoners.append(await get_summoner_by_name("Azula"))
-
-        # map_type = "SUMMONERS_RIFT"
-        map_type = "HOWLING_ABYSS"
+        map_type = "SUMMONERS_RIFT"
         pick_type = "TOURNAMENT_DRAFT"
-        team_size = 1
+        team_size = 5
         spectator_type = "LOBBYONLY"
         allowed_summoner_ids = [summoner.id for summoner in summoners]
 
-        # tournament_id = await get_tournament(
-        #     name=game.id, provider_id=self.provider
-        # )
-        tournament_id = 2646831
+        tournament_id = await get_tournament(
+            name=game.id, provider_id=self.provider
+        )
 
         # generate a secure random string
         tournament_secret = secrets.token_urlsafe(16)
 
-        codes = ["NA04b7e-f0afbbe6-3852-47c9-a5df-472fc33d92fd"]
-        # codes = await get_tournament_codes(
-        #     tournament_id=tournament_id,
-        #     map_type=map_type,
-        #     pick_type=pick_type,
-        #     team_size=team_size,
-        #     count=1,
-        #     spectator_type=spectator_type,
-        #     allowed_summoner_ids=allowed_summoner_ids,
-        #     metadata=tournament_secret,
-        # )
+        codes = await get_tournament_codes(
+            tournament_id=tournament_id,
+            map_type=map_type,
+            pick_type=pick_type,
+            team_size=team_size,
+            count=1,
+            spectator_type=spectator_type,
+            allowed_summoner_ids=allowed_summoner_ids,
+            metadata=tournament_secret,
+        )
 
         code = codes[0]
 

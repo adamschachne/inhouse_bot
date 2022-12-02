@@ -26,8 +26,6 @@ async def average_win_rate_10_matches(summoner_name: str):
 
 
 async def get_summoner_by_puuid(puuid: str):
-    if (puuid is None) or (puuid == ""):
-        return None
     summoner = await lol.Summoner(puuid=puuid).get()
     return summoner
 
