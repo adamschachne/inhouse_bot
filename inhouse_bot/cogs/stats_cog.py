@@ -1,5 +1,4 @@
 from pydoc import describe
-import tempfile
 from collections import defaultdict
 from datetime import datetime, timedelta
 
@@ -23,12 +22,11 @@ from inhouse_bot.common_utils.stats_helper import (
     get_player_history,
     get_roles_most_used_champs,
 )
-from inhouse_bot.common_utils.emoji_and_thumbnails import get_role_emoji, get_rank_emoji
+from inhouse_bot.common_utils.emoji_and_thumbnails import get_role_emoji
 from inhouse_bot.database_orm import (
     session_scope,
     GameParticipant,
     Game,
-    PlayerRating,
     Player,
 )
 from inhouse_bot.common_utils.fields import ChampionNameConverter, RoleConverter
@@ -156,70 +154,11 @@ class StatsCog(commands.Cog, name="Stats"):
         pages = menus.MenuPages(
             source=RankingPagesSource(
                 ratings,
-                embed_name_suffix=f"on {ctx.guild.name}{f' - {get_role_emoji(role)}' if role else ''}",
+                embed_name_suffix=f"{ctx.guild.name}{f' - {get_role_emoji(role)}' if role else ''}",
             ),
             clear_reactions_after=True,
         )
         await pages.start(ctx)
-
-    @commands.command(aliases=["rating_history", "ratings_history"])
-    async def mmr_history(self, ctx: commands.Context):
-        """
-        Displays a graph of your MMR history over the past month
-        """
-        date_start = datetime.now() - timedelta(hours=24 * 30)
-
-        with session_scope() as session:
-
-            participants = (
-                session.query(
-                    Game.start,
-                    GameParticipant.role,
-                    GameParticipant.mmr,
-                    PlayerRating.mmr.label("latest_mmr"),
-                    Player.name,
-                )
-                .select_from(Game)
-                .join(GameParticipant)
-                .join(PlayerRating)  # Join on rating first to select the right role
-                .join(Player)
-                .filter(GameParticipant.player_id == ctx.author.id)
-                .filter(Game.start > date_start)
-                .order_by(Game.start.asc())
-            )
-
-        mmr_history = defaultdict(lambda: {"dates": [], "mmr": []})
-
-        latest_role_mmr = {}
-
-        for row in participants:
-            mmr_history[row.role]["dates"].append(row.start)
-            mmr_history[row.role]["mmr"].append(row.mmr)
-
-            latest_role_mmr[row.role] = row.latest_mmr
-
-        legend = []
-        for role in mmr_history:
-            # We add a data point at the current timestamp with the player’s current MMR
-            mmr_history[role]["dates"].append(datetime.now())
-            mmr_history[role]["mmr"].append(latest_role_mmr[role])
-
-            plt.plot(mmr_history[role]["dates"], mmr_history[role]["mmr"])
-            legend.append(role.value)
-
-        plt.legend(legend)
-        plt.title(f"MMR variation in the last month for {row.name}")
-        mplcyberpunk.add_glow_effects()
-
-        # This looks to be unnecessary verbose with all the closing by hand, I should take a look
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp:
-            plt.savefig(temp.name)
-            file = discord.File(temp.name, filename=temp.name)
-            await ctx.send(file=file)
-            plt.close()
-            temp.close()
-
-    # TODO MEDIUM PRIO (simple) Add !champions_stats once again!!!
 
     @commands.command(aliases=["scout", "profile"])
     @guild_only()

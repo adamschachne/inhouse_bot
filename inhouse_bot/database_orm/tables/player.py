@@ -1,14 +1,9 @@
 import logging
 from sqlalchemy import Column, String, BigInteger, UniqueConstraint
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship, Mapped
+from sqlalchemy.orm import Mapped
 from sqlalchemy.orm.collections import attribute_mapped_collection
-from inhouse_bot.common_utils.fields import RoleEnum
 from inhouse_bot.database_orm import bot_declarative_base
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from inhouse_bot.database_orm.tables.player_rating import PlayerRating
 
 
 class Player(bot_declarative_base):
@@ -35,15 +30,6 @@ class Player(bot_declarative_base):
 
     # Summoner puuid
     summoner_puuid: Mapped[str | None] = Column(String)
-
-    # We automatically load the ratings when loading a Player object
-    ratings: Mapped[dict[RoleEnum, "PlayerRating"]] = relationship(
-        "PlayerRating",
-        collection_class=attribute_mapped_collection("role"),
-        backref="player",
-        cascade="all, delete-orphan",
-        lazy="selectin",
-    )
 
     def __repr__(self):
         return f"<Player: {self.id=} | {self.name=}>"

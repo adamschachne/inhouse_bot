@@ -5,7 +5,7 @@ from datetime import datetime
 from discord import Embed
 from tabulate import tabulate
 
-from sqlalchemy import Column, Integer, DateTime, Float, BigInteger
+from sqlalchemy import Column, Integer, DateTime, BigInteger
 from sqlalchemy.orm import relationship, Mapped
 from sqlalchemy.orm.collections import mapped_collection
 from sqlalchemy.dialects.postgresql import ENUM
@@ -36,8 +36,9 @@ class Game(bot_declarative_base):
     # Server the game was played from
     server_id: Mapped[int] = Column(BigInteger)
 
-    # Predicted outcome before the game was played
-    blue_expected_winrate: Mapped[float] = Column(Float)
+    # Pre-game team mmr
+    blue_team_mmr: Mapped[int] = Column(BigInteger)
+    red_team_mmr: Mapped[int] = Column(BigInteger)
 
     # Winner, updated at the end of the game
     winner: Mapped[SideEnum | None] = Column(
@@ -58,21 +59,12 @@ class Game(bot_declarative_base):
     # We define teams only as properties as it should be easier to work with
     @property
     def teams(self):
-        from inhouse_bot.database_orm import GameParticipant
-
-        @dataclass
-        class Teams:
-            BLUE: List[GameParticipant]
-            RED: List[GameParticipant]
+        from inhouse_bot.dataclasses.Teams import Teams
 
         return Teams(
             BLUE=[self.participants[SideEnum.BLUE, role] for role in roles_list],  # type: ignore
             RED=[self.participants[SideEnum.RED, role] for role in roles_list],  # type: ignore
         )
-
-    @property
-    def matchmaking_score(self):
-        return abs(0.5 - self.blue_expected_winrate)
 
     @property
     def player_ids_list(self) -> List[int]:
@@ -105,8 +97,7 @@ class Game(bot_declarative_base):
         if embed_type == "GAME_FOUND":
             embed = Embed(
                 title="📢 Game found 📢",
-                description=f"Blue side expected winrate is {self.blue_expected_winrate * 100:.1f}%\n"
-                "If you are ready to play, press ✅\n"
+                description=f"If you are ready to play, press ✅\n"
                 "If you cannot play, press ❌\n"
                 "The queue will timeout after a few minutes and AFK players will be automatically dropped "
                 "from queue",
@@ -142,7 +133,7 @@ class Game(bot_declarative_base):
 
         # Blue team
         embed.add_field(
-            name="BLUE",
+            name=f"BLUE ({self.blue_team_mmr})",
             value="\n".join(
                 get_team_embed_value(idx, p) for idx, p in enumerate(self.teams.BLUE)
             ),
@@ -150,7 +141,7 @@ class Game(bot_declarative_base):
 
         # Red team
         embed.add_field(
-            name="RED",
+            name=f"RED ({self.red_team_mmr})",
             value="\n".join(
                 get_team_embed_value(idx, p) for idx, p in enumerate(self.teams.RED)
             ),
@@ -190,7 +181,6 @@ class Game(bot_declarative_base):
         """
         # We use local imports to not have circular imports
         from inhouse_bot.database_orm import GameParticipant
-        from inhouse_bot.matchmaking_logic import evaluate_game
 
         self.start = datetime.now()
 
@@ -203,5 +193,11 @@ class Game(bot_declarative_base):
         game_participants = list(self.participants.values())  # type: ignore
         self.server_id = game_participants[0].player_server_id
 
-        # Then, we compute the expected blue side winrate (which we use for matchmaking)
-        self.blue_expected_winrate = evaluate_game(self)
+    async def matchmake_game(self) -> int:
+        from inhouse_bot.matchmaking_logic import evaluate_game
+
+        gameInfo = await evaluate_game(self)
+        self.blue_team_mmr = gameInfo.blueTeamMMR
+        self.red_team_mmr = gameInfo.redTeamMMR
+
+        return gameInfo.teamDifference
