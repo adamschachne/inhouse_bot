@@ -81,14 +81,23 @@ class TestCog(commands.Cog, name="TEST"):
         with session_scope() as session:
             for i in range(len(TEST_SUMMONER_NAMES)):
                 summoner = await get_summoner_by_name(TEST_SUMMONER_NAMES[i])
-                player = session.merge(Player(id=i, server_id=ctx.guild.id, name=summoner.name, summoner_puuid=summoner.puuid))
+                player = session.merge(
+                    Player(
+                        id=i,
+                        server_id=ctx.guild.id,
+                        name=summoner.name,
+                        summoner_puuid=summoner.puuid,
+                    )
+                )
                 session.add(player)
         await ctx.send("Finished setup")
 
     @test.command()
     async def cleanup(self, ctx: commands.Context):
         with session_scope() as session:
-            session.query(Player).filter(Player.id.in_(list(range(len(TEST_SUMMONER_NAMES))))).delete()
+            session.query(Player).filter(
+                Player.id.in_(list(range(len(TEST_SUMMONER_NAMES))))
+            ).delete()
         await ctx.send("Cleaned up test players from db")
 
     @test.command()
