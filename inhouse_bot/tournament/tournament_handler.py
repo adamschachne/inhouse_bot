@@ -16,6 +16,7 @@ from inhouse_bot.common_utils.constants import (
     INHOUSE_BOT_TOURNAMENTS,
 )
 from inhouse_bot.common_utils.fields import SideEnum
+from inhouse_bot.common_utils.get_server_admins import get_server_admins
 from inhouse_bot.database_orm import session_scope
 from inhouse_bot.database_orm.session.session import Session
 from inhouse_bot.common_utils.lol_api.tasks import (
@@ -59,7 +60,7 @@ class TournamentHandler:
         logging.info(
             "Created tournament provider: id=%s url=%s",
             self.provider,
-            INHOUSE_BOT_TOURNAMENT_URL,
+            callback_url,
         )
         return 0
 
@@ -86,12 +87,22 @@ class TournamentHandler:
         """
         Create a Tournament entity for the given Game. It does not add it to the database.
         """
+
+        puuids: Set[str] = set()
+
+        # add all players in the game
+        for puuid in game.player_puuids:
+            if puuid:
+                puuids.add(puuid)
+
+        # add admins for the server
+        for admin in get_server_admins(server_id=game.server_id):
+            if admin.summoner_puuid:
+                puuids.add(admin.summoner_puuid)
+
+        # get the summoners of the players in the game and the admins on the server
         summoners = await asyncio.gather(
-            *[
-                get_summoner_by_puuid(puuid)
-                for puuid in game.player_puuids
-                if bool(puuid)
-            ]
+            *[get_summoner_by_puuid(puuid) for puuid in list(puuids)]
         )
 
         map_type = "SUMMONERS_RIFT"
@@ -160,7 +171,12 @@ class TournamentHandler:
             if not isinstance(puuid, str):
                 continue
 
-            player = players_by_puuid[puuid]
+            player = players_by_puuid.get(puuid, None)
+
+            # if the player is not in the match, they can't have a champion
+            if not player:
+                continue
+
             if player.win == True:
                 any_winning_player = participant
 
