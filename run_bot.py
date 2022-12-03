@@ -25,7 +25,7 @@ if __name__ == "__main__":
             asyncio.create_task(bot.start())
 
         # TODO uvicorn emits logs that are logged twice
-        uvicorn.run(app, host="127.0.0.1", port=PORT, log_level=logging.INFO)
+        uvicorn.run(app, host="0.0.0.0", port=PORT, log_level=logging.INFO)
     else:
         # Run the bot without starting the API (no tournaments)
         asyncio.run(bot.start())
