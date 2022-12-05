@@ -522,9 +522,7 @@ class QueueCog(commands.Cog, name="Queue"):
         summoner = await get_summoner_by_name(summoner_name, no_cache=True)
 
         # get the player from the database
-        player = get_player(
-            player_id=ctx.author.id, server_id=ctx.guild.id, session=None
-        )
+        player = get_player(player_id=ctx.author.id, server_id=ctx.guild.id)
         if player and player.summoner_puuid == summoner.puuid:
             await ctx.send("Your summoner name is already verified")
             return
