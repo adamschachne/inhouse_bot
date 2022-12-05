@@ -4,6 +4,7 @@ on:
   push:
     # whenever code is merged to main, deploy new image
     branches: [ "main" ]
+  pull_request: # TEST
   
 jobs:
   build_and_publish:
@@ -24,12 +25,13 @@ jobs:
       # Set version
       - name: Set version
         id: version
-        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       # Build the image with tag matching repo owner name
       - name: Build the Docker image
-        run: docker build --build-arg VERSION=${{ steps.version.outputs.sha_short }} -t ghcr.io/${{ github.repository }} .
+        # run: docker build --build-arg VERSION=${{ env.sha_short }} -t ghcr.io/${{ github.repository }} .
+        run: echo ${{ env.sha_short }}
 
       # Upload the image
-      - name: Push to GitHub Container Registry
-        run:  docker push ghcr.io/${{ github.repository }}:latest
+      # - name: Push to GitHub Container Registry
+      #   run:  docker push ghcr.io/${{ github.repository }}:latest
