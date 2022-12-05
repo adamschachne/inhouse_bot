@@ -511,11 +511,13 @@ class QueueCog(commands.Cog, name="Queue"):
     async def verify(
         self,
         ctx: commands.Context,
-        summoner_name: str,
+        *name_arg: str,
     ):
-        if not summoner_name:
+        if not name_arg:
             await ctx.send("Please provide a summoner name")
             return
+
+        summoner_name = " ".join(name_arg)
 
         summoner = await get_summoner_by_name(summoner_name, no_cache=True)
 
