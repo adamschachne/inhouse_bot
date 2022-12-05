@@ -24,11 +24,11 @@ jobs:
       # Set version
       - name: Set version
         id: version
-        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       # Build the image with tag matching repo owner name
       - name: Build the Docker image
-        run: docker build --build-arg VERSION=${{ steps.version.outputs.sha_short }} -t ghcr.io/${{ github.repository }} .
+        run: docker build --build-arg VERSION=${{ env.sha_short }} -t ghcr.io/${{ github.repository }} .
 
       # Upload the image
       - name: Push to GitHub Container Registry
