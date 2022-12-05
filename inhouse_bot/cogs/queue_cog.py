@@ -1,5 +1,6 @@
 import logging
 import discord
+import random
 
 from datetime import datetime, timedelta
 from discord.ext import commands
@@ -12,6 +13,12 @@ from inhouse_bot.common_utils.docstring import doc
 from inhouse_bot.common_utils.emoji_and_thumbnails import get_role_emoji
 from inhouse_bot.common_utils.fields import QueueRoleConverter, roles_list
 from inhouse_bot.common_utils.get_last_game import get_last_game
+from inhouse_bot.common_utils.get_player import get_player
+from inhouse_bot.common_utils.lol_api.tasks import (
+    get_profile_icon_by_id,
+    get_summoner_by_name,
+)
+from inhouse_bot.common_utils.set_player_summoner_puuid import set_player_summoner
 from inhouse_bot.common_utils.validation_dialog import checkmark_validation
 from inhouse_bot.common_utils.is_verified_user import are_verified_users
 
@@ -490,3 +497,76 @@ class QueueCog(commands.Cog, name="Queue"):
                 queue_channel_handler.mark_queue_related_message(
                     await ctx.send(f"Game {game.id} was cancelled")
                 )
+
+    @commands.command()
+    @queue_channel_only()
+    @doc(
+        f"""
+        Verifies your Summoner name
+
+        Example:
+            {PREFIX}verify Doublelift
+    """
+    )
+    async def verify(
+        self,
+        ctx: commands.Context,
+        summoner_name: str,
+    ):
+        if not summoner_name:
+            await ctx.send("Please provide a summoner name")
+            return
+
+        summoner = await get_summoner_by_name(summoner_name, no_cache=True)
+
+        # get the player from the database
+        player = get_player(
+            player_id=ctx.author.id, server_id=ctx.guild.id, session=None
+        )
+        if player and player.summoner_puuid == summoner.puuid:
+            await ctx.send("Your summoner name is already verified")
+            return
+
+        # Use icons 1 through 28 for verification -- excluding the current profile icon
+        verification_icons_ids = [
+            i for i in range(1, 28) if i is not summoner.profile_icon.id
+        ]
+        icon = await get_profile_icon_by_id(
+            icon_id=random.choice(verification_icons_ids)
+        )
+
+        verification_message = await ctx.send(
+            f"You are verifying the summoner name: `{summoner.name}`\n"
+            + "Please change your Summoner icon to the following icon\n"
+            + "Press ✅ once you have done so, or ❌ to cancel\n",
+            file=discord.File(f"assets/profile-icons/{icon.id}.jpg"),
+        )
+
+        result, ids_to_drop = await checkmark_validation(
+            bot=self.bot,
+            message=verification_message,
+            validation_threshold=1,
+            timeout=120,
+            validating_players_ids=[ctx.author.id],
+        )
+
+        if ids_to_drop or result is False:
+            await ctx.send("Verification was cancelled or timed out")
+            return
+
+        # If we get here, the the author pressed the checkmark --> we can now verify the summoner icon
+        summoner = await get_summoner_by_name(summoner_name, no_cache=True)
+        if summoner.profile_icon.id is not icon.id:
+            await ctx.send(
+                f"Verification failed: Your profile icon is not the one shown in the message"
+            )
+            return
+
+        set_player_summoner(
+            server_id=ctx.guild.id,
+            user_id=ctx.author.id,
+            summoner_puuid=summoner.puuid,
+            summoner_name=summoner.name,
+        )
+
+        await ctx.send(f"Verified Summoner name: {summoner.name}")
