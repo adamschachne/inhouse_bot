@@ -6,8 +6,13 @@ from pyot.models import lol
 from pyot.core.exceptions import PyotException
 
 
-async def get_summoner_by_name(summoner_name: str):
-    return await lol.Summoner(name=summoner_name).get()
+async def get_summoner_by_name(summoner_name: str, no_cache: bool = False):
+    summoner = lol.Summoner(name=summoner_name)
+    if no_cache:
+        # clear the pipeline sources of this token before requesting
+        await summoner.metapipeline.delete(await summoner.token())
+
+    return await summoner.get()
 
 
 async def average_win_rate_10_matches(summoner_name: str):
@@ -101,3 +106,7 @@ async def get_tournament_match_history(puuid: str, start_timestamp: int):
         .query(type="tourney", start_time=start_timestamp)
         .get()
     )
+
+
+async def get_profile_icon_by_id(icon_id: int):
+    return await lol.ProfileIcon(id=icon_id).get()

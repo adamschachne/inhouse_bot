@@ -8,7 +8,6 @@ from pyot.core.exceptions import PyotException
 from inhouse_bot import game_queue, matchmaking_logic
 from inhouse_bot.common_utils.constants import (
     CONFIG_OPTIONS,
-    INHOUSE_BOT_TOURNAMENTS,
     PREFIX,
 )
 from inhouse_bot.common_utils.docstring import doc
@@ -16,6 +15,7 @@ from inhouse_bot.common_utils.get_last_game import get_last_game
 from inhouse_bot.common_utils.get_server_config import get_server_config
 from inhouse_bot.common_utils.is_admin import admin_group_check
 from inhouse_bot.common_utils.lol_api.tasks import get_summoner_by_name
+from inhouse_bot.common_utils.set_player_summoner_puuid import set_player_summoner
 from inhouse_bot.database_orm import session_scope
 from inhouse_bot.database_orm.tables.player import Player
 from inhouse_bot.inhouse_bot import InhouseBot
@@ -247,36 +247,13 @@ class AdminCog(commands.Cog, name="Admin"):
             # anything else gets raised
             raise ex
 
-        with session_scope() as session:
-            # TODO move these queries into a util/service
-            player = (
-                session.query(Player)
-                .select_from(Player)
-                .filter(Player.server_id == server_id)
-                .filter(Player.summoner_puuid == summoner.puuid)
-            ).one_or_none()
-
-            if player:
-                if player.id == user.id:
-                    return await ctx.send("Summoner is already verified")
-                else:
-                    # case when there is already a player with this name -> clear player's name and puuid
-                    (
-                        session.query(Player)
-                        .filter(Player.id == player.id)
-                        .filter(Player.server_id == server_id)
-                        .update({Player.summoner_puuid: None, Player.name: None})
-                    )
-
-            # save the new player's summoner name
-            session.merge(
-                Player(
-                    id=user.id,
-                    server_id=server_id,
-                    name=summoner.name,
-                    summoner_puuid=summoner.puuid,
-                )
-            )
+        # this is idempotent. It's safe to verify the same user multiple times
+        set_player_summoner(
+            server_id=server_id,
+            user_id=user.id,
+            summoner_puuid=summoner.puuid,
+            summoner_name=summoner.name,
+        )
 
         # refresh the queue channel to display any name change
         await queue_channel_handler.update_queue_channels(

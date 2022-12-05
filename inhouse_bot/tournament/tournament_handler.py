@@ -22,7 +22,6 @@ from inhouse_bot.database_orm.session.session import Session
 from inhouse_bot.common_utils.lol_api.tasks import (
     get_match_info_by_id,
     get_provider,
-    get_summoner_by_name,
     get_summoner_by_puuid,
     get_tournament,
     get_tournament_codes,
