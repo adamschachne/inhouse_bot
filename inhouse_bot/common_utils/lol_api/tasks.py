@@ -8,11 +8,12 @@ from pyot.core.exceptions import PyotException
 
 async def get_summoner_by_name(summoner_name: str, no_cache: bool = False):
     summoner = lol.Summoner(name=summoner_name)
-    if no_cache:       
+    if no_cache:
         # clear the pipeline sources of this token before requesting
         await summoner.metapipeline.delete(await summoner.token())
 
     return await summoner.get()
+
 
 async def average_win_rate_10_matches(summoner_name: str):
     async with Queue() as queue:
