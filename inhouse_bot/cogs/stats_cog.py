@@ -187,7 +187,7 @@ class StatsCog(commands.Cog, name="Stats"):
 
             # All Users default to unverified until further data is processed
             embed = discord.Embed()
-            file = discord.File("riot-ranks/UNVERIFIED.png")
+            file = discord.File("assets/riot-ranks/UNVERIFIED.png")
             embed.set_thumbnail(url="attachment://UNVERIFIED.png")
 
             if player.summoner_puuid:
@@ -204,7 +204,7 @@ class StatsCog(commands.Cog, name="Stats"):
                 if playerRankInfo:
                     embed.set_author(name=f"Rank: {playerRankInfo['tier']}")
                     file = discord.File(
-                        f"riot-ranks/{playerRankInfo['tier']}.png",
+                        f"assets/riot-ranks/{playerRankInfo['tier']}.png",
                         filename=f"{playerRankInfo['tier']}.png",
                     )
                     embed.set_thumbnail(
@@ -214,7 +214,7 @@ class StatsCog(commands.Cog, name="Stats"):
                 else:
                     embed.set_author(name=f"Rank: UNRANKED")
                     file = discord.File(
-                        "riot-ranks/UNRANKED.png", filename="UNRANKED.png"
+                        "assets/riot-ranks/UNRANKED.png", filename="UNRANKED.png"
                     )
                     embed.set_thumbnail(url="attachment://UNRANKED.png")
 
