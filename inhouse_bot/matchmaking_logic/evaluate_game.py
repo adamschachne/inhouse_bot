@@ -1,5 +1,5 @@
 import inhouse_bot.common_utils.lol_api.tasks as lol
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from inhouse_bot.database_orm import Game, GameParticipant
 from inhouse_bot.dataclasses.GameInfo import GameInfo
 from sqlalchemy import BigInteger
@@ -78,7 +78,7 @@ async def find_team_and_lane_mmr(team: List[GameParticipant]) -> GameInfo:
     return GameInfo(blueTeamMMR, redTeamMMR, teamMMRWithLane)
 
 
-def get_lane_differential(laneMMR: Dict[str, int]) -> int:
+def get_lane_differential(laneMMR: Dict[Tuple[SideEnum, RoleEnum], int]) -> int:
     """
     1. Get each players opponent and attempt to put players of equal level against each other, if they queue for the same role
     """
