@@ -44,18 +44,7 @@ async def find_team_and_lane_mmr(team: List[GameParticipant]) -> GameInfo:
         "CHALLENGERI": 3250,
     }
 
-    laneMMR = {
-        "BLUETOP": 0,
-        "BLUEJGL": 0,
-        "BLUEMID": 0,
-        "BLUEBOT": 0,
-        "BLUESUP": 0,
-        "REDTOP": 0,
-        "REDJGL": 0,
-        "REDMID": 0,
-        "REDBOT": 0,
-        "REDSUP": 0,
-    }
+    laneMMR = {(side, role): 0 for side in SideEnum for role in RoleEnum}
 
     blueTeamMMR = 0
     redTeamMMR = 0
@@ -78,9 +67,7 @@ async def find_team_and_lane_mmr(team: List[GameParticipant]) -> GameInfo:
             redTeamMMR += value
 
         # Storing each players lane mmr
-        if gameparticipant.role in RoleEnum:
-            laneMMRString = str(gameparticipant.side + gameparticipant.role)
-            laneMMR[laneMMRString] = value
+        laneMMR[(gameparticipant.side, gameparticipant.role)] = value
 
     teamMMR = abs(blueTeamMMR - redTeamMMR)
     teamMMRWithLane = teamMMR + get_lane_differential(laneMMR)
@@ -88,8 +75,6 @@ async def find_team_and_lane_mmr(team: List[GameParticipant]) -> GameInfo:
     logging.info(
         f"Blue Team: {blueTeamMMR} | Red Team: {redTeamMMR} | TeamMMRDifferenceWithLane: {teamMMRWithLane}"
     )
-
-    print("\n")
     return GameInfo(blueTeamMMR, redTeamMMR, teamMMRWithLane)
 
 
@@ -97,11 +82,25 @@ def get_lane_differential(laneMMR: Dict[str, int]) -> int:
     """
     1. Get each players opponent and attempt to put players of equal level against each other, if they queue for the same role
     """
-    topDiff = abs(laneMMR["BLUETOP"] - laneMMR["REDTOP"])
-    jgDiff = abs(laneMMR["BLUEJGL"] - laneMMR["REDJGL"])
-    midDiff = abs(laneMMR["BLUEMID"] - laneMMR["REDMID"])
-    botDiff = abs(laneMMR["BLUEBOT"] - laneMMR["REDBOT"])
-    suppDiff = abs(laneMMR["BLUESUP"] - laneMMR["REDSUP"])
+    topDiff = abs(
+        laneMMR[(SideEnum.BLUE, RoleEnum.TOP)] - laneMMR[(SideEnum.RED, RoleEnum.TOP)]
+    )
+
+    jgDiff = abs(
+        laneMMR[(SideEnum.BLUE, RoleEnum.JGL)] - laneMMR[(SideEnum.RED, RoleEnum.JGL)]
+    )
+
+    midDiff = abs(
+        laneMMR[(SideEnum.BLUE, RoleEnum.MID)] - laneMMR[(SideEnum.RED, RoleEnum.MID)]
+    )
+
+    botDiff = abs(
+        laneMMR[(SideEnum.BLUE, RoleEnum.BOT)] - laneMMR[(SideEnum.RED, RoleEnum.BOT)]
+    )
+
+    suppDiff = abs(
+        laneMMR[(SideEnum.BLUE, RoleEnum.SUP)] - laneMMR[(SideEnum.RED, RoleEnum.SUP)]
+    )
     return topDiff + jgDiff + midDiff + botDiff + suppDiff
 
 
