@@ -1,12 +1,19 @@
 import inhouse_bot.common_utils.lol_api.tasks as lol
-from typing import List
+from typing import List, Dict
 from inhouse_bot.database_orm import Game, GameParticipant
 from inhouse_bot.dataclasses.GameInfo import GameInfo
 from sqlalchemy import BigInteger
 import logging
+from inhouse_bot.common_utils.fields import SideEnum, RoleEnum
 
 
-async def get_team_mmr(team: List[GameParticipant]) -> int:
+async def find_team_and_lane_mmr(team: List[GameParticipant]) -> GameInfo:
+    """
+    1. Sum the MMR each team
+    2. Compare the MMR of each player and their lane opponent
+    3. Attempt to find the smallest possible difference among MMR
+    """
+
     mmrValues = {
         "IRONIV": 200,
         "IRONIII": 400,
@@ -37,30 +44,71 @@ async def get_team_mmr(team: List[GameParticipant]) -> int:
         "CHALLENGERI": 3250,
     }
 
-    mmr = 0
+    laneMMR = {
+        "BLUETOP": 0,
+        "BLUEJGL": 0,
+        "BLUEMID": 0,
+        "BLUEBOT": 0,
+        "BLUESUP": 0,
+        "REDTOP": 0,
+        "REDJGL": 0,
+        "REDMID": 0,
+        "REDBOT": 0,
+        "REDSUP": 0,
+    }
+
+    blueTeamMMR = 0
+    redTeamMMR = 0
     for gameparticipant in team:
         summoner = await lol.get_summoner_by_puuid(
             str(gameparticipant.player.summoner_puuid)
         )
         playerRankInfo = await lol.get_summoner_rank_info_by_id(summoner.id)
+
         if playerRankInfo:
             rankString = playerRankInfo["tier"] + playerRankInfo["rank"]
             value = mmrValues[rankString]
-            mmr += value
         else:
-            # We assume players without rank play at a silver level
-            # (TODO: Silver 4 can still be too high for unranked players, consider going to bronze/iron if matchmaking is really bad)
-            mmr += mmrValues["SILVERIV"]
-    return mmr
+            value = mmrValues["BRONZEI"]
+
+        if gameparticipant.side == SideEnum.BLUE:
+            blueTeamMMR += value
+
+        elif gameparticipant.side == SideEnum.RED:
+            redTeamMMR += value
+
+        # Storing each players lane mmr
+        if gameparticipant.role in RoleEnum:
+            laneMMRString = str(gameparticipant.side + gameparticipant.role)
+            laneMMR[laneMMRString] = value
+
+    teamMMR = abs(blueTeamMMR - redTeamMMR)
+    teamMMRWithLane = teamMMR + get_lane_differential(laneMMR)
+
+    logging.info(
+        f"Blue Team: {blueTeamMMR} | Red Team: {redTeamMMR} | TeamMMRDifferenceWithLane: {teamMMRWithLane}"
+    )
+
+    print("\n")
+    return GameInfo(blueTeamMMR, redTeamMMR, teamMMRWithLane)
+
+
+def get_lane_differential(laneMMR: Dict[str, int]) -> int:
+    """
+    1. Get each players opponent and attempt to put players of equal level against each other, if they queue for the same role
+    """
+    topDiff = abs(laneMMR["BLUETOP"] - laneMMR["REDTOP"])
+    jgDiff = abs(laneMMR["BLUEJGL"] - laneMMR["REDJGL"])
+    midDiff = abs(laneMMR["BLUEMID"] - laneMMR["REDMID"])
+    botDiff = abs(laneMMR["BLUEBOT"] - laneMMR["REDBOT"])
+    suppDiff = abs(laneMMR["BLUESUP"] - laneMMR["REDSUP"])
+    return topDiff + jgDiff + midDiff + botDiff + suppDiff
 
 
 async def evaluate_game(game: Game) -> GameInfo:
-    """
-    Returns based on the mmrs of each
-    """
-    blueTeamMMR = await get_team_mmr(game.teams.BLUE)
-    redTeamMMR = await get_team_mmr(game.teams.RED)
 
-    gameInfoObj = GameInfo(blueTeamMMR, redTeamMMR, abs(blueTeamMMR - redTeamMMR))
-    logging.info(f"TeamMMRInfo: {gameInfoObj}")
-    return gameInfoObj
+    teamsList = []
+    teamsList.extend(game.teams.BLUE)
+    teamsList.extend(game.teams.RED)
+
+    return await find_team_and_lane_mmr(teamsList)
