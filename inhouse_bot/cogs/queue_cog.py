@@ -529,7 +529,7 @@ class QueueCog(commands.Cog, name="Queue"):
 
         # Use icons 1 through 28 for verification -- excluding the current profile icon
         verification_icons_ids = [
-            i for i in range(1, 29) if i is not summoner.profile_icon.id
+            i for i in range(1, 29) if i != summoner.profile_icon.id
         ]
         icon = await get_profile_icon_by_id(
             icon_id=random.choice(verification_icons_ids)
