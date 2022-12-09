@@ -13,6 +13,9 @@ class RoleEnum(str, Enum):
     BOT = "BOT"
     SUP = "SUP"
 
+    def __str__(self):
+        return self.value
+
 
 roles_list = [
     RoleEnum.TOP,
@@ -26,6 +29,9 @@ roles_list = [
 class SideEnum(str, Enum):
     BLUE = "BLUE"
     RED = "RED"
+
+    def __str__(self):
+        return self.value
 
 
 foreignkey_cascade_options: MutableMapping = {

@@ -7,17 +7,19 @@ A Discord bot to handle League of Legends in-house games, with role queue, match
 
 This is a fork of [inhouse_bot](https://github.com/mrtolkien/inhouse_bot). The original project is no longer maintained, so I'm using this repo to develop new features.
 
-## Running the application
+## Setting up the bot
 
 1. Install [Docker](https://docs.docker.com/get-docker/)
-2. Activate your bot on the Discord developer portal and give it the Server Members privileged intent: [Video](http://www.youtube.com/watch?v=TksVS8PE2fw   "Youtube Video")
+2. Activate your bot on the Discord developer portal and give it the Server Members and Message Content privileged intents: [Video](http://www.youtube.com/watch?v=TksVS8PE2fw   "Youtube Video")
 3. In docker.compose yml, replace all the values as needed:
     - INHOUSE_BOT_TOKEN = ```{token of discord bot}```
     - INHOUSE_BOT_RIOT_API_KEY = ```{riot api key}```
     - POSTGRES_PASSWORD: = ```{postgres password}```
 4. Run ```docker compose build ```
-5. Run ```docker compose up -d``` 
-6. You are finished, the application should be running :smiley:
+5. Run ```docker compose up -d```
+6. The bot should be running now
+7. Create a new text channel for queuing and mark it with `!admin mark queue`
+8. You are finished :smiley:
 
 # How the matchmaking algorithm works
 1. Generate all possible teams with players in queue
@@ -66,6 +68,8 @@ This is a fork of [inhouse_bot](https://github.com/mrtolkien/inhouse_bot). The o
 - `!cancel` cancels your ongoing game, requiring validation from at least 6 players in the game
 
 # Admin features
+- `!admin mark` marks a text channel as a Queue or Ranking channel
+
 - `!admin reset @user` removes the user from all queues (his name or discord ID work too)
 
 - `!admin reset #channel` resets the queue in the given channel (or the current channel with `!admin reset`)
