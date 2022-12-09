@@ -25,6 +25,14 @@ services:
 
       # Controls running db upgrade
       RUN_MIGRATIONS: true
+
+    logging:
+      driver: "splunk"
+      options:
+        splunk-url: http://docker.for.windows.localhost:8088 # or can be http://docker.for.mac.localhost:8088 or http://localhost:8088 (Depends on host machine)
+        splunk-token: 0000-00000-00000
+        splunk-format: raw
+
     volumes:
       # Socket volume to connect to the database
       - type: volume
@@ -49,6 +57,17 @@ services:
       POSTGRES_DB: inhouse_bot
     ports:
       - 5432:5432
+
+  splunk:
+    image: splunk/splunk:latest
+    environment:
+      - SPLUNK_PASSWORD=anypassword
+      - SPLUNK_START_ARGS=--accept-license
+      - SPLUNK_HEC_TOKEN=0000-00000-00000
+      - SPLUNK_HEC_SSL=False
+    ports:
+      - 8000:8000
+      - 8088:8088
 
   adminer:
     image: adminer
