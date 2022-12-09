@@ -207,7 +207,7 @@ class TournamentHandler:
 
         queue_channel_handler.mark_queue_related_message(
             await self.bot.get_channel(queue_channel_id).send(
-                f"Game {game_id} has been scored as a win for {winning_side.value}!"
+                f"Game {game_id} has been scored as a win for {winning_side}!"
             )
         )
 
