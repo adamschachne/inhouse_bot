@@ -7,48 +7,28 @@ A Discord bot to handle League of Legends in-house games, with role queue, match
 
 This is a fork of [inhouse_bot](https://github.com/mrtolkien/inhouse_bot). The original project is no longer maintained, so I'm using this repo to develop new features.
 
-## Running the app
- 
- 1. Install [Docker](https://docs.docker.com/get-docker/)
- 2. Activate your bot on the Discord developer portal and give it the Server Members privileged intent: [Video](http://www.youtube.com/watch?v=TksVS8PE2fw    "Youtube Video")
- 
- 3. In github, go: profile in top right -> Settings -> Developer settings -> Personal Access Tokens -> Generate new token:
-    
-    a. Name to indicate personal access token
-    
-    b. Select ```(write:packages and read:packages and delete:packages)```
-    
-    c. Generate token
-    
-    d. Copy token value
- 
- 4. In terminal do the following:
-    
-    a. export CR_PAT=```{your_token_value}```
-    
-    b. ```echo $CR_PAT | docker login ghcr.io {github_user_name} --password-stdin```
-    
-    c. After that command, you should get (login succeeded)
+## Running the application
 
-5. In docker.compose yml, replace all the values as needed:
-    
-    a. INHOUSE_BOT_TOKEN = ```{token of discord bot}```
-    
-    b. INHOUSE_BOT_RIOT_API_KEY = ```{riot api key}```
-    
-    c. POSTGRES_PASSWORD: = ```{postgres password}``` -- can be anything.
-    
-    d. And for all the emojis copy over the values of the pictures you get from your discord server
- 
- 6. ```docker compose build ```
+1. Install [Docker](https://docs.docker.com/get-docker/)
+2. Activate your bot on the Discord developer portal and give it the Server Members privileged intent: [Video](http://www.youtube.com/watch?v=TksVS8PE2fw   "Youtube Video")
+3. In docker.compose yml, replace all the values as needed:
+    - INHOUSE_BOT_TOKEN = ```{token of discord bot}```
+    - INHOUSE_BOT_RIOT_API_KEY = ```{riot api key}```
+    - POSTGRES_PASSWORD: = ```{postgres password}```
+4. **Optional** (Recommended): Uncomment services in docker-compose.yml
+    - Adminer - Interface to view your DB and alter tables on port 8085
+    - Splunk - Inteface to view your logs without the use of docker commands on port 8000
+5. Run ```docker compose build ```
+6. Run ```docker compose up -d``` 
+7. You are finished, the application should be running :smiley:
 
- 7. ```docker compose up -d```, at this point the application should be running
+**Note**: If you opted to use splunk, there might be a case where the container fails to run because the splunk image is building, do ```docker compose up``` after a couple of minutes
 
-# How Algorithm Works
+# How Bot Algorithm Works
 1. Generate all possible teams with players in queue
-2. Get each players summoner rift rank (Solo/Duo)
+2. Get each players summoner rift rank (Solo/Duo or Flex(if no solo duo rank is available))
 3. Get rank value for Team A and Team B
-4. Attempt to find the smallest difference amongst Team A and Team B
+4. Attempt to find the smallest difference amongst Team A and Team B and on a lane to lane matchup
 5. Do this for all teams generated
 
 **Potential Drawbacks To This Algorithm**:
