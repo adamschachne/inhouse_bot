@@ -19,7 +19,7 @@ This is a fork of [inhouse_bot](https://github.com/mrtolkien/inhouse_bot). The o
 5. Run ```docker compose up -d``` 
 6. You are finished, the application should be running :smiley:
 
-# How Bot Algorithm Works
+# How the matchmaking algorithm works
 1. Generate all possible teams with players in queue
 2. Get each players summoner rift rank (Solo/Duo or Flex(if no solo duo rank is available))
 3. Get rank value for Team A and Team B
