@@ -14,6 +14,10 @@ def admin_group_check():
     """
 
     def predicate(ctx: commands.Context):
+        # If the user is the owner of the server, they are an admin
+        if ctx.author.id == ctx.guild.owner_id:
+            return True
+
         return is_admin(id=ctx.author.id, server_id=ctx.guild.id)
 
     return check(predicate)
