@@ -15,14 +15,9 @@ This is a fork of [inhouse_bot](https://github.com/mrtolkien/inhouse_bot). The o
     - INHOUSE_BOT_TOKEN = ```{token of discord bot}```
     - INHOUSE_BOT_RIOT_API_KEY = ```{riot api key}```
     - POSTGRES_PASSWORD: = ```{postgres password}```
-4. **Optional** (Recommended): Uncomment services in docker-compose.yml
-    - Adminer - Interface to view your DB and alter tables on port 8085
-    - Splunk - Inteface to view your logs without the use of docker commands on port 8000
-5. Run ```docker compose build ```
-6. Run ```docker compose up -d``` 
-7. You are finished, the application should be running :smiley:
-
-**Note**: If you opted to use splunk, there might be a case where the container fails to run because the splunk image is building, do ```docker compose up``` after a couple of minutes
+4. Run ```docker compose build ```
+5. Run ```docker compose up -d``` 
+6. You are finished, the application should be running :smiley:
 
 # How Bot Algorithm Works
 1. Generate all possible teams with players in queue
