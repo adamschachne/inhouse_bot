@@ -11,7 +11,7 @@ QUEUE_RESET_TIME = os.environ.get("QUEUE_RESET_TIME") or "12:00"
 BACKGROUND_JOBS_INTERVAL = os.environ.get("BACKGROUND_JOBS_INTERVAL") or 60
 
 # tournaments
-INHOUSE_BOT_TOURNAMENTS = os.environ.get("INHOUSE_BOT_TOURNAMENTS") or False
+INHOUSE_BOT_TOURNAMENTS = bool(os.environ.get("INHOUSE_BOT_TOURNAMENTS"))
 INHOUSE_BOT_TOURNAMENT_URL = os.environ.get("INHOUSE_BOT_TOURNAMENT_URL") or None
 PORT = os.environ.get("INHOUSE_BOT_API_PORT") or 5000
 
@@ -27,7 +27,7 @@ INHOUSE_BOT_CONNECTION_STRING = os.environ.get("INHOUSE_BOT_CONNECTION_STRING") 
 VERSION = os.environ.get("VERSION") or "dev"
 
 # test
-INHOUSE_BOT_TEST = os.environ.get("INHOUSE_BOT_TEST") or False
+INHOUSE_BOT_TEST = bool(os.environ.get("INHOUSE_BOT_TEST"))
 
 # voice
 VOICE_CATEGORY = os.environ.get("VOICE_CATEGORY") or "▬▬ Team Voice Chat ▬▬"
