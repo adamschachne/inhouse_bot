@@ -60,7 +60,7 @@ class RankingPagesSource(menus.ListPageSource):
             description="\n".join(rows),
         )
 
-        if show_footer:
+        if menu and show_footer:
             embed.set_footer(text=f"Page {menu.current_page + 1} of {self._max_pages}")
 
         return embed
