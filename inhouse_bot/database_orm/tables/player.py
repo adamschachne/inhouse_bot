@@ -47,6 +47,8 @@ class Player(bot_declarative_base):
                 return summoner.name
         except PyotException as ex:
             logging.warn(f"Error getting summoner name: {ex}")
+        except:
+            logging.exception("Error in get_summoner_name")
 
         return self.name
 

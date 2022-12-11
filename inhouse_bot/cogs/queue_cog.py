@@ -343,7 +343,7 @@ class QueueCog(commands.Cog, name="Queue"):
     async def leave(
         self,
         ctx: commands.Context,
-        role: Optional[QueueRoleConverter()] = None,
+        role: QueueRoleConverter | None = None,
     ):
         game_queue.remove_player(
             player_id=ctx.author.id, channel_id=ctx.channel.id, role=role

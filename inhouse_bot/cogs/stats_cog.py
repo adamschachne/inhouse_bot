@@ -69,7 +69,7 @@ class StatsCog(commands.Cog, name="Stats"):
     async def champion(
         self,
         ctx: commands.Context,
-        champion_name: ChampionNameConverter(),
+        champion_name: ChampionNameConverter,
         game_id: int | None = None,
     ):
         # TODO move this query to a util function so that it can return a proper typing
