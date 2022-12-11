@@ -70,7 +70,7 @@ class StatsCog(commands.Cog, name="Stats"):
         self,
         ctx: commands.Context,
         champion_name: ChampionNameConverter(),
-        game_id: int = None,
+        game_id: int | None = None,
     ):
         # TODO move this query to a util function so that it can return a proper typing
         # i.e -> Tuple[Game, GameParticipant] | Tuple[None, None]
@@ -144,7 +144,7 @@ class StatsCog(commands.Cog, name="Stats"):
             {PREFIX}ranking mid
     """
     )
-    async def ranking(self, ctx: commands.Context, role: RoleConverter = None):
+    async def ranking(self, ctx: commands.Context, role: RoleConverter | None = None):
         ratings = ranking_channel_handler.get_server_ratings(ctx.guild.id, role=role)
 
         if not ratings:

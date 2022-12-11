@@ -100,7 +100,7 @@ class RankingChannelHandler:
         await channel.purge(check=lambda msg: msg.id not in new_msgs_ids)
 
     @staticmethod
-    def get_server_ratings(server_id: int, role: str = None, limit=100):
+    def get_server_ratings(server_id: int, role: str | None = None, limit=100):
         with session_scope() as session:
             session.expire_on_commit = False
 

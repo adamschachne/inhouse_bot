@@ -233,8 +233,8 @@ class QueueCog(commands.Cog, name="Queue"):
         self,
         ctx: commands.Context,
         role: QueueRoleConverter,
-        duo: discord.Member = None,
-        duo_role: QueueRoleConverter = None,
+        duo: discord.Member | None = None,
+        duo_role: QueueRoleConverter | None = None,
     ):
         server_id = ctx.guild.id
 
@@ -343,7 +343,7 @@ class QueueCog(commands.Cog, name="Queue"):
     async def leave(
         self,
         ctx: commands.Context,
-        role: QueueRoleConverter() = None,
+        role: Optional[QueueRoleConverter()] = None,
     ):
         game_queue.remove_player(
             player_id=ctx.author.id, channel_id=ctx.channel.id, role=role
