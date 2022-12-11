@@ -14,6 +14,9 @@ def admin_group_check():
     """
 
     def predicate(ctx: commands.Context):
+        if ctx.guild is None:
+            return False
+            
         # If the user is the owner of the server, they are an admin
         if ctx.author.id == ctx.guild.owner_id:
             return True
@@ -23,7 +26,7 @@ def admin_group_check():
     return check(predicate)
 
 
-def is_admin(id: int, server_id: str) -> bool:
+def is_admin(id: int, server_id: int) -> bool:
     with session_scope() as session:
         admin = (
             session.query(Admin)

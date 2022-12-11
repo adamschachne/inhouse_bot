@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 from inhouse_bot.database_orm import (
     session_scope,
     GameParticipant,
@@ -94,7 +94,7 @@ async def get_roles_most_used_champs(player_id, server_id):
     if not game_participant_list:
         return [("No champions are registered for player.")]
 
-    roleChampDict = {key: {} for key in RoleEnum}
+    roleChampDict: Dict[RoleEnum, Dict[int, int]] = {key: {} for key in RoleEnum}
 
     # Keeping track of all the champs used for each role
     for game_participant in game_participant_list:
@@ -110,7 +110,7 @@ async def get_roles_most_used_champs(player_id, server_id):
     rows = []
     # Sort map of champs for each role and get the top 3
     for role in roles_list:
-        row_string = ()
+        row_string: List[str] = []
         champs_collection = []
 
         most_played = sorted(
@@ -121,11 +121,9 @@ async def get_roles_most_used_champs(player_id, server_id):
             champs_collection.append(get_champion_name_by_id(key) + f" ({value})")
 
         if champs_collection:
-            row_string = row_string + (
-                f"{get_role_emoji(role)}: {', '.join(champs_collection)}",
-            )
+            row_string.append(f"{get_role_emoji(role)}: {', '.join(champs_collection)}")
         else:
-            row_string = row_string + (f"{get_role_emoji(role)}: No Role Data.",)
+            row_string.append(f"{get_role_emoji(role)}: No Role Data.")
 
         rows.append("  | ".join(row_string))
 

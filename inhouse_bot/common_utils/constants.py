@@ -1,4 +1,5 @@
 import os
+from typing import List, Tuple
 
 # command prefix
 PREFIX = os.environ.get("INHOUSE_BOT_COMMAND_PREFIX") or "!"
@@ -42,7 +43,7 @@ BOT_EMOJI = os.environ.get("INHOUSE_BOT_BOT_EMOJI") or "BOT"
 SUP_EMOJI = os.environ.get("INHOUSE_BOT_SUP_EMOJI") or "SUP"
 
 
-CONFIG_OPTIONS = [
+CONFIG_OPTIONS: List[Tuple[str, str]] = [
     ("queue_reset", f"Resets the queues daily at {QUEUE_RESET_TIME} UTC"),
     (
         "voice",
