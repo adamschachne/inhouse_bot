@@ -40,9 +40,7 @@ from pyot.models.lol.match import Match
 
 
 class TournamentHandler:
-    bot: Union[Bot, None] = None
-    app: Union[FastAPI, None] = None
-
+    bot: Bot
     provider: int = 0
 
     def __init__(self):
@@ -91,12 +89,11 @@ class TournamentHandler:
 
         # add all players in the game
         for puuid in game.player_puuids:
-            if puuid:
-                puuids.add(puuid)
+            puuids.add(puuid)
 
         # add admins for the server
         for admin in get_server_admins(server_id=game.server_id):
-            if admin.summoner_puuid:
+            if admin.summoner_puuid is not None:
                 puuids.add(admin.summoner_puuid)
 
         # get the summoners of the players in the game and the admins on the server
@@ -110,7 +107,7 @@ class TournamentHandler:
         spectator_type = "LOBBYONLY"
         allowed_summoner_ids = [summoner.id for summoner in summoners]
 
-        tournament_id = await get_tournament(name=game.id, provider_id=self.provider)
+        tournament_id = await get_tournament(name=str(game.id), provider_id=self.provider)
 
         # generate a secure random string
         tournament_secret = secrets.token_urlsafe(16)
@@ -132,7 +129,7 @@ class TournamentHandler:
         tournament = Tournament(
             code=code,
             game=game,
-            name=game.id,
+            name=str(game.id),
             tournament_id=tournament_id,
             provider_id=self.provider,
             allowed_summoner_ids=allowed_summoner_ids,
@@ -148,7 +145,7 @@ class TournamentHandler:
 
     async def score_tournament(
         self, tournament: Tournament, match: Match, session: Session
-    ):
+    ) -> SideEnum | None:
         """
         Scores the given tournament based on the given match. The tournament match_id is set,
         Game participants' champions are updated, the game winner is set.
@@ -172,7 +169,9 @@ class TournamentHandler:
 
             player = players_by_puuid.get(puuid, None)
 
-            # if the player is not in the match, they can't have a champion
+            # if this player is not in the GameParticipants, there's nothing to do. This could
+            # only happen if the player was an admin and not a player in the game, or if Riot
+            # the puuids of the players in the game were different from the puuids of GameParticipants
             if not player:
                 continue
 
@@ -189,9 +188,10 @@ class TournamentHandler:
                 session=session,
             )
 
-        session.merge(tournament)
+            session.merge(tournament)
 
-        return any_winning_player.side
+            return any_winning_player.side
+        return None
 
     async def send_server_game_result(
         self, game_id: int, server_id: int, winning_side: SideEnum
@@ -205,11 +205,14 @@ class TournamentHandler:
         # get the queue channel for this game's server from queue_channel_handler
         queue_channel_id = queue_channel_handler.get_server_queues(server_id)[0]
 
-        queue_channel_handler.mark_queue_related_message(
-            await self.bot.get_channel(queue_channel_id).send(
-                f"Game {game_id} has been scored as a win for {winning_side}!"
+        channel = self.bot.get_channel(queue_channel_id)
+
+        if isinstance(channel, TextChannel):
+            queue_channel_handler.mark_queue_related_message(
+                await channel.send(
+                    f"Game {game_id} has been scored as a win for {winning_side}!"
+                )
             )
-        )
 
     async def _fallback(self, request: Request, path_name: str):
         body = await request.body()
@@ -263,9 +266,10 @@ class TournamentHandler:
 
         # after the session is closed and committed, the game result can be sent to the game server's channels
         try:
-            await self.send_server_game_result(
-                game_id=game_id, server_id=server_id, winning_side=winning_side
-            )
+            if winning_side is not None:
+                await self.send_server_game_result(
+                    game_id=game_id, server_id=server_id, winning_side=winning_side
+                )
         except:
             # do nothing if there is no queue channel
             pass

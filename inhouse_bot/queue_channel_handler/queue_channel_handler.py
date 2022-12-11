@@ -53,7 +53,8 @@ class QueueChannelHandler:
             await asyncio.sleep(5)  # Hardcoded right now, will need a sanity pass
 
             if self.latest_purge_message_id[msg.channel.id] == msg.id:
-                await msg.channel.purge(check=self.is_not_queue_related_message)
+                if hasattr(msg.channel, 'purge'):
+                    await msg.channel.purge(check=self.is_not_queue_related_message)
 
     async def refresh_channel_queue(self, channel: TextChannel, restart: bool):
         """
@@ -135,7 +136,7 @@ class QueueChannelHandler:
     def is_queue_channel(self, channel_id) -> bool:
         return channel_id in self.queue_channel_ids
 
-    def is_not_queue_related_message(self, msg) -> bool:
+    def is_not_queue_related_message(self, msg: Message) -> bool:
         return (msg.id not in self.permanent_messages) and (
             msg.id not in self.latest_queue_message_ids.values()
         )
@@ -195,7 +196,8 @@ class QueueChannelHandler:
                 self.unmark_queue_channel(channel_id)  # We remove it for the future
                 continue
 
-            await self.refresh_channel_queue(channel=channel, restart=restart)
+            if isinstance(channel, TextChannel):
+                await self.refresh_channel_queue(channel=channel, restart=restart)
 
 
 # This will be an object common to all functions afterwards

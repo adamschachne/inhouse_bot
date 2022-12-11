@@ -1,5 +1,14 @@
 [tool.mypy]
-files = "inhouse_bot/database_orm/tables/*.py"
+files = [
+    "inhouse_bot/database_orm/tables/**/*.py",
+    "inhouse_bot/matchmaking_logic/**/*.py",
+    "inhouse_bot/game_queue/**/*.py",
+    "inhouse_bot/queue_channel_handler/**/*.py",
+    "inhouse_bot/ranking_channel_handler/**/*.py",
+    "inhouse_bot/stats_menus/**/*.py",
+    "inhouse_bot/tournament/**/*.py",
+]
+# files = "inhouse_bot/**/*.py"
 # remove with sqlalchemy 2.0
 plugins = "sqlalchemy.ext.mypy.plugin"
 python_version = "3.10"
@@ -9,11 +18,7 @@ check_untyped_defs = "True"
 
 [[tool.mypy.overrides]]
 module = [
-    "uvicorn.*",
     "pyot.*",
-    "discord.*",
-    "lol_id_tools.*",
-    "trueskill.*"
 ]
 ignore_missing_imports = true
 

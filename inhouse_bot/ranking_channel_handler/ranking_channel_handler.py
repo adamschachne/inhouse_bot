@@ -76,8 +76,9 @@ class RankingChannelHandler:
             if not channel:  # Happens when the channel does not exist anymore
                 self.unmark_ranking_channel(channel_id)  # We remove it for the future
                 continue
-
-            await self.refresh_channel_rankings(channel=channel)
+            
+            if isinstance(channel, TextChannel):
+                await self.refresh_channel_rankings(channel=channel)
 
     async def refresh_channel_rankings(self, channel: TextChannel):
         ratings = self.get_server_ratings(channel.guild.id, limit=30)
