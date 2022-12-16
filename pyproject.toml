@@ -2,6 +2,7 @@
 files = [
     "inhouse_bot/common_utils/**/*.py",
     "inhouse_bot/database_orm/tables/**/*.py",
+    "inhouse_bot/dataclasses/**/*.py",
     "inhouse_bot/matchmaking_logic/**/*.py",
     "inhouse_bot/game_queue/**/*.py",
     "inhouse_bot/queue_channel_handler/**/*.py",
