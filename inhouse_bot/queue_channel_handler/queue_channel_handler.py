@@ -53,7 +53,7 @@ class QueueChannelHandler:
             await asyncio.sleep(5)  # Hardcoded right now, will need a sanity pass
 
             if self.latest_purge_message_id[msg.channel.id] == msg.id:
-                if hasattr(msg.channel, 'purge'):
+                if hasattr(msg.channel, "purge"):
                     await msg.channel.purge(check=self.is_not_queue_related_message)
 
     async def refresh_channel_queue(self, channel: TextChannel, restart: bool):

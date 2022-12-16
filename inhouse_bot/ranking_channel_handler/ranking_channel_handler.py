@@ -76,7 +76,7 @@ class RankingChannelHandler:
             if not channel:  # Happens when the channel does not exist anymore
                 self.unmark_ranking_channel(channel_id)  # We remove it for the future
                 continue
-            
+
             if isinstance(channel, TextChannel):
                 await self.refresh_channel_rankings(channel=channel)
 

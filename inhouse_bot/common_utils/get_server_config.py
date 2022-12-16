@@ -17,7 +17,7 @@ def get_server_config(server_id: int, session) -> ServerConfig:
     # If server_config doesn't exist for this server_id, we'll create one now and send that back
     server_config = ServerConfig()
     server_config.server_id = server_id
-    server_config.config = { key: False for (key, value) in CONFIG_OPTIONS }
+    server_config.config = {key: False for (key, value) in CONFIG_OPTIONS}
 
     session.merge(server_config)
 

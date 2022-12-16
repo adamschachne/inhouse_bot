@@ -64,7 +64,9 @@ async def tournament_check(bot: commands.Bot, server_id: int):
                 )
 
                 if winning_side is None:
-                    logging.error(f"Failed to score tournament match: {match_id}, game: {game.id}")
+                    logging.error(
+                        f"Failed to score tournament match: {match_id}, game: {game.id}"
+                    )
                     continue
 
                 # commit changes to database
