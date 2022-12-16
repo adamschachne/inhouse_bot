@@ -1,10 +1,12 @@
 from datetime import datetime, timedelta
+import logging
 from typing import List, Optional, Set
 
 import sqlalchemy
 from discord.ext import commands
 
 from inhouse_bot.common_utils.fields import RoleEnum, roles_list
+from inhouse_bot.common_utils.lol_api.tasks import get_summoner_by_puuid
 
 from inhouse_bot.database_orm import session_scope, QueuePlayer, Player
 from inhouse_bot.common_utils.get_last_game import get_last_game
@@ -85,11 +87,15 @@ async def add_player(
     # This is also useful to automatically update name changes
     player = session.merge(Player(id=player_id, server_id=server_id, name=name))
 
-    # fetch their summoner name (if possible) and update player.name
-    await player.get_summoner_name()
-
-    # merge this player back into the session
-    session.merge(player)
+    # try to get the summoner name from the lol api
+    if player.summoner_puuid:
+        try:
+            summoner = await get_summoner_by_puuid(player.summoner_puuid)
+            player.name = summoner.name
+            # merge this player back into the session
+            session.merge(player)
+        except Exception as ex:
+            logging.warn(f"Error getting summoner name: {ex}")
 
     # Finally, we actually add the player to the queue
     queue_player = QueuePlayer(

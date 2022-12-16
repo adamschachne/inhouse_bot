@@ -10,7 +10,7 @@ async def are_verified_users(
 ) -> bool:
     with session_scope() as session:
         for id in ids:
-            player = (
+            player: Player | None = (
                 session.query(Player)
                 .filter(Player.id == id)
                 .filter(Player.server_id == server_id)

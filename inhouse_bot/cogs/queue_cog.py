@@ -531,15 +531,14 @@ class QueueCog(commands.Cog, name="Queue"):
         verification_icons_ids = [
             i for i in range(1, 29) if i != summoner.profile_icon.id
         ]
-        icon = await get_profile_icon_by_id(
-            icon_id=random.choice(verification_icons_ids)
-        )
 
-        verification_message = await ctx.send(
+        icon_id = random.choice(verification_icons_ids)
+
+        verification_message = await ctx.reply(
             f"You are verifying the summoner name: `{summoner.name}`\n"
             + "Please change your Summoner icon to the following icon\n"
             + "Press ✅ once you have done so, or ❌ to cancel\n",
-            file=discord.File(f"assets/profile-icons/{icon.id}.jpg"),
+            file=discord.File(f"assets/profile-icons/{icon_id}.jpg"),
         )
 
         result, ids_to_drop = await checkmark_validation(
@@ -556,7 +555,7 @@ class QueueCog(commands.Cog, name="Queue"):
 
         # If we get here, the the author pressed the checkmark --> we can now verify the summoner icon
         summoner = await get_summoner_by_name(summoner_name, no_cache=True)
-        if summoner.profile_icon.id is not icon.id:
+        if summoner.profile_icon.id is not icon_id:
             await ctx.send(
                 f"Verification failed: Your profile icon is not the one shown in the message"
             )
@@ -567,6 +566,11 @@ class QueueCog(commands.Cog, name="Queue"):
             user_id=ctx.author.id,
             summoner_puuid=summoner.puuid,
             summoner_name=summoner.name,
+        )
+
+        # refresh the queue channel to display any name change
+        await queue_channel_handler.update_queue_channels(
+            bot=self.bot, server_id=ctx.guild.id
         )
 
         await ctx.send(f"Verified Summoner name: {summoner.name}")
