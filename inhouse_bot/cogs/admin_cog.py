@@ -57,7 +57,7 @@ class AdminCog(commands.Cog, name="Admin"):
     async def reset(
         self,
         ctx: commands.Context,
-        member_or_channel: Union[discord.Member, discord.TextChannel] = None,
+        member_or_channel: Union[discord.Member, discord.TextChannel] | None = None,
     ):
         """
         Resets the queue status for a channel or a player

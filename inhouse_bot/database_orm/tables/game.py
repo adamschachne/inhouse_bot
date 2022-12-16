@@ -75,8 +75,8 @@ class Game(bot_declarative_base):
         return f"||{' '.join([f'<@{discord_id}>' for discord_id in self.player_ids_list])}||\n"
 
     @property
-    def player_puuids(self) -> List[str | None]:
-        return [p.player.summoner_puuid for p in self.participants.values()]  # type: ignore
+    def player_puuids(self) -> List[str]:
+        return [p.player.summoner_puuid for p in self.participants.values() if isinstance(p.player.summoner_puuid, str)]  # type: ignore
 
     def __str__(self):
         return tabulate(

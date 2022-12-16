@@ -19,7 +19,7 @@ async def checkmark_validation(
     validating_players_ids: List[int],
     validation_threshold: int = 10,
     timeout: float = 120,
-    game: Game = None,
+    game: Game | None = None,
 ) -> Tuple[Optional[bool], Optional[Set[int]]]:
     """
     Implements a checkmark validation on the chosen message.
@@ -56,10 +56,10 @@ async def checkmark_validation(
             and str(received_reaction.emoji) in ["✅", "❌"]
         )
 
-    ids_of_players_who_validated = set()
+    ids_of_players_who_validated: Set[int] = set()
 
     # Default values that will be output in case of success
-    result = True
+    result: bool | None = True
     ids_to_drop = None
     try:
         while len(ids_of_players_who_validated) < validation_threshold:
@@ -77,7 +77,7 @@ async def checkmark_validation(
                     await message.edit(
                         embed=game.get_embed(
                             embed_type="GAME_FOUND",
-                            validated_players=ids_of_players_who_validated,
+                            validated_players=list(ids_of_players_who_validated),
                             bot=bot,
                         )
                     )

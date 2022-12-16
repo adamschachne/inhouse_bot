@@ -77,7 +77,8 @@ class RankingChannelHandler:
                 self.unmark_ranking_channel(channel_id)  # We remove it for the future
                 continue
 
-            await self.refresh_channel_rankings(channel=channel)
+            if isinstance(channel, TextChannel):
+                await self.refresh_channel_rankings(channel=channel)
 
     async def refresh_channel_rankings(self, channel: TextChannel):
         ratings = self.get_server_ratings(channel.guild.id, limit=30)
@@ -99,7 +100,7 @@ class RankingChannelHandler:
         await channel.purge(check=lambda msg: msg.id not in new_msgs_ids)
 
     @staticmethod
-    def get_server_ratings(server_id: int, role: str = None, limit=100):
+    def get_server_ratings(server_id: int, role: str | None = None, limit=100):
         with session_scope() as session:
             session.expire_on_commit = False
 

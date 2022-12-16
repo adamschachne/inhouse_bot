@@ -279,7 +279,7 @@ class TestCog(commands.Cog, name="TEST"):
         )
 
     @test.command()
-    async def emoji(self, ctx: commands.Context, champion_id: ChampionNameConverter()):
+    async def emoji(self, ctx: commands.Context, champion_id: ChampionNameConverter):
         emoji_text = get_champion_emoji(champion_id, self.bot)
 
         await ctx.send(f"{champion_id} - {emoji_text}")

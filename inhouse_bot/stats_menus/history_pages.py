@@ -8,6 +8,7 @@ from inhouse_bot.common_utils.emoji_and_thumbnails import (
     get_role_emoji,
     role_thumbnail_dict,
 )
+from inhouse_bot.common_utils.fields import RoleEnum
 from inhouse_bot.database_orm import GameParticipant, Game
 
 entries_type = List[Tuple[Game, GameParticipant]]
@@ -31,7 +32,7 @@ class HistoryPagesSource(menus.ListPageSource):
         )
 
         rows = []
-        role_counter = Counter()
+        role_counter: Counter[RoleEnum] = Counter()
 
         max_game_id_length = max(len(str(game.id)) for game, participant in entries)
 
@@ -41,6 +42,8 @@ class HistoryPagesSource(menus.ListPageSource):
             name = participant.player.name
             champion_emoji = get_champion_emoji(participant.champion_id, self.bot)
             role = get_role_emoji(participant.role)
+            server = self.bot.get_guild(game.server_id)
+            server_name = server.name if server else ""
 
             role_counter[participant.role] += 1
 
@@ -57,11 +60,7 @@ class HistoryPagesSource(menus.ListPageSource):
             output_string = (
                 f"{result}   {role}   {champion_emoji}  "
                 f"`#{game.id}{' '*id_padding}{game.start.date()}"
-                + (
-                    "`"
-                    if not self.is_dms
-                    else f"  {self.bot.get_guild(game.server_id).name}`"
-                )
+                + ("`" if not self.is_dms else f"  {server_name}`")
             )
 
             rows.append(output_string)

@@ -34,22 +34,6 @@ class Player(bot_declarative_base):
     def __repr__(self):
         return f"<Player: {self.id=} | {self.name=}>"
 
-    async def get_summoner_name(self):
-        from inhouse_bot.common_utils.lol_api.tasks import (
-            get_summoner_by_puuid,
-            PyotException,
-        )
-
-        try:
-            if self.summoner_puuid:
-                summoner = await get_summoner_by_puuid(self.summoner_puuid)
-                self.name = summoner.name
-                return summoner.name
-        except PyotException as ex:
-            logging.warn(f"Error getting summoner name: {ex}")
-
-        return self.name
-
     @hybrid_property
     def is_verified(self):
         if self.summoner_puuid:
