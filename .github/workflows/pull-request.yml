@@ -17,7 +17,7 @@ jobs:
           path: "inhouse_bot"
 
       - name: Mypy Check
-        uses: jpetrucciani/mypy-check@0.971
+        uses: jpetrucciani/mypy-check@0.991
         with:
           path: "" # files to check are inthe config file
           requirements_file: "requirements.txt"
