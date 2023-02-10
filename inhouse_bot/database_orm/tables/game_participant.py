@@ -38,7 +38,7 @@ class GameParticipant(bot_declarative_base):
     player_server_id: Mapped[int] = Column(BigInteger)
 
     # Player relationship
-    player: Mapped[Player] = relationship(Player, lazy="joined", uselist=False)
+    player: Mapped[Player] = relationship(Player, lazy="joined", uselist=False) # type: ignore
 
     # Champion id, only filled if the player updates it by themselves after the game
     champion_id: Mapped[int | None] = Column(Integer)
