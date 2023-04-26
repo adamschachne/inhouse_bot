@@ -161,7 +161,7 @@ class TournamentHandler:
         any_winning_player: GameParticipant | None = None
 
         # iterate the game participants and set their champion id
-        for participant in tournament.game.participants.values(): # type: ignore
+        for participant in tournament.game.participants.values():  # type: ignore
             if not isinstance(participant, GameParticipant):
                 continue
 
