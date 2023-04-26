@@ -180,7 +180,6 @@ def start_ready_check(
     assert len(player_ids) == 10
 
     with session_scope() as session:
-
         (
             session.query(QueuePlayer)
             .filter(QueuePlayer.channel_id == channel_id)
@@ -309,7 +308,6 @@ async def add_duo(
     jump_ahead=False,
     session: Session | None = None,
 ):
-
     if not session:
         with session_scope() as new_session:
             return await add_duo(

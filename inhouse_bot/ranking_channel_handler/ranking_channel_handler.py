@@ -53,7 +53,6 @@ class RankingChannelHandler:
         self._ranking_channels.append(channel)
 
     def unmark_ranking_channel(self, channel_id):
-
         with session_scope() as session:
             channel_query = session.query(ChannelInformation).filter(
                 ChannelInformation.id == channel_id

@@ -32,9 +32,8 @@ async def tournament_check(bot: commands.Bot, server_id: int):
 
     logging.info("Checking for completed matches")
     with session_scope() as session:
-
         # query for tournaments whose games do not have a winner
-        for (game, tournament) in get_active_games(session):
+        for game, tournament in get_active_games(session):
             logging.info(f"Game {game.id} is still active. Checking for updates.")
 
             start_timestamp = int(game.start.timestamp())

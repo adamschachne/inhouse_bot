@@ -223,7 +223,6 @@ class TournamentHandler:
 
     # API route handler function
     async def _game_result(self, game_result: GameResultParams):
-
         server_id: int = -1
         game_id: int = -1
         winning_side: SideEnum | None = None
