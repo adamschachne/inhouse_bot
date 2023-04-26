@@ -71,7 +71,6 @@ class GameQueue:
 
             for role in self.queue_players_dict:
                 for qp in self.queue_players_dict[role]:
-
                     # If we already have 2 players in that role, we continue
                     if len(starting_queue[role]) >= 2:
                         continue

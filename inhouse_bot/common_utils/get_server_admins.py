@@ -5,7 +5,6 @@ from inhouse_bot.database_orm.session.session import session_scope
 
 
 def get_server_admins(server_id: int) -> List[Player]:
-
     with session_scope() as session:
         session.expire_on_commit = False
         admins = (

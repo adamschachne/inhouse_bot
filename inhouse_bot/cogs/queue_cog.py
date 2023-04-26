@@ -254,7 +254,6 @@ class QueueCog(commands.Cog, name="Queue"):
         if cancel_timestamp := self.players_whose_last_game_got_cancelled.pop(
             ctx.author.id, None
         ):
-
             if datetime.now() - cancel_timestamp < timedelta(hours=1):
                 jump_ahead = True
 
@@ -485,7 +484,6 @@ class QueueCog(commands.Cog, name="Queue"):
                 await ctx.send(f"Game {game.id} was not cancelled")
 
             else:
-
                 for participant in game.participants.values():
                     self.players_whose_last_game_got_cancelled[
                         participant.player_id

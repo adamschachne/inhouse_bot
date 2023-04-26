@@ -19,7 +19,6 @@ class RankingPagesSource(menus.ListPageSource):
     async def format_page(
         self, menu: Optional[menus.MenuPages], entries, offset=None
     ) -> Embed:
-
         if menu:
             show_footer = True
             offset = menu.current_page * self.per_page
@@ -33,7 +32,6 @@ class RankingPagesSource(menus.ListPageSource):
         max_name_length = max(len(r.Player.name) for r in entries)
 
         for idx, row in enumerate(entries):
-
             role = get_role_emoji(row.role)
 
             # TODO need typing on row here; row.Player is Any, should be Player

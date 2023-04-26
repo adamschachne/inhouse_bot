@@ -44,7 +44,6 @@ class QueueChannelHandler:
 
         # We check if the message is in a queue channel
         if self.is_queue_channel(msg.channel.id):
-
             # If it was, we trigger a purge of non-marked messages
 
             # We save the msg id and will only delete if it’s still the latest msg in the channel to purge after 5s
@@ -97,7 +96,6 @@ class QueueChannelHandler:
             duos_strings = []
 
             for duo in queue.duos:
-
                 duos_strings.append(
                     " + ".join(
                         f"{qp.player.name} {get_role_emoji(qp.role)}" for qp in duo

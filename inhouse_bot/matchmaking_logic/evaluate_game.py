@@ -105,7 +105,6 @@ def get_lane_differential(laneMMR: Dict[Tuple[SideEnum, RoleEnum], int]) -> int:
 
 
 async def evaluate_game(game: Game) -> GameInfo:
-
     teamsList = []
     teamsList.extend(game.teams.BLUE)
     teamsList.extend(game.teams.RED)
