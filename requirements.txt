@@ -13,7 +13,7 @@ trueskill==0.4.5
 psycopg2==2.9.6
 alembic==1.11.1
 pyot==6.0.8
-fastapi==0.92.0
+fastapi==0.115.3
 uvicorn==0.20.0
 black==23.7.0
 mypy==1.4.1
