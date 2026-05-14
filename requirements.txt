@@ -14,7 +14,7 @@ psycopg2==2.9.12
 alembic==1.18.4
 pyot==6.0.9
 fastapi==0.92.0
-uvicorn==0.20.0
+uvicorn==0.47.0
 black==23.12.1
 mypy==1.4.1
 discord-ext-menus==1.1
