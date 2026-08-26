@@ -3,7 +3,7 @@ discord.py==2.1.0
 inflect==6.2.0
 lol_id_tools==2.0.1
 matplotlib==3.10.9
-mplcyberpunk==0.6.0
+mplcyberpunk==0.7.6
 pytest==7.4.4
 rapidfuzz==2.15.2
 SQLAlchemy==1.4.54
